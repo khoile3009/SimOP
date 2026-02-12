@@ -18,7 +18,7 @@ export function validateAction(
 
   switch (action.type) {
     case 'MULLIGAN':
-      return validateMulligan(state, actingPlayer, action.accept)
+      return validateMulligan(state, actingPlayer)
     case 'PLAY_CARD':
       return validatePlayCard(state, actingPlayer, action.cardInstanceId)
     case 'ATTACH_DON':
@@ -48,7 +48,7 @@ export function validateAction(
   }
 }
 
-function validateMulligan(state: GameState, playerId: PlayerId, _accept: boolean): ValidationResult {
+function validateMulligan(state: GameState, playerId: PlayerId): ValidationResult {
   if (state.phase !== 'SETUP') return { valid: false, reason: 'Not in setup phase' }
   if (state.mulliganState[playerId] !== 'pending') {
     return { valid: false, reason: 'Already made mulligan decision' }

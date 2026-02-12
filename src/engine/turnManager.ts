@@ -94,7 +94,7 @@ export function executeEndPhase(state: GameState): GameState {
   const player = state.players[playerId]
 
   // Return attached DON from all characters and leader to cost area (rested)
-  let returnedDon: typeof player.donArea = []
+  const returnedDon: typeof player.donArea = []
 
   const newLeader = { ...player.leader }
   if (newLeader.attachedDon > 0) {

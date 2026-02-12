@@ -22,7 +22,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(node -e:*)",
       "Bash(node:*)",
-      "Bash(npx vitest run:*)"
+      "Bash(npx vitest run:*)",
+      "WebFetch(domain:limitlesstcg.nyc3.cdn.digitaloceanspaces.com)",
+      "Bash(ls:*)"
     ]
   }
 }

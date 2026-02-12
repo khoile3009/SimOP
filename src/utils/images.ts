@@ -6,5 +6,5 @@ export function getCardImageUrl(cardId: string): string {
 }
 
 export function getCardBackUrl(): string {
-  return '/assets/card-back.webp'
+  return '/assets/card-back.svg'
 }
