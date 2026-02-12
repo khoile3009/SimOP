@@ -4,7 +4,11 @@
       "WebSearch",
       "WebFetch(domain:optcgapi.com)",
       "WebFetch(domain:shinycardtraders.com)",
-      "WebFetch(domain:www.mplgames.com)"
+      "WebFetch(domain:www.mplgames.com)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite build:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }

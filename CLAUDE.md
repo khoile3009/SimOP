@@ -6,19 +6,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 SimPiece is a web-based One Piece Trading Card Game (TCG) simulator. V1 scope: OP01 set, local self-play (both sides), deck builder, automated card effects. Future: AI opponent (P1), online multiplayer (P2).
 
+## Commands
+
+```bash
+npm run dev          # Start dev server (Vite)
+npm run build        # Type check + production build
+npm run lint         # ESLint
+npm run format       # Prettier format all src files
+npm run format:check # Prettier check (no write)
+npm run test         # Run all tests once (Vitest)
+npm run test:watch   # Run tests in watch mode
+npx vitest run src/engine/rules.test.ts  # Run a single test file
+```
+
 ## Architecture
 
 See `ARCHITECTURE_AND_PLAN.md` for the full spec. Key architectural decisions:
 
 - **Pure Game Engine**: `src/engine/` is framework-agnostic TypeScript with zero React imports. It takes a `GameState` + `GameAction` and returns a new `GameState`. This enables unit testing without DOM, reuse for AI/network, and deterministic replays.
-- **Command Pattern**: Every game action is a serializable discriminated union (`GameAction`). Enables undo, replay, network sync.
-- **Player Adapter Pattern**: `PlayerAdapter` interface abstracts input source (Human UI, AI, Remote WebSocket) so the engine doesn't care where actions come from.
-- **Zustand as thin glue**: Zustand store holds `GameState` and dispatches to the engine. React components subscribe to state slices.
+- **Command Pattern**: Every game action is a serializable discriminated union (`GameAction` in `src/engine/types.ts`). Enables undo, replay, network sync.
+- **Player Adapter Pattern**: `PlayerAdapter` interface in `src/adapters/` abstracts input source (Human UI, AI, Remote WebSocket) so the engine doesn't care where actions come from.
+- **Zustand as thin glue**: Zustand store in `src/store/` holds `GameState` and dispatches to the engine. React components subscribe to state slices.
 - **Effect Registry**: Card effects are registered per card ID (not parsed from text). Each set has its own effect file (`src/data/op01/effects.ts`).
 
 ## Tech Stack
 
-React 18 + TypeScript (strict) + Vite + Zustand + @dnd-kit + TailwindCSS v4 + Framer Motion + Vitest
+React 19 + TypeScript (strict) + Vite + Zustand + @dnd-kit + TailwindCSS v4 + Framer Motion + Vitest
+
+Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
+
+## Project Structure
+
+- `src/engine/` — Pure game engine (NO React imports). Types, rules, processor, battle, effects.
+- `src/data/` — Card data service (OPTCG API + IndexedDB cache), static fallback JSON.
+- `src/store/` — Zustand stores (game state, deck builder, UI state).
+- `src/adapters/` — PlayerAdapter interface + implementations (human, AI, remote).
+- `src/components/` — React components: `pages/`, `game/`, `deck-builder/`, `common/`.
+- `src/hooks/` — React hooks (useGameEngine, useDragCard, useCardData).
+- `src/utils/` — Pure helper functions (shuffle, id generation, image URLs).
+- `tests/` — Test files mirroring src structure.
 
 ## Card Data
 
@@ -36,3 +62,14 @@ The authoritative rules spec is in `ARCHITECTURE_AND_PLAN.md` Section 2. Critica
 - Characters at 0 power are NOT destroyed (only via battle loss or explicit KO effects)
 - Life damage: life card goes to hand, player may optionally activate its Trigger effect
 - DON attached to characters returns to cost area (rested) at End Phase
+
+## Styling
+
+Dark oceanic theme with glassmorphism panels. Custom colors defined in `src/index.css` via `@theme`:
+- `ocean-*`: background gradients
+- `don-gold`: DON!! / resource accent
+- `life-red`: life/damage
+- `action-green`: valid actions
+- `text-primary`, `text-secondary`, `text-muted`: text hierarchy
+
+Use `glass-panel` class for card zone containers.
