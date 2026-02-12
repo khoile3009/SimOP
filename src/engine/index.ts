@@ -26,3 +26,10 @@ export {
   DON_FIRST_TURN,
   DON_POWER_BONUS,
 } from './constants'
+
+export { createGame } from './gameSetup'
+export { processAction } from './processor'
+export { validateAction } from './rules'
+export { getEffectivePower, getBattlePower } from './powerCalc'
+export { autoAdvancePhases, getOpponent } from './turnManager'
+export { resolveDamage } from './battleManager'
