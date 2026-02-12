@@ -15,6 +15,7 @@ interface PlayerSideProps {
   onSelectCard: (instanceId: string, zone: 'leader' | 'character') => void
   onClickDon: () => void
   cardActions?: CardActions
+  attackTargets?: boolean
 }
 
 export default function PlayerSide({
@@ -25,6 +26,7 @@ export default function PlayerSide({
   onSelectCard,
   onClickDon,
   cardActions,
+  attackTargets,
 }: PlayerSideProps) {
   const leaderData = getCardById(player.leader.cardId)
   const maxLife = leaderData?.life ?? 5
@@ -40,6 +42,7 @@ export default function PlayerSide({
         isSelected={selectedId === player.leader.instanceId}
         onClick={() => onSelectCard(player.leader.instanceId, 'leader')}
         cardActions={cardActions}
+        attackTargetId={attackTargets ? `attack-target-${player.leader.instanceId}` : undefined}
       />
 
       {/* Characters + DON */}
@@ -48,7 +51,9 @@ export default function PlayerSide({
           characters={player.characters}
           selectedId={selectedId}
           onSelect={(id) => onSelectCard(id, 'character')}
+          droppableId={isActive ? 'character-zone' : 'opponent-character-zone'}
           cardActions={cardActions}
+          attackTargets={attackTargets}
         />
         <DonZone
           donArea={player.donArea}

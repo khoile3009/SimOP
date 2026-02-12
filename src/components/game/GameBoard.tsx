@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
+import type { DragEndEvent, DragMoveEvent, DragStartEvent } from '@dnd-kit/core'
 import type { PlayerId, CardData, GameCard } from '@/engine/types'
 import { getCardById } from '@/data/cardService'
 import { getCardImageUrl } from '@/utils/images'
@@ -13,6 +13,7 @@ import HandZone from './HandZone'
 import PhaseBar from './PhaseBar'
 import ControlsBar from './ControlsBar'
 import CardDetail from '@/components/cards/CardDetail'
+import AttackArrow from './AttackArrow'
 
 export default function GameBoard() {
   const {
@@ -30,6 +31,12 @@ export default function GameBoard() {
   const [inspecting, setInspecting] = useState<CardData | null>(null)
   const [attackingFrom, setAttackingFrom] = useState<string | null>(null)
   const [draggingCard, setDraggingCard] = useState<GameCard | null>(null)
+  const [attackArrowSource, setAttackArrowSource] = useState<{ x: number; y: number } | null>(null)
+  const [counterSelection, setCounterSelection] = useState<string[]>([])
+
+
+  const arrowLineRef = useRef<SVGLineElement | null>(null)
+  const attackStartPointerRef = useRef<{ x: number; y: number } | null>(null)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -113,24 +120,95 @@ export default function GameBoard() {
     incrementDonAttach()
   }, [current, gameState, donAttachCount, select, incrementDonAttach])
 
+  // Counter handlers
+  const handleToggleCounter = useCallback((instanceId: string) => {
+    setCounterSelection((prev) =>
+      prev.includes(instanceId) ? prev.filter((id) => id !== instanceId) : [...prev, instanceId],
+    )
+  }, [])
+
+  const handleUseCounter = useCallback(() => {
+    if (!gameState?.battle || counterSelection.length === 0) return
+    dispatch(
+      { type: 'USE_COUNTER', cardInstanceIds: counterSelection },
+      gameState.battle.defenderPlayer,
+    )
+    setCounterSelection([])
+  }, [gameState, counterSelection, dispatch])
+
+  const handlePassCounter = useCallback(() => {
+    if (!gameState?.battle) return
+    dispatch({ type: 'PASS_COUNTER' }, gameState.battle.defenderPlayer)
+    setCounterSelection([])
+  }, [gameState, dispatch])
+
   // Drag-and-drop handlers
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const data = event.active.data.current as DragCardData | undefined
-    if (data?.card) setDraggingCard(data.card)
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const data = event.active.data.current as DragCardData | undefined
+      if (!data) return
+
+      if (data.zone === 'hand') {
+        setDraggingCard(data.card)
+      } else if (data.zone === 'character') {
+        clearSelection()
+        const activator = event.activatorEvent as PointerEvent
+        // Store initial pointer for computing position in onDragMove
+        attackStartPointerRef.current = { x: activator.clientX, y: activator.clientY }
+        // Get card center for arrow source
+        const target = activator.target as HTMLElement
+        const rect = target.getBoundingClientRect()
+        setAttackArrowSource({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        })
+      }
+    },
+    [clearSelection],
+  )
+
+  const handleDragMove = useCallback((event: DragMoveEvent) => {
+    if (arrowLineRef.current && attackStartPointerRef.current) {
+      const currentX = attackStartPointerRef.current.x + event.delta.x
+      const currentY = attackStartPointerRef.current.y + event.delta.y
+      arrowLineRef.current.setAttribute('x2', String(currentX))
+      arrowLineRef.current.setAttribute('y2', String(currentY))
+    }
   }, [])
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       setDraggingCard(null)
+      setAttackArrowSource(null)
+      attackStartPointerRef.current = null
+
       const { active, over } = event
-      if (!over || over.id !== 'character-zone') return
       const data = active.data.current as DragCardData | undefined
-      if (data?.zone === 'hand' && data.card) {
+      if (!over || !data) return
+
+      // Hand card → character zone = play card
+      if (data.zone === 'hand' && over.id === 'character-zone') {
         dispatch({ type: 'PLAY_CARD', cardInstanceId: data.card.instanceId }, current)
+        return
+      }
+
+      // Character/Leader → attack target = declare attack
+      if (data.zone === 'character' && typeof over.id === 'string' && over.id.startsWith('attack-target-')) {
+        const targetId = (over.id as string).slice('attack-target-'.length)
+        dispatch(
+          { type: 'DECLARE_ATTACK', attackerId: data.card.instanceId, targetId },
+          current,
+        )
       }
     },
     [current, dispatch],
   )
+
+  const handleDragCancel = useCallback(() => {
+    setDraggingCard(null)
+    setAttackArrowSource(null)
+    attackStartPointerRef.current = null
+  }, [])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -148,11 +226,26 @@ export default function GameBoard() {
   // Mulligan UI
   if (gameState.phase === 'SETUP') {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4">
+      <div className="flex flex-1 flex-col items-center justify-center gap-6">
         <h2 className="text-xl font-bold">Mulligan Phase</h2>
         {(['player1', 'player2'] as PlayerId[]).map((pid) => (
-          <div key={pid} className="glass-panel p-4">
-            <p className="mb-2 text-sm font-medium">{pid === 'player1' ? 'Player 1' : 'Player 2'}</p>
+          <div key={pid} className="glass-panel flex flex-col items-center gap-3 p-4">
+            <p className="text-sm font-medium">{pid === 'player1' ? 'Player 1' : 'Player 2'}</p>
+            <div className="flex items-center gap-1.5">
+              {gameState.players[pid].hand.map((card) => {
+                const data = getCardById(card.cardId)
+                return (
+                  <div key={card.instanceId} className="w-16 overflow-hidden rounded">
+                    <img
+                      src={getCardImageUrl(card.cardId)}
+                      alt={data?.name ?? ''}
+                      className="w-full"
+                      draggable={false}
+                    />
+                  </div>
+                )
+              })}
+            </div>
             {gameState.mulliganState[pid] === 'pending' ? (
               <div className="flex gap-2">
                 <button
@@ -179,6 +272,17 @@ export default function GameBoard() {
     )
   }
 
+  // Counter mode: determine which hand should show counter selection
+  const isCounterStep = !!gameState.battle && gameState.battle.step === 'COUNTER'
+  const defenderPlayer = gameState.battle?.defenderPlayer
+  const counterTotal = counterSelection.reduce((sum, id) => {
+    const defHand = defenderPlayer ? gameState.players[defenderPlayer].hand : []
+    const card = defHand.find((c) => c.instanceId === id)
+    if (!card) return sum
+    const data = getCardById(card.cardId)
+    return sum + (data?.counter ?? 0)
+  }, 0)
+
   const cardActions: CardActions = {
     onPlay: handlePlayCard,
     onAttack: handleAttackFrom,
@@ -191,14 +295,24 @@ export default function GameBoard() {
   }
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
     <div className="flex flex-1 flex-col gap-1 overflow-hidden p-2">
       {/* Opponent hand */}
       <HandZone
         cards={gameState.players[opponent].hand}
-        faceDown
+        flipped
         selectedId={null}
         onSelect={() => {}}
+        counterMode={isCounterStep && defenderPlayer === opponent ? {
+          selectedIds: counterSelection,
+          onToggle: handleToggleCounter,
+        } : undefined}
       />
 
       {/* Opponent side */}
@@ -209,6 +323,7 @@ export default function GameBoard() {
         donAttachCount={0}
         onSelectCard={(id) => handleSelectOpponentCard(id)}
         onClickDon={() => {}}
+        attackTargets
       />
 
       {/* Phase bar */}
@@ -243,6 +358,10 @@ export default function GameBoard() {
         selectedId={selectedId}
         onSelect={(id) => handleSelectCard(id, 'hand')}
         cardActions={cardActions}
+        counterMode={isCounterStep && defenderPlayer === current ? {
+          selectedIds: counterSelection,
+          onToggle: handleToggleCounter,
+        } : undefined}
       />
 
       {/* Controls */}
@@ -250,7 +369,10 @@ export default function GameBoard() {
         gameState={gameState}
         onEndTurn={() => dispatch({ type: 'END_TURN' }, current)}
         onDeclineBlock={() => dispatch({ type: 'DECLINE_BLOCK' }, gameState.battle?.defenderPlayer ?? opponent)}
-        onPassCounter={() => dispatch({ type: 'PASS_COUNTER' }, gameState.battle?.defenderPlayer ?? opponent)}
+        onPassCounter={handlePassCounter}
+        onUseCounter={handleUseCounter}
+        counterTotal={counterTotal}
+        counterCount={counterSelection.length}
       />
 
       {/* Card inspect modal */}
@@ -270,6 +392,11 @@ export default function GameBoard() {
         </div>
       )}
     </div>
+
+    {/* Attack arrow overlay */}
+    {attackArrowSource && (
+      <AttackArrow sourceX={attackArrowSource.x} sourceY={attackArrowSource.y} lineRef={arrowLineRef} />
+    )}
 
     <DragOverlay dropAnimation={null}>
       {draggingCard ? (

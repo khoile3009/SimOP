@@ -24,7 +24,8 @@
       "Bash(node:*)",
       "Bash(npx vitest run:*)",
       "WebFetch(domain:limitlesstcg.nyc3.cdn.digitaloceanspaces.com)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm run test:*)"
     ]
   }
 }

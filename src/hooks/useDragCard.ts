@@ -3,13 +3,14 @@ import type { GameCard } from '@/engine/types'
 
 export interface DragCardData {
   card: GameCard
-  zone: 'hand'
+  zone: 'hand' | 'character'
 }
 
-export function useDragCard(card: GameCard, zone: 'hand') {
+export function useDragCard(card: GameCard, zone: 'hand' | 'character', disabled?: boolean) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: card.instanceId,
+    id: `${zone}-${card.instanceId}`,
     data: { card, zone } satisfies DragCardData,
+    disabled,
   })
 
   const style: React.CSSProperties | undefined = transform

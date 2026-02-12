@@ -8,9 +8,14 @@ import type { CardActions } from './CardActionPopup'
 interface HandZoneProps {
   cards: GameCard[]
   faceDown?: boolean
+  flipped?: boolean
   selectedId: string | null
   onSelect: (instanceId: string) => void
   cardActions?: CardActions
+  counterMode?: {
+    selectedIds: string[]
+    onToggle: (instanceId: string) => void
+  }
 }
 
 function DraggableHandCard({
@@ -88,7 +93,7 @@ function DraggableHandCard({
   )
 }
 
-export default function HandZone({ cards, faceDown, selectedId, onSelect, cardActions }: HandZoneProps) {
+export default function HandZone({ cards, faceDown, flipped, selectedId, onSelect, cardActions, counterMode }: HandZoneProps) {
   if (faceDown) {
     return (
       <div className="flex items-center justify-center gap-1 py-2" style={{ minHeight: 100 }}>
@@ -108,18 +113,94 @@ export default function HandZone({ cards, faceDown, selectedId, onSelect, cardAc
   const totalWidth = Math.min(cards.length * maxSpread, 600)
   const spacing = cards.length > 1 ? totalWidth / (cards.length - 1) : 0
 
+  // Counter mode: show selectable counter cards
+  if (counterMode) {
+    return (
+      <div className="flex items-end justify-center py-2" style={{ minHeight: 100 }}>
+        <div className="relative" style={{ width: totalWidth + cardWidth, height: 88 }}>
+          {cards.map((card, i) => {
+            const cardData = getCardById(card.cardId)
+            const hasCounter = cardData && (cardData.counter !== null || cardData.effectText?.includes('[Counter]'))
+            const isCounterSelected = counterMode.selectedIds.includes(card.instanceId)
+            const left = cards.length === 1 ? totalWidth / 2 : i * spacing
+            const mid = (cards.length - 1) / 2
+            const offset = i - mid
+            const rotDeg = offset * 1.5
+            const yShift = Math.abs(offset) * 2
+
+            return (
+              <div
+                key={card.instanceId}
+                className="absolute bottom-0 w-14"
+                style={{
+                  left,
+                  transform: `translateY(${isCounterSelected ? -16 : yShift}px) rotate(${isCounterSelected ? 0 : rotDeg}deg) scale(${isCounterSelected ? 1.1 : 1})`,
+                  zIndex: isCounterSelected ? 20 : i,
+                }}
+              >
+                <button
+                  onClick={() => hasCounter && counterMode.onToggle(card.instanceId)}
+                  className={`w-full overflow-hidden rounded transition-all ${
+                    isCounterSelected ? 'ring-2 ring-action-green' : ''
+                  } ${!hasCounter ? 'opacity-40' : 'cursor-pointer'}`}
+                  disabled={!hasCounter}
+                >
+                  <img
+                    src={getCardImageUrl(card.cardId)}
+                    alt={cardData?.name ?? ''}
+                    className="w-full"
+                    draggable={false}
+                  />
+                  {hasCounter && cardData.counter !== null && (
+                    <span className="absolute bottom-0.5 left-0.5 rounded bg-action-green/90 px-1 text-[10px] font-bold text-white">
+                      +{cardData.counter}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex items-end justify-center py-2" style={{ minHeight: 100 }}>
+    <div className={`flex ${flipped ? 'items-start' : 'items-end'} justify-center py-2`} style={{ minHeight: 100 }}>
       <div className="relative" style={{ width: totalWidth + cardWidth, height: 88 }}>
         {cards.map((card, i) => {
           const isSelected = selectedId === card.instanceId
           const left = cards.length === 1 ? totalWidth / 2 : i * spacing
 
-          // Slight arc effect
+          // Slight arc effect (flipped for opponent)
           const mid = (cards.length - 1) / 2
           const offset = i - mid
-          const rotDeg = offset * 1.5
+          const rotDeg = flipped ? -(offset * 1.5) : offset * 1.5
           const yShift = Math.abs(offset) * 2
+
+          if (flipped) {
+            const cardData = getCardById(card.cardId)
+            return (
+              <div
+                key={card.instanceId}
+                className="absolute top-0 w-14"
+                style={{
+                  left,
+                  transform: `translateY(${yShift}px) rotate(${rotDeg}deg)`,
+                  zIndex: i,
+                }}
+              >
+                <div className="w-full overflow-hidden rounded">
+                  <img
+                    src={getCardImageUrl(card.cardId)}
+                    alt={cardData?.name ?? ''}
+                    className="w-full"
+                    draggable={false}
+                  />
+                </div>
+              </div>
+            )
+          }
 
           return (
             <DraggableHandCard
