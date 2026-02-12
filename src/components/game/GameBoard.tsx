@@ -7,11 +7,11 @@ import { getCardImageUrl } from '@/utils/images'
 import { useGameStore } from '@/stores/gameStore'
 import { getOpponent } from '@/engine'
 import type { DragCardData } from '@/hooks/useDragCard'
+import type { CardActions } from './CardActionPopup'
 import PlayerSide from './PlayerSide'
 import HandZone from './HandZone'
 import PhaseBar from './PhaseBar'
 import ControlsBar from './ControlsBar'
-import ActionBar from './ActionBar'
 import CardDetail from '@/components/cards/CardDetail'
 
 export default function GameBoard() {
@@ -36,15 +36,6 @@ export default function GameBoard() {
   const current = gameState?.currentPlayer ?? 'player1'
   const opponent = gameState ? getOpponent(current) : 'player2'
 
-  // Find the selected card data
-  const selectedCard = (() => {
-    if (!gameState || !selectedTarget || selectedTarget.type !== 'card') return null
-    const p = gameState.players[current]
-    const all = [p.leader, ...p.characters, ...p.hand]
-    return all.find((c) => c.instanceId === selectedTarget.instanceId) ?? null
-  })()
-
-  const selectedZone = selectedTarget?.type === 'card' ? selectedTarget.zone : null
   const selectedId = selectedTarget?.type === 'card' ? selectedTarget.instanceId : null
 
   // Handle card selection on own side
@@ -77,26 +68,45 @@ export default function GameBoard() {
     [attackingFrom, current, dispatch],
   )
 
-  // Action handlers
-  const handlePlay = useCallback(() => {
-    if (!selectedTarget || selectedTarget.type !== 'card') return
-    dispatch({ type: 'PLAY_CARD', cardInstanceId: selectedTarget.instanceId }, current)
-  }, [selectedTarget, current, dispatch])
+  // Card action handlers (used by popup on each card)
+  const handlePlayCard = useCallback(
+    (instanceId: string) => {
+      dispatch({ type: 'PLAY_CARD', cardInstanceId: instanceId }, current)
+    },
+    [current, dispatch],
+  )
 
-  const handleAttack = useCallback(() => {
-    if (!selectedTarget || selectedTarget.type !== 'card') return
-    setAttackingFrom(selectedTarget.instanceId)
+  const handleAttackFrom = useCallback(
+    (instanceId: string) => {
+      setAttackingFrom(instanceId)
+      clearSelection()
+    },
+    [clearSelection],
+  )
+
+  const handleInspectCard = useCallback(
+    (instanceId: string) => {
+      if (!gameState) return
+      const p = gameState.players[current]
+      const card = [p.leader, ...p.characters, ...p.hand].find((c) => c.instanceId === instanceId)
+      if (card) {
+        const data = getCardById(card.cardId)
+        if (data) setInspecting(data)
+      }
+    },
+    [gameState, current],
+  )
+
+  const handleDeselect = useCallback(() => {
     clearSelection()
-  }, [selectedTarget, clearSelection])
-
-  const handleInspect = useCallback(() => {
-    if (!selectedCard) return
-    const data = getCardById(selectedCard.cardId)
-    if (data) setInspecting(data)
-  }, [selectedCard])
+    setAttackingFrom(null)
+    resetDonAttach()
+  }, [clearSelection, resetDonAttach])
 
   const handleDonClick = useCallback(() => {
     if (!gameState || gameState.currentPlayer !== current) return
+    const activeDon = gameState.players[current].donArea.filter((d) => !d.isRested).length
+    if (activeDon === 0 || donAttachCount >= activeDon) return
     if (donAttachCount === 0) {
       select({ type: 'don' })
     }
@@ -126,14 +136,12 @@ export default function GameBoard() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        clearSelection()
-        setAttackingFrom(null)
-        resetDonAttach()
+        handleDeselect()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [clearSelection, resetDonAttach])
+  }, [handleDeselect])
 
   if (!gameState) return null
 
@@ -171,6 +179,17 @@ export default function GameBoard() {
     )
   }
 
+  const cardActions: CardActions = {
+    onPlay: handlePlayCard,
+    onAttack: handleAttackFrom,
+    onInspect: handleInspectCard,
+    onDeselect: handleDeselect,
+    isMainPhase: gameState.phase === 'MAIN' && gameState.currentPlayer === current,
+    activeDon: gameState.players[current].donArea.filter((d) => !d.isRested).length,
+    isInBattle: !!gameState.battle,
+    turnNumber: gameState.turnNumber,
+  }
+
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
     <div className="flex flex-1 flex-col gap-1 overflow-hidden p-2">
@@ -192,7 +211,7 @@ export default function GameBoard() {
         onClickDon={() => {}}
       />
 
-      {/* Phase bar + action bar */}
+      {/* Phase bar */}
       <div className="flex items-center gap-3" style={{ minHeight: 40 }}>
         <PhaseBar
           phase={gameState.phase}
@@ -203,17 +222,6 @@ export default function GameBoard() {
           <span className="rounded bg-life-red/20 px-3 py-1 text-xs font-medium text-life-red">
             Select target...
           </span>
-        )}
-        {selectedCard && !attackingFrom && (
-          <ActionBar
-            gameState={gameState}
-            selectedCard={selectedCard}
-            selectedZone={selectedZone as 'hand' | 'character' | 'leader' | null}
-            currentPlayer={current}
-            onPlay={handlePlay}
-            onAttack={handleAttack}
-            onInspect={handleInspect}
-          />
         )}
         {error && <span className="text-xs text-life-red">{error}</span>}
       </div>
@@ -226,6 +234,7 @@ export default function GameBoard() {
         donAttachCount={donAttachCount}
         onSelectCard={(id, zone) => handleSelectCard(id, zone)}
         onClickDon={handleDonClick}
+        cardActions={cardActions}
       />
 
       {/* Current player hand */}
@@ -233,6 +242,7 @@ export default function GameBoard() {
         cards={gameState.players[current].hand}
         selectedId={selectedId}
         onSelect={(id) => handleSelectCard(id, 'hand')}
+        cardActions={cardActions}
       />
 
       {/* Controls */}

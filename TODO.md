@@ -1,0 +1,4 @@
+- [ ]: If we click into trash, show modal of the trash pile
+- [ ]: See hands when muligan
+- [ ]: When the character on the field, if the character is allowed to attack and you drag the character, show an arrow from character to the cursor, if release on a target, attack that target
+- [ ]: Show opponent hand so we can select counter

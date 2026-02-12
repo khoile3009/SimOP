@@ -4,15 +4,18 @@ import { getCardById } from '@/data/cardService'
 import { getCardImageUrl } from '@/utils/images'
 import { getEffectivePower } from '@/engine'
 import { MAX_CHARACTERS } from '@/engine/constants'
+import CardActionPopup from './CardActionPopup'
+import type { CardActions } from './CardActionPopup'
 
 interface CharacterZoneProps {
   characters: GameCard[]
   selectedId: string | null
   onSelect: (instanceId: string) => void
   droppableId?: string
+  cardActions?: CardActions
 }
 
-export default function CharacterZone({ characters, selectedId, onSelect, droppableId }: CharacterZoneProps) {
+export default function CharacterZone({ characters, selectedId, onSelect, droppableId, cardActions }: CharacterZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: droppableId ?? 'character-zone' })
 
   return (
@@ -38,30 +41,54 @@ export default function CharacterZone({ characters, selectedId, onSelect, droppa
         const cardData = getCardById(char.cardId)
         const power = getEffectivePower(char)
         const isSelected = selectedId === char.instanceId
+        const hasSummonSickness = cardActions
+          ? char.turnPlayed === cardActions.turnNumber && !cardData?.effectText?.includes('[Rush]')
+          : false
+        const canAttack = cardActions
+          ? !char.isRested && cardActions.isMainPhase && !cardActions.isInBattle && !hasSummonSickness
+          : false
 
         return (
-          <button
-            key={char.instanceId}
-            onClick={() => onSelect(char.instanceId)}
-            className={`relative w-16 overflow-hidden rounded transition-all ${
-              char.isRested ? 'rotate-90' : ''
-            } ${isSelected ? 'ring-2 ring-info-blue scale-105' : 'hover:scale-102'}`}
-          >
-            <img
-              src={getCardImageUrl(char.cardId)}
-              alt={cardData?.name ?? ''}
-              className="w-full"
-              draggable={false}
-            />
-            <div className="absolute inset-x-0 bottom-0 bg-black/70 px-1 py-0.5 text-center">
-              <span className="text-[10px] font-semibold tabular-nums">{power}</span>
-              {char.attachedDon > 0 && (
-                <span className="ml-0.5 text-[9px] text-don-gold">
-                  {'◆'.repeat(char.attachedDon)}
-                </span>
-              )}
-            </div>
-          </button>
+          <div key={char.instanceId} className="relative">
+            <button
+              onClick={() => onSelect(char.instanceId)}
+              className={`relative w-16 overflow-hidden rounded transition-all ${
+                char.isRested ? 'rotate-90' : ''
+              } ${isSelected ? 'ring-2 ring-info-blue scale-105' : 'hover:scale-102'}`}
+            >
+              <img
+                src={getCardImageUrl(char.cardId)}
+                alt={cardData?.name ?? ''}
+                className="w-full"
+                draggable={false}
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-black/70 px-1 py-0.5 text-center">
+                <span className="text-[10px] font-semibold tabular-nums">{power}</span>
+                {char.attachedDon > 0 && (
+                  <span className="ml-0.5 text-[9px] text-don-gold">
+                    {'◆'.repeat(char.attachedDon)}
+                  </span>
+                )}
+              </div>
+            </button>
+            {isSelected && cardActions && (
+              <CardActionPopup
+                actions={[
+                  ...(cardActions.isMainPhase && !cardActions.isInBattle
+                    ? [{
+                        label: 'Attack',
+                        onClick: () => cardActions.onAttack(char.instanceId),
+                        primary: canAttack,
+                        disabled: !canAttack,
+                        hint: hasSummonSickness ? 'Just played' : !canAttack ? 'Rested' : undefined,
+                      }]
+                    : []),
+                  { label: 'Inspect', onClick: () => cardActions.onInspect(char.instanceId) },
+                ]}
+                onDeselect={cardActions.onDeselect}
+              />
+            )}
+          </div>
         )
       })}
     </div>

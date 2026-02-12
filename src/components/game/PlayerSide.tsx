@@ -1,5 +1,6 @@
 import type { PlayerState } from '@/engine/types'
 import { getCardById } from '@/data/cardService'
+import type { CardActions } from './CardActionPopup'
 import LeaderZone from './LeaderZone'
 import LifeZone from './LifeZone'
 import CharacterZone from './CharacterZone'
@@ -13,6 +14,7 @@ interface PlayerSideProps {
   donAttachCount: number
   onSelectCard: (instanceId: string, zone: 'leader' | 'character') => void
   onClickDon: () => void
+  cardActions?: CardActions
 }
 
 export default function PlayerSide({
@@ -22,6 +24,7 @@ export default function PlayerSide({
   donAttachCount,
   onSelectCard,
   onClickDon,
+  cardActions,
 }: PlayerSideProps) {
   const leaderData = getCardById(player.leader.cardId)
   const maxLife = leaderData?.life ?? 5
@@ -36,6 +39,7 @@ export default function PlayerSide({
         leader={player.leader}
         isSelected={selectedId === player.leader.instanceId}
         onClick={() => onSelectCard(player.leader.instanceId, 'leader')}
+        cardActions={cardActions}
       />
 
       {/* Characters + DON */}
@@ -44,6 +48,7 @@ export default function PlayerSide({
           characters={player.characters}
           selectedId={selectedId}
           onSelect={(id) => onSelectCard(id, 'character')}
+          cardActions={cardActions}
         />
         <DonZone
           donArea={player.donArea}

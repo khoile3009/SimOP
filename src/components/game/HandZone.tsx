@@ -2,12 +2,15 @@ import type { GameCard } from '@/engine/types'
 import { getCardById } from '@/data/cardService'
 import { getCardImageUrl, getCardBackUrl } from '@/utils/images'
 import { useDragCard } from '@/hooks/useDragCard'
+import CardActionPopup from './CardActionPopup'
+import type { CardActions } from './CardActionPopup'
 
 interface HandZoneProps {
   cards: GameCard[]
   faceDown?: boolean
   selectedId: string | null
   onSelect: (instanceId: string) => void
+  cardActions?: CardActions
 }
 
 function DraggableHandCard({
@@ -18,6 +21,7 @@ function DraggableHandCard({
   rotDeg,
   zIndex,
   onSelect,
+  cardActions,
 }: {
   card: GameCard
   isSelected: boolean
@@ -26,21 +30,18 @@ function DraggableHandCard({
   rotDeg: number
   zIndex: number
   onSelect: () => void
+  cardActions?: CardActions
 }) {
   const cardData = getCardById(card.cardId)
   const { ref, attributes, listeners, style: dragStyle, isDragging } = useDragCard(card, 'hand')
+  const canAfford = cardActions && cardData ? cardActions.activeDon >= cardData.cost : false
 
   return (
-    <button
+    <div
       ref={ref}
       {...attributes}
       {...listeners}
-      onClick={onSelect}
-      className={`absolute bottom-0 w-14 overflow-hidden rounded transition-all ${
-        isSelected
-          ? '-translate-y-4 scale-110 ring-2 ring-info-blue z-20'
-          : 'hover:-translate-y-2 hover:scale-105 hover:z-10'
-      } ${isDragging ? 'opacity-30' : ''}`}
+      className="absolute bottom-0 w-14"
       style={{
         left,
         transform: `translateY(${isSelected ? -16 : yShift}px) rotate(${isSelected ? 0 : rotDeg}deg) scale(${isSelected ? 1.1 : 1})`,
@@ -48,22 +49,46 @@ function DraggableHandCard({
         ...dragStyle,
       }}
     >
-      <img
-        src={getCardImageUrl(card.cardId)}
-        alt={cardData?.name ?? ''}
-        className="w-full"
-        draggable={false}
-      />
-      {cardData && (
-        <span className="absolute left-0.5 top-0.5 rounded bg-black/70 px-1 text-[9px] font-bold">
-          {cardData.cost}
-        </span>
+      <button
+        onClick={onSelect}
+        className={`w-full overflow-hidden rounded transition-all ${
+          isSelected ? 'ring-2 ring-info-blue' : ''
+        } ${isDragging ? 'opacity-30' : ''}`}
+      >
+        <img
+          src={getCardImageUrl(card.cardId)}
+          alt={cardData?.name ?? ''}
+          className="w-full"
+          draggable={false}
+        />
+        {cardData && (
+          <span className="absolute left-0.5 top-0.5 rounded bg-black/70 px-1 text-[9px] font-bold">
+            {cardData.cost}
+          </span>
+        )}
+      </button>
+      {isSelected && cardActions && (
+        <CardActionPopup
+          actions={[
+            ...(cardActions.isMainPhase && !cardActions.isInBattle
+              ? [{
+                  label: 'Play',
+                  onClick: () => cardActions.onPlay(card.instanceId),
+                  primary: canAfford,
+                  disabled: !canAfford,
+                  hint: !canAfford && cardData ? `Need ${cardData.cost} DON` : undefined,
+                }]
+              : []),
+            { label: 'Inspect', onClick: () => cardActions.onInspect(card.instanceId) },
+          ]}
+          onDeselect={cardActions.onDeselect}
+        />
       )}
-    </button>
+    </div>
   )
 }
 
-export default function HandZone({ cards, faceDown, selectedId, onSelect }: HandZoneProps) {
+export default function HandZone({ cards, faceDown, selectedId, onSelect, cardActions }: HandZoneProps) {
   if (faceDown) {
     return (
       <div className="flex items-center justify-center gap-1 py-2" style={{ minHeight: 100 }}>
@@ -106,6 +131,7 @@ export default function HandZone({ cards, faceDown, selectedId, onSelect }: Hand
               rotDeg={rotDeg}
               zIndex={i}
               onSelect={() => onSelect(card.instanceId)}
+              cardActions={cardActions}
             />
           )
         })}
