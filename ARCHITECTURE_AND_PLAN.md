@@ -1291,14 +1291,16 @@ Deliverable: Polished V1 — complete self-play experience
 
 ## 12. Resources
 
-### APIs & Data
-- [OPTCG API](https://optcgapi.com/) — Card data (`GET /api/sets/OP01/`)
-- [OPTCG API Docs](https://optcgapi.com/documentation) — Full endpoint reference
-- [onepiece-cardgame.dev](https://onepiece-cardgame.dev/cards?f=%24R+%28srcN%3A%22Romance+Dawn+%5BOP-01%5D%22%29) — OP01 card browser (visual reference for card data/images)
-- [Limitless Card Database](https://onepiece.limitlesstcg.com/cards) — Visual card reference
+### Card Data
+- **Card data**: Static `src/data/op01/cards.json` — hand-curated JSON dataset for OP01 (118 cards, non-alternate art only)
+- **Card images**: [Limitless TCG CDN](https://onepiece.limitlesstcg.com/cards) — high-quality card images
+  - URL pattern: `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/OP01/{CARD_ID}_EN.webp`
+  - Example: `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/OP01/OP01-001_EN.webp`
+- [onepiece-cardgame.dev](https://onepiece-cardgame.dev/cards?f=%24R+%28srcN%3A%22Romance+Dawn+%5BOP-01%5D%22%29) — OP01 card browser (visual reference)
 
 ### Card Data Rules
-- **Non-alternate art only**: Only include base art versions of cards. Filter out alternate art / parallel art variants when importing card data. Each card ID (e.g., OP01-024) should have exactly one entry.
+- **Non-alternate art only**: Only include base art versions of cards. Filter out alternate art / parallel art variants. Each card ID (e.g., OP01-024) should have exactly one entry.
+- **No external API dependency**: Card data ships as static JSON. No runtime API calls needed for card info. Images loaded from Limitless CDN.
 
 ### Official Rules
 - [Official Rules Page](https://en.onepiece-cardgame.com/rules/)

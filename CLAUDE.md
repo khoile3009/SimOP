@@ -48,9 +48,11 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 
 ## Card Data
 
-Card data comes from the [OPTCG API](https://optcgapi.com/) (free, no auth, GET-only). Key endpoint: `GET https://www.optcgapi.com/api/sets/OP01/`. Cached locally in IndexedDB with a static `src/data/op01/cards.json` fallback. Visual card reference: [onepiece-cardgame.dev](https://onepiece-cardgame.dev/cards?f=%24R+%28srcN%3A%22Romance+Dawn+%5BOP-01%5D%22%29).
+Card data is a **static JSON file** at `src/data/op01/cards.json` (no runtime API dependency). Card images are loaded from the [Limitless TCG CDN](https://onepiece.limitlesstcg.com/cards):
+- Image URL pattern: `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/OP01/{CARD_ID}_EN.webp`
+- Visual reference: [onepiece-cardgame.dev](https://onepiece-cardgame.dev/cards?f=%24R+%28srcN%3A%22Romance+Dawn+%5BOP-01%5D%22%29)
 
-**Important**: Only use non-alternate (base) art versions of cards. Filter out alternate/parallel art variants. Each card ID (e.g., OP01-024) should have exactly one entry.
+**Important**: Only non-alternate (base) art versions. Each card ID (e.g., OP01-024) has exactly one entry.
 
 ## Game Rules Reference
 

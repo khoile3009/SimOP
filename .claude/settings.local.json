@@ -8,7 +8,20 @@
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
       "Bash(npx vite build:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "WebFetch(domain:www.optcgapi.com)",
+      "WebFetch(domain:www.apitcg.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:onepiece.limitlesstcg.com)",
+      "WebFetch(domain:docs.limitlesstcg.com)",
+      "Bash(gh repo view:*)",
+      "Bash(gh search:*)",
+      "Bash(gh api:*)",
+      "Bash(python3:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(node -e:*)",
+      "Bash(node:*)"
     ]
   }
 }
