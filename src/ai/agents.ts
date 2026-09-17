@@ -61,7 +61,7 @@ export class GreedyAgent implements Agent {
  * reply. Stops as soon as control returns to `me` or the opponent's normal turn
  * begins - this never simulates the opponent's next main phase.
  */
-function rolloutInterrupts(state: GameState, me: PlayerId): GameState {
+export function rolloutInterrupts(state: GameState, me: PlayerId): GameState {
   let s = state
   for (let guard = 0; guard < 50; guard++) {
     if (s.winner) return s

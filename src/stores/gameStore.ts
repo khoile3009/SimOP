@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { GameState, GameAction, GameEvent, PlayerId, Deck } from '@/engine/types'
 import { createGame, processAction } from '@/engine'
+import { evaluateState } from '@/ai/evaluate'
 
 type SelectionTarget =
   | { type: 'card'; instanceId: string; zone: 'hand' | 'character' | 'leader' | 'opponent' }
@@ -20,9 +21,14 @@ interface GameStore {
   viewingPlayer: PlayerId
   /** When set, this seat is driven by an agent and its hidden zones stay hidden */
   aiPlayer: PlayerId | null
+  /** Chess-style analysis mode: eval bar + line recommendations */
+  analyze: boolean
+  /** Player-1 win probability at the start of each of their decision windows */
+  evalHistory: { turn: number; p1: number }[]
 
   // Actions
   startNewGame: (deck1: Deck, deck2: Deck, aiPlayer?: PlayerId | null) => void
+  toggleAnalyze: () => void
   dispatch: (action: GameAction, player: PlayerId) => void
   select: (target: SelectionTarget) => void
   clearSelection: () => void
@@ -39,6 +45,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   donAttachCount: 0,
   viewingPlayer: 'player1',
   aiPlayer: null,
+  analyze: false,
+  evalHistory: [],
 
   startNewGame: (deck1, deck2, aiPlayer = null) => {
     const state = createGame(deck1, deck2)
@@ -50,20 +58,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
       donAttachCount: 0,
       viewingPlayer: state.currentPlayer,
       aiPlayer,
+      evalHistory: [],
     })
   },
 
+  toggleAnalyze: () => set((s) => ({ analyze: !s.analyze })),
+
   dispatch: (action, player) => {
-    const { gameState } = get()
+    const { gameState, evalHistory } = get()
     if (!gameState) return
 
     const result = processAction(gameState, action, player)
+    const lastTurn = evalHistory[evalHistory.length - 1]?.turn ?? 0
+    const nextHistory =
+      result.state.phase === 'MAIN' && result.state.turnNumber > lastTurn
+        ? [
+            ...evalHistory,
+            { turn: result.state.turnNumber, p1: evaluateState(result.state, 'player1') },
+          ]
+        : evalHistory
     set({
       gameState: result.state,
       events: [...get().events, ...result.events],
       error: result.error ?? null,
       selectedTarget: null,
       donAttachCount: 0,
+      evalHistory: nextHistory,
     })
   },
 

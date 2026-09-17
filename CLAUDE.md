@@ -86,6 +86,9 @@ cards lives in `src/data/op01/effects.ts` (`COVERAGE_NOTES`, enforced by
 - `src/ai/agents.ts` — `Agent` interface + `RandomAgent` + `GreedyAgent` (one-ply, with opponent best-response rollout through battle interrupts).
 - `src/sim/selfplay.ts` — headless seeded self-play (`runGame`, `runMatch`, `makeAutoDeck`). Deterministic per seed via `src/utils/rng.ts` (`setRandomSource`); the UI keeps `Math.random`.
 - `npm run selfplay -- <n> <modes>` — e.g. `npm run selfplay -- 30 gr` (greedy vs random), modes: `g`/`r` per player. Prints win counts and a per-turn win-probability trace.
+- `src/ai/turnSearch.ts` — whole-turn line search (beam + adversarial verification + lethal certificates) powering the Analyze panel, and `TurnPlannerAgent` (plans a turn, follows the line, replans on divergence).
+- `npm run benchmark -- <gamesPerPair>` — agent strength ladder (random/greedy/planner), mirror deck, seat-swapped, seeded. Reference result: planner 85% > greedy 65% > random 0%; planner beats greedy ~70%.
+- `npm run playtest -- <n>` — the invariant/coverage fleet (see the playtest skill).
 
 ## Card Data
 

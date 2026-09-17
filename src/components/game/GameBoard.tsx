@@ -16,7 +16,22 @@ import CardDetail from '@/components/cards/CardDetail'
 import AttackArrow from './AttackArrow'
 import ChoicePrompt from './ChoicePrompt'
 import TriggerPrompt from './TriggerPrompt'
+import AnalyzePanel from './AnalyzePanel'
+import { evaluateState } from '@/ai/evaluate'
 import type { GameState, PendingChoice } from '@/engine/types'
+
+/** Chess-style vertical eval bar: player 1's share fills from the bottom. */
+function EvalBar({ p1 }: { p1: number }) {
+  return (
+    <div
+      className="my-2 ml-1 flex w-2.5 flex-col overflow-hidden rounded bg-life-red/50"
+      title={`Player 1 win probability: ${Math.round(p1 * 100)}%`}
+    >
+      <div style={{ height: `${(1 - p1) * 100}%` }} />
+      <div className="w-full bg-don-gold transition-all duration-300" style={{ height: `${p1 * 100}%` }} />
+    </div>
+  )
+}
 
 /**
  * Where a pending choice's options live decides its picker surface:
@@ -48,6 +63,7 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
     donAttachCount,
     error,
     aiPlayer,
+    analyze,
     dispatch,
     select,
     clearSelection,
@@ -444,6 +460,8 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
+    <div className="flex flex-1 overflow-hidden">
+    {analyze && <EvalBar p1={evaluateState(gameState, 'player1')} />}
     <div className="flex flex-1 flex-col gap-1 overflow-hidden p-2">
       {/* Opponent hand (hidden when an AI holds it) */}
       <HandZone
@@ -569,6 +587,8 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
           </div>
         </div>
       )}
+    </div>
+    {analyze && <AnalyzePanel />}
     </div>
 
     {/* Attack arrow overlay */}

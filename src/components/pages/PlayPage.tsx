@@ -55,7 +55,7 @@ function useAiDriver() {
 }
 
 export default function PlayPage() {
-  const { gameState, aiPlayer, startNewGame } = useGameStore()
+  const { gameState, aiPlayer, analyze, toggleAnalyze, startNewGame } = useGameStore()
   const { savedDecks } = useDeckStore()
   useAiDriver()
 
@@ -71,6 +71,14 @@ export default function PlayPage() {
               You are Player 1 &middot; AI plays Player 2
             </span>
           )}
+          <button
+            onClick={toggleAnalyze}
+            className={`rounded px-3 py-0.5 text-xs font-medium ${
+              analyze ? 'bg-info-blue text-white' : 'bg-ocean-700 text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            {analyze ? 'Analyze: on' : 'Analyze'}
+          </button>
         </div>
         <GameBoard />
       </div>
