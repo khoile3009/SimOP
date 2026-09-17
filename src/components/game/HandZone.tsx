@@ -101,13 +101,40 @@ function DraggableHandCard({
 
 export default function HandZone({ cards, faceDown, flipped, selectedId, onSelect, cardActions, counterMode, pickMode }: HandZoneProps) {
   if (faceDown) {
+    // Revealed cards (effect reveals, bounces, life hits) show their face; the
+    // rest stay hidden. Effect picks over this hand are blind: card backs are
+    // the toggle targets.
     return (
       <div className="flex items-center justify-center gap-1 py-2" style={{ minHeight: 100 }}>
-        {cards.map((c) => (
-          <div key={c.instanceId} className="h-20 w-14 overflow-hidden rounded">
-            <img src={getCardBackUrl()} alt="Card" className="h-full w-full object-cover" draggable={false} />
-          </div>
-        ))}
+        {cards.map((c) => {
+          const img = c.revealed ? getCardImageUrl(c.cardId) : getCardBackUrl()
+          const alt = c.revealed ? (getCardById(c.cardId)?.name ?? 'Card') : 'Card'
+          if (pickMode) {
+            const eligible = pickMode.eligible.includes(c.instanceId)
+            const selected = pickMode.selectedIds.includes(c.instanceId)
+            return (
+              <button
+                key={c.instanceId}
+                onClick={() => eligible && pickMode.onToggle(c.instanceId)}
+                disabled={!eligible}
+                className={`h-20 w-14 overflow-hidden rounded transition-all ${
+                  selected
+                    ? 'scale-105 ring-2 ring-action-green'
+                    : eligible
+                      ? 'ring-2 ring-action-green/50'
+                      : 'opacity-40'
+                }`}
+              >
+                <img src={img} alt={alt} className="h-full w-full object-cover" draggable={false} />
+              </button>
+            )
+          }
+          return (
+            <div key={c.instanceId} className="h-20 w-14 overflow-hidden rounded">
+              <img src={img} alt={alt} className="h-full w-full object-cover" draggable={false} />
+            </div>
+          )
+        })}
         <span className="ml-2 text-xs text-text-muted">{cards.length} cards</span>
       </div>
     )

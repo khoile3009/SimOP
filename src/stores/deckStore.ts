@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Deck, CardData, Color } from '@/engine/types'
-import { DECK_SIZE, MAX_CARD_COPIES } from '@/engine/constants'
+import { DECK_SIZE } from '@/engine/constants'
+import { deckCopyLimit } from '@/engine/rulesLayer'
 import { getCardById } from '@/data/cardService'
 import { generateId } from '@/utils/id'
 
@@ -65,10 +66,11 @@ export function canAddCard(deck: Deck, card: CardData): { ok: boolean; reason?: 
   // Cannot add leaders to deck
   if (card.cardType === 'Leader') return { ok: false, reason: 'Leaders cannot be in deck' }
 
-  // Max copies
+  // Max copies (rules layer: some cards lift the limit, e.g. Pacifista)
   const currentCount = getCardCount(deck, card.id)
-  if (currentCount >= MAX_CARD_COPIES) {
-    return { ok: false, reason: `Max ${MAX_CARD_COPIES} copies` }
+  const limit = deckCopyLimit(card.id)
+  if (currentCount >= limit) {
+    return { ok: false, reason: `Max ${limit} copies` }
   }
 
   // Deck size

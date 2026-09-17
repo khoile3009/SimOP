@@ -48,17 +48,32 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 
 ## Effect System
 
-OP01 coverage: ~75 cards with effect defs + 11 auras in `src/data/op01/effects.ts`; the
-`NOT_IMPLEMENTED` list there documents the 7 deferred cards and the machinery each needs.
+OP01 coverage: FULL (Sep 2026) — every card is automated via effect defs + statics in
+`src/data/op01/effects.ts`, printed-keyword parsing, or the rules layer; `COVERAGE_NOTES`
+there documents the remaining SIMPLIFIED deviations (enforced by coverage.test.ts).
 Key mechanisms beyond the basics: statics/auras (`effects/statics.ts`, applied at read
 time — `getEffectivePower`/`hasKeyword`/`hasFlag` all take `state`), [Activate: Main]
 abilities (`ACTIVATE_EFFECT` action, costs + once-per-turn), counter events
 (`PLAY_COUNTER_EVENT`, pays DON cost; `USE_COUNTER` chains and `PASS_COUNTER` resolves),
 [On Block] timing, two-phase choice ops (searches/scries pause on `pendingChoice` and
 re-execute), opponent-as-chooser selects, all-or-nothing DON!!-X cost selects (`exact`),
-restriction flags (taunt / cannotAttack / noBattleKo / noBlockPowerAtMost), and
-`untilTurn` modifier durations. Characters leaving the field return attached DON to the
-owner's cost area (conservation invariant is tested).
+restriction flags (taunt / cannotAttack / noBattleKo / noBlockPowerAtMost / per-attribute
+noBattleKoBy*), and `untilTurn` modifier durations. Characters leaving the field return
+attached DON to the owner's cost area (conservation invariant is tested).
+
+Phase B machinery (M5): the **event pipeline** — `timing: 'onEvent'` defs subscribe via
+`EffectDef.on` queries (`eventActivated`, `characterKoed`); `emitEngineEvent` queues
+listeners turn-player-first from the choke points (event plays in processor.ts, KOs in
+`koById`). The **K.O. replacement window** — a `timing: 'replaceKo'` def on the dying
+card runs INSTEAD of the K.O. (mandatory replacements only, so far). **Cost modifiers** —
+`StaticDef` scope `'myHand'` + `costMod`; `getEffectiveCost(state, pid, card)` is the
+only correct way to read a hand card's cost (rules, processor, legalActions all use it).
+**Rules layer** (`src/engine/rulesLayer.ts`) — `cardHasName` (names are sets; never
+compare `data.name` directly), `deckCopyLimit`, `getBattleAttribute` (real battle
+attributes live in `src/data/op01/battleAttributes.json`; cards.json's `attribute` field
+holds the TYPE list). **Revealed knowledge** — `GameCard.revealed` marks publicly-known
+cards in hands (reveal ops, field bounces, trash-to-hand, life hits); cleared on draw or
+bottom-deck; `determinize` pins revealed cards instead of resampling them.
 
 ## Effect System (Phase A)
 

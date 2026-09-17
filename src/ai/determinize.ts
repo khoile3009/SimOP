@@ -25,12 +25,16 @@ export function determinize(
   const ownLife = ownPool.slice(0, own.lifeCards.length)
   const ownDeck = ownPool.slice(own.lifeCards.length)
 
-  // Opponent: hand joins their hidden pool as well
+  // Opponent: the unrevealed part of their hand joins their hidden pool.
+  // Revealed hand cards (effect reveals, bounced characters, life hits) are
+  // public knowledge and stay fixed.
   const theirs = state.players[opp]
-  const theirPool = shuffled([...theirs.hand, ...theirs.deck, ...theirs.lifeCards], rand)
-  const theirHand = theirPool.slice(0, theirs.hand.length)
-  const theirLife = theirPool.slice(theirs.hand.length, theirs.hand.length + theirs.lifeCards.length)
-  const theirDeck = theirPool.slice(theirs.hand.length + theirs.lifeCards.length)
+  const known = theirs.hand.filter((c) => c.revealed)
+  const unknown = theirs.hand.filter((c) => !c.revealed)
+  const theirPool = shuffled([...unknown, ...theirs.deck, ...theirs.lifeCards], rand)
+  const theirHand = [...known, ...theirPool.slice(0, unknown.length)]
+  const theirLife = theirPool.slice(unknown.length, unknown.length + theirs.lifeCards.length)
+  const theirDeck = theirPool.slice(unknown.length + theirs.lifeCards.length)
 
   return {
     ...state,

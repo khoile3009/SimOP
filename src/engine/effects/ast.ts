@@ -14,6 +14,23 @@ export type EffectTiming =
   | 'main'
   | 'counter'
   | 'activateMain'
+  /** Auto effect listening for an engine event; requires EffectDef.on */
+  | 'onEvent'
+  /** Replacement: runs INSTEAD of this card's K.O. (two-phase event window) */
+  | 'replaceKo'
+
+/**
+ * Engine events that 'onEvent' defs can subscribe to (socket 1). Emitted from
+ * the engine's choke points; listeners on field cards are queued turn-player
+ * first (CR 8-6-1).
+ */
+export type EngineEventKind = 'eventActivated' | 'characterKoed'
+
+export interface EventQuery {
+  kind: EngineEventKind
+  /** Whose event, relative to the listener's controller */
+  who: 'self' | 'opponent'
+}
 
 /** Predicates over game state, evaluated from the effect controller's seat. */
 export interface Cond {
@@ -31,6 +48,7 @@ export interface Cond {
   /** DON!! cards on your field: cost area + attached (CR "on your field") */
   minDonField?: number
   maxLifeSelf?: number
+  minDeckSelf?: number
   hasCharacterNamed?: string
   lacksCharacterNamed?: string
 }
@@ -69,6 +87,12 @@ export type FlagName =
   | 'taunt' // opponent may only attack this card
   | 'noBattleKo' // cannot be K.O.'d in battle
   | 'noBlockPowerAtMost' // on an attacker: blockers with power <= value can't block
+  // Cannot be K.O.'d in battle by attackers with this battle attribute
+  | 'noBattleKoBySlash'
+  | 'noBattleKoByStrike'
+  | 'noBattleKoByRanged'
+  | 'noBattleKoBySpecial'
+  | 'noBattleKoByWisdom'
 
 export type EffectOp =
   | { op: 'draw'; count: number }
@@ -126,9 +150,17 @@ export type EffectOp =
   | { op: 'returnDon'; ref: string } // bound cost-area DON back to the DON!! deck
   /** Run this same card's def of another timing (trigger: "Activate this card's [Main]") */
   | { op: 'activateTiming'; timing: 'main' | 'counter' }
+  /** Mark bound hand cards as revealed (public knowledge until they move zones) */
+  | { op: 'reveal'; ref: string }
+  /** Skip the rest of the effect unless every bound card has this printed type */
+  | { op: 'requireRefIs'; ref: string; cardType: 'Character' | 'Event' | 'Stage' }
+  /** Move bound life cards to the bottom of their owner's deck */
+  | { op: 'lifeToDeckBottom'; ref: string }
 
 export interface EffectDef {
   timing: EffectTiming
+  /** For timing 'onEvent': which engine event this def listens for */
+  on?: EventQuery
   /** [DON!! xN]: needs at least N DON attached to the source card */
   donRequired?: number
   oncePerTurn?: boolean
@@ -147,9 +179,12 @@ export interface StaticDef {
   donRequired?: number
   condition?: Cond
   target: {
-    scope: 'self' | 'myCharacters' | 'myCharactersOther' | 'oppCharacters'
+    /** 'myHand' scopes cost modifiers to the controller's hand cards */
+    scope: 'self' | 'myCharacters' | 'myCharactersOther' | 'oppCharacters' | 'myHand'
     typeIncludes?: string
     nameNot?: string
+    cardType?: 'Character' | 'Event' | 'Stage'
+    colorIncludes?: string
   }
   power?: number
   /** Scaling auras: value per matching count, added to `power` */
@@ -157,4 +192,6 @@ export interface StaticDef {
   keyword?: string
   flag?: FlagName
   flagValue?: number
+  /** Cost delta for matching cards (scope 'myHand'); applied at read time, floor 0 */
+  costMod?: number
 }

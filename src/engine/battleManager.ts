@@ -1,10 +1,19 @@
-import type { GameState, GameEvent, PlayerId } from './types'
+import type { GameState, GameCard, GameEvent, PlayerId } from './types'
+import type { FlagName } from './effects/ast'
 import { getCardById } from '@/data/cardService'
 import { getOpponent, expireModifiers } from './turnManager'
+import { getBattleAttribute } from './rulesLayer'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
 import { koById } from './effects/interpreter'
 import { hasFlag } from './effects/statics'
+
+/** Battle-KO protection: blanket, or scoped to the attacker's battle attribute. */
+function protectedFromBattleKo(state: GameState, defender: GameCard, attacker: GameCard): boolean {
+  if (hasFlag(state, defender, 'noBattleKo')) return true
+  const attr = getBattleAttribute(attacker.cardId)
+  return attr !== null && hasFlag(state, defender, `noBattleKoBy${attr}` as FlagName)
+}
 
 /** Resolve the damage step of battle */
 export function resolveDamage(state: GameState): { state: GameState; events: GameEvent[] } {
@@ -53,7 +62,7 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
       // Leader hit: deal life damage
       const damageCount = hasDoubleAttack ? 2 : 1
       newState = dealLifeDamage(newState, battle.defenderPlayer, damageCount, hasBanish, events)
-    } else if (defenderChar && hasFlag(state, defenderChar, 'noBattleKo')) {
+    } else if (defenderChar && protectedFromBattleKo(state, defenderChar, attacker)) {
       // Protected (e.g. Semimaru's aura): the battle is won but nothing happens
       events.push({
         type: 'KO_PREVENTED',
@@ -127,8 +136,8 @@ export function dealLifeDamage(
         description: `Life card banished to trash`,
       })
     } else {
-      // Normal: card goes to hand, may have trigger
-      newHand.push(lifeCard)
+      // Normal: card goes to hand, revealed to both players (trigger check is public)
+      newHand.push({ ...lifeCard, revealed: true })
       const cardData = getCardById(lifeCard.cardId)
 
       if (cardData?.triggerText) {

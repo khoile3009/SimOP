@@ -4,7 +4,7 @@ import { getCardById } from '@/data/cardService'
 import { getOpponent } from './turnManager'
 import { hasKeyword } from './keywords'
 import { getEffectDefs } from './effects/registry'
-import { evalCond, getFlag, hasFlag } from './effects/statics'
+import { evalCond, getFlag, hasFlag, getEffectiveCost } from './effects/statics'
 import { getEffectivePower } from './powerCalc'
 
 export interface ValidationResult {
@@ -88,10 +88,11 @@ function validatePlayCard(
   if (!cardData) return { valid: false, reason: 'Card data not found' }
   if (cardData.cardType === 'Leader') return { valid: false, reason: 'Cannot play Leader cards' }
 
-  // Check DON cost
+  // Check DON cost (after in-hand cost modifiers)
+  const cost = getEffectiveCost(state, playerId, card)
   const activeDon = player.donArea.filter((d) => !d.isRested).length
-  if (activeDon < cardData.cost) {
-    return { valid: false, reason: `Need ${cardData.cost} active DON (have ${activeDon})` }
+  if (activeDon < cost) {
+    return { valid: false, reason: `Need ${cost} active DON (have ${activeDon})` }
   }
 
   // Check field limit for Characters
@@ -373,9 +374,10 @@ function validatePlayCounterEvent(
   if (getEffectDefs(card.cardId, 'counter').length === 0) {
     return { valid: false, reason: 'No [Counter] effect' }
   }
+  const cost = getEffectiveCost(state, playerId, card)
   const activeDon = player.donArea.filter((d) => !d.isRested).length
-  if (activeDon < data.cost) {
-    return { valid: false, reason: `Need ${data.cost} active DON (have ${activeDon})` }
+  if (activeDon < cost) {
+    return { valid: false, reason: `Need ${cost} active DON (have ${activeDon})` }
   }
   return { valid: true }
 }

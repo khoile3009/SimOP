@@ -3,6 +3,7 @@ import type { Cond, FlagName } from './ast'
 import { getStatics } from './registry'
 import { getCardById } from '@/data/cardService'
 import { getOpponent } from '../turnManager'
+import { cardHasName } from '../rulesLayer'
 
 export function cardTypes(cardId: string): string[] {
   // CardData.attribute holds the type list ({Straw Hat Crew} etc.) in this dataset
@@ -27,12 +28,11 @@ export function evalCond(
   if (!cond) return true
   const me = state.players[controller]
   const opp = state.players[getOpponent(controller)]
-  const leaderData = getCardById(me.leader.cardId)
 
   if (cond.yourTurn && state.currentPlayer !== controller) return false
   if (cond.opponentsTurn && state.currentPlayer === controller) return false
   if (cond.selfRested && !source?.isRested) return false
-  if (cond.leaderNameIs && leaderData?.name !== cond.leaderNameIs) return false
+  if (cond.leaderNameIs && !cardHasName(me.leader.cardId, cond.leaderNameIs)) return false
   if (cond.leaderTypeIncludes && !cardTypes(me.leader.cardId).includes(cond.leaderTypeIncludes)) {
     return false
   }
@@ -57,15 +57,16 @@ export function evalCond(
     return false
   }
   if (cond.maxLifeSelf !== undefined && me.lifeCards.length > cond.maxLifeSelf) return false
+  if (cond.minDeckSelf !== undefined && me.deck.length < cond.minDeckSelf) return false
   if (
     cond.hasCharacterNamed &&
-    !me.characters.some((c) => getCardById(c.cardId)?.name === cond.hasCharacterNamed)
+    !me.characters.some((c) => cardHasName(c.cardId, cond.hasCharacterNamed!))
   ) {
     return false
   }
   if (
     cond.lacksCharacterNamed &&
-    me.characters.some((c) => getCardById(c.cardId)?.name === cond.lacksCharacterNamed)
+    me.characters.some((c) => cardHasName(c.cardId, cond.lacksCharacterNamed!))
   ) {
     return false
   }
@@ -90,6 +91,7 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
         if (!evalCond(state, pid, source, def.condition)) continue
 
         const t = def.target
+        if (t.scope === 'myHand') continue // cost modifiers: see getEffectiveCost
         if (t.scope === 'self') {
           if (source.instanceId !== card.instanceId) continue
         } else if (t.scope === 'oppCharacters') {
@@ -100,7 +102,7 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
           if (t.scope === 'myCharactersOther' && card.instanceId === source.instanceId) continue
         }
         if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) continue
-        if (t.nameNot && getCardById(card.cardId)?.name === t.nameNot) continue
+        if (t.nameNot && cardHasName(card.cardId, t.nameNot)) continue
 
         let power = def.power ?? 0
         if (def.powerPer) {
@@ -151,4 +153,28 @@ export function getFlag(
 
 export function hasFlag(state: GameState, card: GameCard, flag: FlagName): boolean {
   return getFlag(state, card, flag).present
+}
+
+/**
+ * A hand card's cost after 'myHand' cost statics on the owner's field
+ * (e.g. OP01-067 Crocodile: blue Events in your hand -1 cost). Computed on
+ * read, never stored, like power.
+ */
+export function getEffectiveCost(state: GameState, playerId: PlayerId, card: GameCard): number {
+  const data = getCardById(card.cardId)
+  let cost = data?.cost ?? 0
+  const p = state.players[playerId]
+  for (const source of [p.leader, ...p.characters]) {
+    for (const def of getStatics(source.cardId)) {
+      if (!def.costMod || def.target.scope !== 'myHand') continue
+      if (def.donRequired && source.attachedDon < def.donRequired) continue
+      if (!evalCond(state, playerId, source, def.condition)) continue
+      const t = def.target
+      if (t.cardType && data?.cardType !== t.cardType) continue
+      if (t.colorIncludes && !(data?.color ?? []).some((c) => c === t.colorIncludes)) continue
+      if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) continue
+      cost += def.costMod
+    }
+  }
+  return Math.max(0, cost)
 }

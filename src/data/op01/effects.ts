@@ -3,7 +3,8 @@ import type { EffectDef, StaticDef } from '@/engine/effects/ast'
 /**
  * OP01 effect definitions as DSL data, keyed by card ID, transcribed from the
  * exact card texts in cards.json. Cards absent here are vanilla, keyword-only,
- * or listed in NOT_IMPLEMENTED below with the reason.
+ * rules-layer entries (engine/rulesLayer.ts), or listed in COVERAGE_NOTES
+ * below with the reason.
  *
  * Encoding conventions:
  * - "You may X: Y" optional costs = select (min 0) + abortIfEmpty + pay + Y.
@@ -193,7 +194,20 @@ export const OP01_EFFECTS: Record<string, EffectDef[]> = {
     },
   ],
 
-  // Luffy: once/turn, give self up to 2 rested DON (Strike protection: see NOT_IMPLEMENTED)
+  // Usopp: draw 1 when the opponent activates an Event on your turn (their
+  // counter events during your attacks are the usual firing window)
+  'OP01-004': [
+    {
+      timing: 'onEvent',
+      on: { kind: 'eventActivated', who: 'opponent' },
+      donRequired: 1,
+      oncePerTurn: true,
+      condition: { yourTurn: true },
+      ops: [{ op: 'draw', count: 1 }],
+    },
+  ],
+
+  // Luffy: once/turn, give self up to 2 rested DON (Strike protection is a static)
   'OP01-024': [
     { timing: 'activateMain', oncePerTurn: true, ops: [{ op: 'giveRestedDon', upTo: 2 }] },
   ],
@@ -586,6 +600,49 @@ export const OP01_EFFECTS: Record<string, EffectDef[]> = {
     },
   ],
 
+  // Kaido leader: when an opponent Character is K.O.'d on your turn, add a DON
+  'OP01-061': [
+    {
+      timing: 'onEvent',
+      on: { kind: 'characterKoed', who: 'opponent' },
+      donRequired: 1,
+      oncePerTurn: true,
+      condition: { yourTurn: true },
+      ops: [{ op: 'addDon', count: 1, rested: false }],
+    },
+  ],
+
+  // Crocodile leader: when you activate an Event with 4 or fewer cards in hand,
+  // draw 1 (once per turn via the printed "haven't drawn ... this turn" clause)
+  'OP01-062': [
+    {
+      timing: 'onEvent',
+      on: { kind: 'eventActivated', who: 'self' },
+      donRequired: 1,
+      oncePerTurn: true,
+      condition: { maxHandSelf: 4, minDeckSelf: 1 },
+      ops: [{ op: 'draw', count: 1 }],
+    },
+  ],
+
+  // Arlong: rest to peek at a chosen opponent hand card; if it's an Event,
+  // bottom-deck their top life card
+  'OP01-063': [
+    {
+      timing: 'activateMain',
+      donRequired: 1,
+      cost: { restSelf: true },
+      ops: [
+        { op: 'select', bind: 'r', filter: { owner: 'opponent', zone: 'hand' }, min: 1, max: 1, prompt: "Choose 1 card from your opponent's hand to reveal" },
+        { op: 'abortIfEmpty', ref: 'r' },
+        { op: 'reveal', ref: 'r' },
+        { op: 'requireRefIs', ref: 'r', cardType: 'Event' },
+        { op: 'select', bind: 'l', filter: { owner: 'opponent', zone: 'life' }, min: 0, max: 1, prompt: "Place up to 1 card from your opponent's Life at the bottom of their deck" },
+        { op: 'lifeToDeckBottom', ref: 'l' },
+      ],
+    },
+  ],
+
   // Alvida
   'OP01-064': [
     {
@@ -854,6 +911,17 @@ export const OP01_EFFECTS: Record<string, EffectDef[]> = {
 
   'OP01-104': [{ timing: 'trigger', ops: [{ op: 'playSelf' }] }],
 
+  // Bao Huang: peek at up to 2 chosen opponent hand cards
+  'OP01-105': [
+    {
+      timing: 'onPlay',
+      ops: [
+        { op: 'select', bind: 'r', filter: { owner: 'opponent', zone: 'hand' }, min: 0, max: 2, prompt: "Choose up to 2 cards from your opponent's hand to reveal" },
+        { op: 'reveal', ref: 'r' },
+      ],
+    },
+  ],
+
   // Basil Hawkins
   'OP01-106': [
     { timing: 'onPlay', ops: [{ op: 'addDon', count: 1, rested: true }] },
@@ -1005,9 +1073,15 @@ export const OP01_STATICS: Record<string, StaticDef[]> = {
   'OP01-032': [
     { donRequired: 1, condition: { minOppRestedCharacters: 2 }, target: { scope: 'self' }, power: 2000 },
   ],
+  // Luffy: [DON!! x2] can't be battle-K.O.'d by <Strike> attackers
+  'OP01-024': [{ donRequired: 2, target: { scope: 'self' }, flag: 'noBattleKoByStrike' }],
   // Kid: taunt while rested on the opponent's turn
   'OP01-051': [
     { donRequired: 1, condition: { opponentsTurn: true, selfRested: true }, target: { scope: 'self' }, flag: 'taunt' },
+  ],
+  // Crocodile: [DON!! x1] blue Events in your hand cost 1 less
+  'OP01-067': [
+    { donRequired: 1, target: { scope: 'myHand', cardType: 'Event', colorIncludes: 'Blue' }, costMod: -1 },
   ],
   // Moria: Double Attack with a big hand on your turn
   'OP01-068': [
@@ -1036,10 +1110,12 @@ export const OP01_STATICS: Record<string, StaticDef[]> = {
 }
 
 /**
- * Cards whose printed text is fully handled by the keyword parser alone
- * (engine/keywords.ts) - no effect defs or statics needed.
+ * Cards whose printed text is fully handled by the keyword parser
+ * (engine/keywords.ts) and/or the rules-layer registry (engine/rulesLayer.ts)
+ * - no effect defs or statics needed. OP01-075's "any number in your deck" and
+ * OP01-121's "also treat this card's name as [Kozuki Oden]" live in CARD_RULES.
  */
-export const KEYWORD_ONLY: string[] = ['OP01-025', 'OP01-100']
+export const KEYWORD_ONLY: string[] = ['OP01-025', 'OP01-100', 'OP01-075', 'OP01-121']
 
 /**
  * The coverage ledger for the ingestion pipeline: every card whose text is not
@@ -1052,24 +1128,12 @@ export const KEYWORD_ONLY: string[] = ['OP01-025', 'OP01-100']
  * named clause inert; SIMPLIFIED = automated with a documented deviation.
  */
 export const COVERAGE_NOTES: Record<string, string> = {
-  'OP01-004':
-    'MISSING: "Draw 1 when your opponent activates an Event" - event-driven trigger needs the Phase B event pipeline',
   'OP01-061':
-    'MISSING: "when your opponent\'s Character is K.O.\'d, add 1 DON" - event-driven trigger needs the Phase B event pipeline',
+    'SIMPLIFIED: "add up to 1 DON!!" always adds it (declining is never right in this pool)',
   'OP01-062':
-    'MISSING: "when you activate an Event, you may draw" - event-driven trigger needs the Phase B event pipeline (plus a per-turn leader-effect flag)',
-  'OP01-063':
-    'MISSING: peek at opponent hand card, gate on its card type, move Life to deck bottom - needs revealed-hand state and a life-to-deck op',
-  'OP01-105':
-    'MISSING: "opponent reveals 2 hand cards" - pure reveal has no effect without revealed-hand state',
-  'OP01-067':
-    'PARTIAL: [Banish] works; "blue Events in your hand -1 cost" needs cost modifiers applied to cards in hand',
-  'OP01-024':
-    'PARTIAL: the activated ability works; "cannot be K.O.\'d in battle by <Strike>" needs battle-attribute data, which cards.json does not carry (its attribute field holds the type list)',
-  'OP01-075':
-    'PARTIAL: [Blocker] works; "any number of this card in your deck" needs the rules-layer deck validator',
-  'OP01-121':
-    'PARTIAL: [Double Attack]/[Banish] work; "also treat this card\'s name as [Kozuki Oden]" needs names-as-sets identity in the rules layer',
+    'SIMPLIFIED: "you may draw 1" always draws (skipped when the deck is empty); "activate an Event" counts Main and Counter plays, not Trigger activations',
+  'OP01-004':
+    'SIMPLIFIED: "opponent activates an Event" counts Main and Counter plays, not Trigger activations',
   'OP01-073': 'SIMPLIFIED: "top or bottom in any order" implemented as choose-a-subset-for-bottom (order preserved)',
   'OP01-077': 'SIMPLIFIED: "top or bottom in any order" implemented as choose-a-subset-for-bottom (order preserved)',
   'OP01-088': 'SIMPLIFIED: counter half reorders via choose-a-subset-for-bottom (order preserved)',

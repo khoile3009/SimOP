@@ -53,6 +53,8 @@ export interface GameCard {
   attachedDon: number
   activatedThisTurn: string[]
   turnPlayed: number
+  /** In a hidden zone (hand): this card is public knowledge (reveals, bounces, life hits) */
+  revealed?: boolean
 }
 
 export interface PlayerState {

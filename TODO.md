@@ -32,8 +32,28 @@
          determinization + Zhang-Buro outcome bucketing; fixes topdeck clairvoyance);
       4. playing-to-your-outs mode (when max win% < threshold, rank lines by P(win | best
          draw class) - direct transcription of pro play; unpublished as an AI technique).
-- [ ] M5 Phase B engine — event pipeline, replacement interceptors, cost modifiers,
-      rules-layer registry; unlocks the 7 deferred OP01 cards.
+- [x] M5 Phase B engine — DONE (Sep 2026). OP01 is now FULLY implemented: zero
+      MISSING/PARTIAL ledger entries (only documented SIMPLIFIED deviations).
+      Shipped: (1) event pipeline - 'onEvent' EffectDefs subscribe to engine
+      events (eventActivated, characterKoed) via EffectDef.on queries, emitted
+      from processor/koById choke points, turn-player-first (CR 8-6-1); unlocks
+      Usopp OP01-004, Kaido leader OP01-061, Crocodile leader OP01-062.
+      (2) K.O. replacement window - 'replaceKo' defs run INSTEAD of the K.O.
+      (socket 2; mandatory replacements only - optional "you may instead" needs
+      a confirm op, build with its first card). (3) cost modifiers - StaticDef
+      scope 'myHand' + costMod, getEffectiveCost read everywhere costs are
+      checked/paid (OP01-067). (4) rules-layer registry (engine/rulesLayer.ts) -
+      names-as-sets (cardHasName; OP01-121 Yamato-as-Oden), deck copy limits
+      (OP01-075 Pacifista any-number), battle attributes (battleAttributes.json
+      from optcgapi; OP01-024 Strike shield). (5) revealed-hand knowledge -
+      GameCard.revealed set by reveal ops (OP01-063 Arlong, OP01-105 Bao Huang),
+      bounces, trash-to-hand, and life hits; determinize pins revealed cards
+      (first real knowledge tracking); vs-AI UI renders revealed opponent cards
+      face-up and supports blind picks over face-down hands.
+      Fleet-certified: 1200 games, zero invariant violations, ZERO unused
+      effects. Coverage decks upgraded: leaders with abilities always anchor a
+      deck, and every deck carries >=2 Events (this caught Crocodile leader's
+      draw never firing - his deck had no Events to activate).
 - [ ] M6 Card ingestion + OP02 — LLM emits EffectDefs, schema+coverage-ledger gates.
       Per-set checklist (mostly automatic): ingest defs -> coverage decks auto-expand ->
       fleet campaign (correctness: violations/usage holes) -> RETRAIN EVAL (one command;

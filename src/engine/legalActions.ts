@@ -5,6 +5,7 @@ import { getOpponent } from './turnManager'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
 import { getEffectDefs } from './effects/registry'
+import { getEffectiveCost } from './effects/statics'
 
 /**
  * Which player must act next, or null if the game is over / no decision is pending.
@@ -71,7 +72,7 @@ function mainPhaseOptions(state: GameState, actor: PlayerId): GameAction[] {
   for (const card of player.hand) {
     const data = getCardById(card.cardId)
     if (!data || data.cardType === 'Leader') continue
-    if (data.cost > activeDon) continue
+    if (getEffectiveCost(state, actor, card) > activeDon) continue
     // Events are only playable at their printed timing: main here, counter in battle
     if (data.cardType === 'Event' && getEffectDefs(card.cardId, 'main').length === 0) continue
     // A full board is still playable: the '$boardFull' flow trashes one first
@@ -173,7 +174,8 @@ function counterOptions(state: GameState, actor: PlayerId): GameAction[] {
   const activeDon = player.donArea.filter((d) => !d.isRested).length
   for (const card of player.hand) {
     const data = getCardById(card.cardId)
-    if (data?.cardType !== 'Event' || data.cost > activeDon) continue
+    if (data?.cardType !== 'Event') continue
+    if (getEffectiveCost(state, actor, card) > activeDon) continue
     if (getEffectDefs(card.cardId, 'counter').length === 0) continue
     actions.push({ type: 'PLAY_COUNTER_EVENT', cardInstanceId: card.instanceId })
   }

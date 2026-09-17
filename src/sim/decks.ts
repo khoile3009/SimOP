@@ -1,7 +1,8 @@
 import type { Deck } from '@/engine/types'
 import { getCardsBySet, getLeaders, getCardById } from '@/data/cardService'
-import { getEffectDefs } from '@/engine/effects/registry'
+import { getEffectDefs, getStatics } from '@/engine/effects/registry'
 import { DECK_SIZE, MAX_CARD_COPIES } from '@/engine/constants'
+import { cardHasName } from '@/engine/rulesLayer'
 
 /**
  * Coverage decks: partition a set's card pool into legal decks such that every
@@ -37,17 +38,22 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
       if (!cond) continue
       const satisfied = [...anchors.values()].some(
         (l) =>
-          (!cond.leaderNameIs || l.name === cond.leaderNameIs) &&
+          (!cond.leaderNameIs || cardHasName(l.id, cond.leaderNameIs)) &&
           (!cond.leaderTypeIncludes || l.attribute.includes(cond.leaderTypeIncludes)),
       )
       if (satisfied) continue
       const provider = leaders.find(
         (l) =>
-          (!cond.leaderNameIs || l.name === cond.leaderNameIs) &&
+          (!cond.leaderNameIs || cardHasName(l.id, cond.leaderNameIs)) &&
           (!cond.leaderTypeIncludes || l.attribute.includes(cond.leaderTypeIncludes)),
       )
       if (provider) anchors.set(provider.id, provider)
     }
+  }
+  // A leader with its own effects or statics must lead a deck somewhere, or
+  // the fleet could never fire them (e.g. Kaido's on-K.O. DON gain)
+  for (const l of leaders) {
+    if (getEffectDefs(l.id).length > 0 || getStatics(l.id).length > 0) anchors.set(l.id, l)
   }
 
   // Assign every card to one home deck: a leader-condition provider when the
@@ -64,7 +70,7 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
       const provider = anchorList.find(
         (l) =>
           card.color.some((c) => l.color.includes(c)) &&
-          (!cond.leaderNameIs || l.name === cond.leaderNameIs) &&
+          (!cond.leaderNameIs || cardHasName(l.id, cond.leaderNameIs)) &&
           (!cond.leaderTypeIncludes || l.attribute.includes(cond.leaderTypeIncludes)),
       )
       if (provider) home = provider
@@ -91,6 +97,19 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
         if (qty <= 0) break
         cards.push({ cardId: id, qty })
         total += qty
+      }
+      // Every deck carries at least 2 Event ids: counter steps and
+      // event-triggered abilities (e.g. Crocodile's leader draw) need fuel
+      let eventIds = cards.filter((c) => getCardById(c.cardId)?.cardType === 'Event').length
+      for (const filler of pool) {
+        if (eventIds >= 2 || total >= DECK_SIZE) break
+        if (filler.cardType !== 'Event') continue
+        if (!filler.color.some((c) => leader.color.includes(c))) continue
+        if (cards.some((c) => c.cardId === filler.id)) continue
+        const qty = Math.min(MAX_CARD_COPIES, DECK_SIZE - total)
+        cards.push({ cardId: filler.id, qty })
+        total += qty
+        eventIds++
       }
       // Pad with same-color pool cards not already in this deck
       for (const filler of pool) {
@@ -140,7 +159,7 @@ export function annotateUnreachable(key: string, decks: CoverageDeck[]): string 
       const leader = getCardById(deck.leader)
       return (
         leader &&
-        (!cond.leaderNameIs || leader.name === cond.leaderNameIs) &&
+        (!cond.leaderNameIs || cardHasName(leader.id, cond.leaderNameIs)) &&
         (!cond.leaderTypeIncludes || leader.attribute.includes(cond.leaderTypeIncludes))
       )
     })

@@ -4,8 +4,9 @@ import { validateAction } from './rules'
 import { getOpponent, executeEndPhase, autoAdvancePhases, expireModifiers } from './turnManager'
 import { performMulligan, acceptHand, isMulliganComplete, startGame } from './gameSetup'
 import { resolveDamage, dealLifeDamage } from './battleManager'
-import { queueEffects, runStack, applyChoice, pushFrame } from './effects/interpreter'
+import { queueEffects, runStack, applyChoice, pushFrame, emitEngineEvent } from './effects/interpreter'
 import { getEffectDefs } from './effects/registry'
+import { getEffectiveCost } from './effects/statics'
 import { legalActions } from './legalActions'
 import { MAX_CHARACTERS } from './constants'
 
@@ -120,7 +121,7 @@ function processPlayCard(
 
   // Pay DON cost: rest active DON
   const newDonArea = [...player.donArea]
-  let costRemaining = cardData.cost
+  let costRemaining = getEffectiveCost(state, playerId, card)
   for (let i = 0; i < newDonArea.length && costRemaining > 0; i++) {
     if (!newDonArea[i].isRested) {
       newDonArea[i] = { ...newDonArea[i], isRested: true }
@@ -189,8 +190,13 @@ function processPlayCard(
     },
   }
 
-  const timing = cardData.cardType === 'Event' ? 'main' : 'onPlay'
-  newState = queueEffects(newState, playedCard, timing, playerId)
+  if (cardData.cardType === 'Event') {
+    // Listeners queue first so the event's own frames land on top and resolve first
+    newState = emitEngineEvent(newState, { kind: 'eventActivated', player: playerId })
+    newState = queueEffects(newState, playedCard, 'main', playerId)
+  } else {
+    newState = queueEffects(newState, playedCard, 'onPlay', playerId)
+  }
   return runStack(newState, events)
 }
 
@@ -525,7 +531,7 @@ function processPlayCounterEvent(
   const card = player.hand[idx]
   const data = getCardById(card.cardId)!
 
-  let costRemaining = data.cost
+  let costRemaining = getEffectiveCost(state, playerId, card)
   const donArea = player.donArea.map((d) => {
     if (costRemaining > 0 && !d.isRested) {
       costRemaining--
@@ -548,6 +554,7 @@ function processPlayCounterEvent(
     playerId,
     description: `${playerId} played ${data.name}`,
   })
+  newState = emitEngineEvent(newState, { kind: 'eventActivated', player: playerId })
   const counterDefs = getEffectDefs(card.cardId)
   for (let i = counterDefs.length - 1; i >= 0; i--) {
     if (counterDefs[i].timing === 'counter') {
