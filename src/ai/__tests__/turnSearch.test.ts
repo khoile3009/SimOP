@@ -86,9 +86,12 @@ describe('searchTurnLines', () => {
 
   it('orders the sequence correctly: attach DON before attacking', () => {
     let state = baseState()
-    // Opponent has a rested 7000 wall; my lone leader is 5000 - only
-    // attach-both-then-attack reaches it (attacker wins ties at 7000)
-    const wall = withCharacter(state, 'player2', 'OP01-065', { isRested: true }) // Vergo 7000
+    // My only attacker is a 4000 body and my leader is rested: NOTHING succeeds
+    // without attaching DON first, so any winning line must sequence
+    // attach-then-attack (4000 fails into the 5000 leader; 5000+ ties or wins)
+    const attacker = withCharacter(state, 'player1', 'OP01-012') // Sai 4000
+    state = attacker.state
+    const wall = withCharacter(state, 'player2', 'OP01-018', { isRested: true }) // Hajrudin 6000
     state = wall.state
     state = {
       ...state,
@@ -97,6 +100,7 @@ describe('searchTurnLines', () => {
         player1: {
           ...state.players.player1,
           hand: [],
+          leader: { ...state.players.player1.leader, isRested: true },
           donArea: [createGameCard('DON', 'player1'), createGameCard('DON', 'player1')],
         },
         player2: { ...state.players.player2, hand: [] },
@@ -105,12 +109,12 @@ describe('searchTurnLines', () => {
 
     const lines = searchTurnLines(state, 'player1')
     const top = lines[0]
-    const attackIdx = top.labels.findIndex((l) => l.includes('attacks Vergo'))
+    const attackIdx = top.labels.findIndex((l) => l.includes('attacks'))
     expect(attackIdx).toBeGreaterThan(0)
     const attaches = top.labels.slice(0, attackIdx).filter((l) => l.startsWith('Attach')).length
-    expect(attaches).toBe(2) // both DON attached before swinging
-    // And the wall died in the top line
-    expect(top.score).toBeGreaterThan(top.baseline)
+    expect(attaches).toBeGreaterThanOrEqual(1) // DON committed before swinging
+    // And the attack accomplished something under best defense
+    expect(top.worstCase).toBeGreaterThan(top.baseline)
   })
 
   it('always includes the pass line as a floor', () => {

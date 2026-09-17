@@ -8,7 +8,7 @@ import { runBenchmark } from '@/sim/benchmark'
 import type { AgentKind } from '@/sim/benchmark'
 
 const games = Number(process.argv[2] ?? 40)
-const kinds: AgentKind[] = ['random', 'greedy', 'planner']
+const kinds: AgentKind[] = (process.argv[3] ?? 'random,greedy,planner').split(',') as AgentKind[]
 console.log(`Benchmark: ${kinds.join(' / ')} — ${games} games per pairing (mirror deck, seat-swapped)`)
 
 const report = runBenchmark(kinds, games)

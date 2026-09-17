@@ -4,7 +4,8 @@ import type { Deck } from '@/engine/types'
 import { legalActions, whoActs } from '@/engine/legalActions'
 import { useGameStore } from '@/stores/gameStore'
 import { useDeckStore } from '@/stores/deckStore'
-import { GreedyAgent } from '@/ai/agents'
+import type { Agent } from '@/ai/agents'
+import { AGENT_FACTORIES } from '@/sim/benchmark'
 import GameBoard from '@/components/game/GameBoard'
 
 // Fallback test deck if user has no saved decks
@@ -38,7 +39,7 @@ function useAiDriver() {
   const gameState = useGameStore((s) => s.gameState)
   const aiPlayer = useGameStore((s) => s.aiPlayer)
   const dispatch = useGameStore((s) => s.dispatch)
-  const agentRef = useRef(new GreedyAgent())
+  const agentRef = useRef<{ kind: string; agent: Agent } | null>(null)
 
   useEffect(() => {
     if (!gameState || gameState.winner || !aiPlayer) return
@@ -48,14 +49,19 @@ function useAiDriver() {
       if (!state || state.winner || whoActs(state) !== aiPlayer) return
       const actions = legalActions(state)
       if (actions.length === 0) return
-      dispatch(agentRef.current.choose(state, actions, aiPlayer), aiPlayer)
+      const kind = useGameStore.getState().aiKind
+      if (!agentRef.current || agentRef.current.kind !== kind) {
+        agentRef.current = { kind, agent: AGENT_FACTORIES[kind](Math.random) }
+      }
+      dispatch(agentRef.current.agent.choose(state, actions, aiPlayer), aiPlayer)
     }, 600)
     return () => clearTimeout(timer)
   }, [gameState, aiPlayer, dispatch])
 }
 
 export default function PlayPage() {
-  const { gameState, aiPlayer, analyze, toggleAnalyze, startNewGame } = useGameStore()
+  const { gameState, aiPlayer, analyze, toggleAnalyze, startNewGame, aiKind, setAiKind } =
+    useGameStore()
   const { savedDecks } = useDeckStore()
   useAiDriver()
 
@@ -118,6 +124,20 @@ export default function PlayPage() {
         <p className="text-text-secondary">
           Play against the AI, or control both sides in hotseat mode.
         </p>
+
+        <label className="flex items-center gap-2 text-sm text-text-secondary">
+          AI difficulty
+          <select
+            id="ai-difficulty"
+            value={aiKind}
+            onChange={(e) => setAiKind(e.target.value as 'greedy' | 'planner' | 'mcts')}
+            className="rounded bg-ocean-700 px-2 py-1 text-sm text-text-primary"
+          >
+            <option value="greedy">Greedy (easy)</option>
+            <option value="planner">Planner (medium)</option>
+            <option value="mcts">MCTS (hard)</option>
+          </select>
+        </label>
 
         {validDecks.length > 0 ? (
           <div className="flex flex-col gap-3">

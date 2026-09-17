@@ -6,6 +6,7 @@ import { getOpponent } from '@/engine/turnManager'
 import { getEffectivePower } from '@/engine/powerCalc'
 import { hasKeyword } from '@/engine/keywords'
 import { evaluateState } from './evaluate'
+import type { EvalFn } from './evaluate'
 import { GreedyAgent, rolloutInterrupts } from './agents'
 import type { Agent } from './agents'
 
@@ -54,6 +55,8 @@ export interface TurnSearchOptions {
   maxExpansions?: number
   /** How many top candidates get the (costlier) adversarial verification */
   verifyTop?: number
+  /** Evaluation function (defaults to the active weights) - enables eval A/B */
+  evalFn?: EvalFn
 }
 
 export function searchTurnLines(
@@ -62,10 +65,11 @@ export function searchTurnLines(
   options: TurnSearchOptions = {},
 ): TurnLine[] {
   const { beamWidth = 24, maxDepth = 20, topK = 3, maxExpansions = 20000, verifyTop = 8 } = options
+  const ev = options.evalFn ?? evaluateState
   if (whoActs(root) !== player) return []
 
   const baselineState = endTurnState(root, player)
-  const baseline = baselineState ? evaluateState(baselineState, player) : 0.5
+  const baseline = baselineState ? ev(baselineState, player) : 0.5
 
   let frontier: Node[] = [{ state: root, actions: [], labels: [], stepScores: [], done: false }]
   const finished: Node[] = []
@@ -96,7 +100,7 @@ export function searchTurnLines(
           state: result.state,
           actions: [...node.actions, action],
           labels: [...node.labels, describeAction(node.state, action)],
-          stepScores: [...node.stepScores, evaluateState(result.state, player)],
+          stepScores: [...node.stepScores, ev(result.state, player)],
           done: action.type === 'END_TURN' || !!result.state.winner,
         }
         if (child.done) {
@@ -111,7 +115,7 @@ export function searchTurnLines(
     }
 
     // Keep the most promising partial lines
-    next.sort((a, b) => evaluateState(b.state, player) - evaluateState(a.state, player))
+    next.sort((a, b) => ev(b.state, player) - ev(a.state, player))
     frontier = next.slice(0, beamWidth)
   }
   // Anything still open at the depth cap counts with its current score
@@ -121,7 +125,7 @@ export function searchTurnLines(
     .map((n) => ({
       actions: n.actions,
       labels: n.labels,
-      score: evaluateState(n.state, player),
+      score: ev(n.state, player),
       stepScores: n.stepScores,
     }))
     .sort((a, b) => b.score - a.score)
@@ -138,7 +142,7 @@ export function searchTurnLines(
   // but their published value is the minimax over the defender's real options -
   // "best line" must not depend on the opponent misdefending
   const verified: TurnLine[] = unique.map((c) => {
-    const v = verifyLine(root, player, c.actions)
+    const v = verifyLine(root, player, c.actions, ev)
     return {
       ...c,
       worstCase: v.value,
@@ -165,8 +169,8 @@ export class TurnPlannerAgent implements Agent {
   private searchOptions: TurnSearchOptions
 
   constructor(rand: () => number = Math.random, searchOptions: TurnSearchOptions = {}) {
-    this.greedy = new GreedyAgent(rand)
     this.searchOptions = { beamWidth: 16, verifyTop: 4, topK: 1, ...searchOptions }
+    this.greedy = new GreedyAgent(rand, this.searchOptions.evalFn ?? evaluateState)
   }
 
   choose(state: GameState, actions: GameAction[], playerId: PlayerId): GameAction {
@@ -211,10 +215,15 @@ interface VerifyOutcome {
  * deviation invalidates the planned remainder, the tail is repaired with a
  * greedy completion.
  */
-function verifyLine(root: GameState, player: PlayerId, actions: GameAction[]): VerifyOutcome {
+function verifyLine(
+  root: GameState,
+  player: PlayerId,
+  actions: GameAction[],
+  ev: EvalFn,
+): VerifyOutcome {
   const budget = { nodes: 4000 }
   const branches: { label: string; value: number }[] = []
-  const value = verifyRec(root, player, actions, 0, budget, branches)
+  const value = verifyRec(root, player, actions, 0, budget, branches, ev)
   return { value, branches }
 }
 
@@ -225,40 +234,41 @@ function verifyRec(
   index: number,
   budget: { nodes: number },
   topBranches: { label: string; value: number }[] | null,
+  ev: EvalFn,
 ): number {
   let s = state
   let i = index
   for (let guard = 0; guard < 80; guard++) {
     if (s.winner) return s.winner === player ? 1 : 0
     const actor = whoActs(s)
-    if (!actor) return evaluateState(s, player)
+    if (!actor) return ev(s, player)
 
     if (actor === player) {
-      if (i >= actions.length) return evaluateState(s, player)
+      if (i >= actions.length) return ev(s, player)
       const action = actions[i]
       const result = processAction(s, action, player)
       if (result.error) {
         // The defender's deviation made the plan illegal: repair greedily
-        return evaluateState(greedyComplete(s, player), player)
+        return ev(greedyComplete(s, player, ev), player)
       }
       s = result.state
       i++
-      if (action.type === 'END_TURN') return evaluateState(s, player)
+      if (action.type === 'END_TURN') return ev(s, player)
       continue
     }
 
     // Defender decision point
     const options = legalActions(s)
-    if (options.length === 0) return evaluateState(s, player)
+    if (options.length === 0) return ev(s, player)
     if (options.length === 1 || budget.nodes <= 0) {
       const only = options.length === 1 ? options[0] : null
       if (only) {
         const result = processAction(s, only, actor)
-        if (result.error) return evaluateState(s, player)
+        if (result.error) return ev(s, player)
         s = result.state
         continue
       }
-      s = rolloutInterrupts(s, player) // budget exhausted: fall back to greedy reply
+      s = rolloutInterrupts(s, player, ev) // budget exhausted: fall back to greedy reply
       continue
     }
 
@@ -268,26 +278,26 @@ function verifyRec(
       budget.nodes--
       const result = processAction(s, option, actor)
       if (result.error) continue
-      const value = verifyRec(result.state, player, actions, i, budget, null)
+      const value = verifyRec(result.state, player, actions, i, budget, null, ev)
       localBranches.push({ label: describeAction(s, option), value })
       if (value < worst) worst = value
     }
     if (topBranches && topBranches.length === 0) topBranches.push(...localBranches)
-    return worst === Infinity ? evaluateState(s, player) : worst
+    return worst === Infinity ? ev(s, player) : worst
   }
-  return evaluateState(s, player)
+  return ev(s, player)
 }
 
 /** Finish the turn with one-ply greedy play (used to repair diverged lines). */
-function greedyComplete(state: GameState, player: PlayerId): GameState {
-  const agent = new GreedyAgent(() => 0.5)
+function greedyComplete(state: GameState, player: PlayerId, ev: EvalFn): GameState {
+  const agent = new GreedyAgent(() => 0.5, ev)
   let s = state
   for (let guard = 0; guard < 40; guard++) {
     if (s.winner) return s
     const actor = whoActs(s)
     if (!actor) return s
     if (actor !== player) {
-      const resolved = rolloutInterrupts(s, player)
+      const resolved = rolloutInterrupts(s, player, ev)
       if (resolved === s) return s
       s = resolved
       continue

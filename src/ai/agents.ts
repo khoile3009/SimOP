@@ -2,6 +2,7 @@ import type { GameState, GameAction, PlayerId } from '@/engine/types'
 import { processAction } from '@/engine/processor'
 import { legalActions, whoActs } from '@/engine/legalActions'
 import { evaluateState } from './evaluate'
+import type { EvalFn } from './evaluate'
 
 export interface Agent {
   readonly name: string
@@ -30,9 +31,11 @@ export class RandomAgent implements Agent {
 export class GreedyAgent implements Agent {
   readonly name = 'greedy'
   private rand: () => number
+  private evalFn: EvalFn
 
-  constructor(rand: () => number = Math.random) {
+  constructor(rand: () => number = Math.random, evalFn: EvalFn = evaluateState) {
     this.rand = rand
+    this.evalFn = evalFn
   }
 
   choose(state: GameState, actions: GameAction[], playerId: PlayerId): GameAction {
@@ -41,8 +44,8 @@ export class GreedyAgent implements Agent {
     for (const action of actions) {
       const result = processAction(state, action, playerId)
       if (result.error) continue
-      const settled = rolloutInterrupts(result.state, playerId)
-      const value = evaluateState(settled, playerId)
+      const settled = rolloutInterrupts(result.state, playerId, this.evalFn)
+      const value = this.evalFn(settled, playerId)
       if (value > bestValue + 1e-9) {
         bestValue = value
         best = [action]
@@ -61,7 +64,11 @@ export class GreedyAgent implements Agent {
  * reply. Stops as soon as control returns to `me` or the opponent's normal turn
  * begins - this never simulates the opponent's next main phase.
  */
-export function rolloutInterrupts(state: GameState, me: PlayerId): GameState {
+export function rolloutInterrupts(
+  state: GameState,
+  me: PlayerId,
+  evalFn: EvalFn = evaluateState,
+): GameState {
   let s = state
   for (let guard = 0; guard < 50; guard++) {
     if (s.winner) return s
@@ -78,7 +85,7 @@ export function rolloutInterrupts(state: GameState, me: PlayerId): GameState {
     for (const option of options) {
       const result = processAction(s, option, actor)
       if (result.error) continue
-      const value = evaluateState(result.state, actor)
+      const value = evalFn(result.state, actor)
       if (value > bestValue) {
         bestValue = value
         best = option

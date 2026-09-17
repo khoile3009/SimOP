@@ -23,6 +23,9 @@ interface GameStore {
   aiPlayer: PlayerId | null
   /** Chess-style analysis mode: eval bar + line recommendations */
   analyze: boolean
+  /** Which agent drives the AI seat */
+  aiKind: 'greedy' | 'planner' | 'mcts'
+  setAiKind: (kind: 'greedy' | 'planner' | 'mcts') => void
   /** Player-1 win probability at the start of each of their decision windows */
   evalHistory: { turn: number; p1: number }[]
 
@@ -46,6 +49,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   viewingPlayer: 'player1',
   aiPlayer: null,
   analyze: false,
+  aiKind: 'mcts',
+  setAiKind: (kind) => set({ aiKind: kind }),
   evalHistory: [],
 
   startNewGame: (deck1, deck2, aiPlayer = null) => {
