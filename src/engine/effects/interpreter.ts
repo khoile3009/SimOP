@@ -8,6 +8,7 @@ import type {
 } from '../types'
 import type { CardDataFilter, EffectOp, EffectTiming, SelectFilter } from './ast'
 import { getEffectDefs } from './registry'
+import { recordEffectFired } from './telemetry'
 import { evalCond, cardTypes } from './statics'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '../powerCalc'
@@ -66,15 +67,21 @@ export function queueEffects(
   return { ...s, stack: [...s.stack, ...frames.reverse()] }
 }
 
-/** Push one specific def (activated abilities, counter events, activateTiming). */
+/** Push one specific def (activated abilities, counter events, activateTiming).
+ * `defCardId` overrides which registry entry supplies the ops - used by
+ * rule-processing pseudo-defs ('$boardFull') acting on a real card instance. */
 export function pushFrame(
   state: GameState,
   card: GameCard,
   controller: PlayerId,
   timing: EffectTiming,
   defIndex: number,
+  defCardId?: string,
 ): GameState {
-  return { ...state, stack: [...state.stack, makeFrame(card, controller, timing, defIndex)] }
+  return {
+    ...state,
+    stack: [...state.stack, makeFrame(card, controller, timing, defIndex, defCardId)],
+  }
 }
 
 function makeFrame(
@@ -82,10 +89,13 @@ function makeFrame(
   controller: PlayerId,
   timing: EffectTiming,
   defIndex: number,
+  defCardId?: string,
 ): EffectFrame {
+  const sourceCardId = defCardId ?? card.cardId
+  recordEffectFired(sourceCardId, timing)
   return {
     sourceInstanceId: card.instanceId,
-    sourceCardId: card.cardId,
+    sourceCardId,
     controller,
     pc: 0,
     timing,
@@ -210,6 +220,13 @@ function executeOp(
       }
       let s = state
       for (const id of targets) s = koById(s, id, events)
+      return advance(s)
+    }
+
+    case 'trashFromField': {
+      // Not a K.O. (CR 3-7-6-1-1, 10-2-1-3): no [On K.O.] effects fire
+      let s = state
+      for (const id of refs(op.ref)) s = removeFromField(s, id, 'trash')
       return advance(s)
     }
 

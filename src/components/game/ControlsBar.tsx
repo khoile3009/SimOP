@@ -7,8 +7,19 @@ export interface Activatable {
   name: string
 }
 
+export interface ChoiceStrip {
+  prompt: string
+  count: number
+  min: number
+  max: number
+  exact?: boolean
+  onConfirm: () => void
+  onSkip?: () => void
+}
+
 interface ControlsBarProps {
   gameState: GameState
+  choice?: ChoiceStrip
   onEndTurn: () => void
   onDeclineBlock: () => void
   onActivateBlocker: (blockerId: string) => void
@@ -25,6 +36,7 @@ interface ControlsBarProps {
 
 export default function ControlsBar({
   gameState,
+  choice,
   onEndTurn,
   onDeclineBlock,
   onActivateBlocker,
@@ -39,6 +51,38 @@ export default function ControlsBar({
   counterCount,
 }: ControlsBarProps) {
   const { battle, phase } = gameState
+
+  // A pending effect choice blocks everything else: the board is the picker,
+  // this strip is the prompt
+  if (choice) {
+    const okSize =
+      choice.count >= choice.min &&
+      choice.count <= choice.max &&
+      (!choice.exact || choice.count === choice.min || choice.count === choice.max)
+    return (
+      <div className="flex flex-wrap items-center justify-center gap-3 py-2">
+        <span className="max-w-md text-sm font-medium text-text-primary">{choice.prompt}</span>
+        <span className="rounded bg-black/30 px-2 py-0.5 text-xs tabular-nums text-text-secondary">
+          {choice.count} / {choice.max}
+        </span>
+        {choice.onSkip && (
+          <button
+            onClick={choice.onSkip}
+            className="rounded bg-ocean-700 px-4 py-1.5 text-sm font-medium hover:bg-ocean-600"
+          >
+            Choose none
+          </button>
+        )}
+        <button
+          onClick={choice.onConfirm}
+          disabled={!okSize}
+          className="rounded bg-action-green px-4 py-1.5 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-40"
+        >
+          Confirm
+        </button>
+      </div>
+    )
+  }
 
   // During battle block step
   if (battle && battle.step === 'BLOCK') {

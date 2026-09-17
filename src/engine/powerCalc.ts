@@ -7,7 +7,10 @@ import { auraGrants } from './effects/statics'
 export function getEffectivePower(state: GameState, card: GameCard): number {
   const cardData = getCardById(card.cardId)
   const basePower = cardData?.power ?? 0
-  const donBonus = card.attachedDon * DON_POWER_BONUS
+  // Given DON grants +1000 only during the owner's turn (CR 6-5-5-2); a
+  // defender's attached DON contributes nothing
+  const donBonus =
+    state.currentPlayer === card.ownerId ? card.attachedDon * DON_POWER_BONUS : 0
   let modifierTotal = 0
   for (const m of card.modifiers) {
     if (m.kind === 'power') modifierTotal += m.value

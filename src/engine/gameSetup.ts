@@ -56,15 +56,10 @@ function setupPlayer(deck: Deck, playerId: PlayerId): PlayerState {
   }
   shuffle(deckCards)
 
-  // Draw starting hand
+  // Draw starting hand. Life is NOT dealt yet - it comes off the top of the
+  // deck only after both mulligan decisions (CR 5-2-1-6 then 5-2-1-7), which is
+  // also why a mulligan legitimately reshuffles the future life cards.
   const hand = deckCards.splice(0, STARTING_HAND_SIZE)
-
-  // Set life cards from top of deck
-  const lifeCount = leaderData.life ?? 0
-  const dealt = dealLife(deckCards, lifeCount)
-  const lifeCards = dealt.life
-  deckCards.length = 0
-  deckCards.push(...dealt.deck)
 
   // Build DON deck
   const donDeck: GameCard[] = []
@@ -74,7 +69,7 @@ function setupPlayer(deck: Deck, playerId: PlayerId): PlayerState {
 
   return {
     leader,
-    lifeCards,
+    lifeCards: [],
     hand,
     characters: [],
     donDeck,
@@ -102,6 +97,7 @@ export function createGame(deck1: Deck, deck2: Deck): GameState {
     stack: [],
     pendingChoice: null,
     pendingTrigger: null,
+    pendingDamage: null,
     actionHistory: [],
     winner: null,
     setupComplete: false,
@@ -150,8 +146,18 @@ export function isMulliganComplete(state: GameState): boolean {
 }
 
 export function startGame(state: GameState): GameState {
+  // Both mulligans are settled: deal life from the top of each deck (CR 5-2-1-7)
+  const players = { ...state.players }
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    const p = players[pid]
+    const lifeCount = getCardById(p.leader.cardId)?.life ?? 0
+    const dealt = dealLife(p.deck, lifeCount)
+    players[pid] = { ...p, deck: dealt.deck, lifeCards: dealt.life }
+  }
+
   return {
     ...state,
+    players,
     phase: 'REFRESH',
     setupComplete: true,
   }

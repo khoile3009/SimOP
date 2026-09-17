@@ -16,6 +16,12 @@ interface HandZoneProps {
     selectedIds: string[]
     onToggle: (instanceId: string) => void
   }
+  /** Effect-choice selection over hand cards (e.g. "trash 1 card from your hand") */
+  pickMode?: {
+    eligible: string[]
+    selectedIds: string[]
+    onToggle: (instanceId: string) => void
+  }
 }
 
 function DraggableHandCard({
@@ -93,7 +99,7 @@ function DraggableHandCard({
   )
 }
 
-export default function HandZone({ cards, faceDown, flipped, selectedId, onSelect, cardActions, counterMode }: HandZoneProps) {
+export default function HandZone({ cards, faceDown, flipped, selectedId, onSelect, cardActions, counterMode, pickMode }: HandZoneProps) {
   if (faceDown) {
     return (
       <div className="flex items-center justify-center gap-1 py-2" style={{ minHeight: 100 }}>
@@ -113,15 +119,35 @@ export default function HandZone({ cards, faceDown, flipped, selectedId, onSelec
   const totalWidth = Math.min(cards.length * maxSpread, 600)
   const spacing = cards.length > 1 ? totalWidth / (cards.length - 1) : 0
 
-  // Counter mode: show selectable counter cards
-  if (counterMode) {
+  // Selection modes: counter step, or an effect choosing hand cards
+  const selectMode = pickMode
+    ? {
+        selectedIds: pickMode.selectedIds,
+        onToggle: pickMode.onToggle,
+        isEligible: (card: GameCard) => pickMode.eligible.includes(card.instanceId),
+        showCounterValue: false,
+      }
+    : counterMode
+      ? {
+          selectedIds: counterMode.selectedIds,
+          onToggle: counterMode.onToggle,
+          // Counter VALUES only; [Counter] events have their own button in the controls bar
+          isEligible: (card: GameCard) => {
+            const d = getCardById(card.cardId)
+            return !!d && d.counter !== null && d.counter > 0
+          },
+          showCounterValue: true,
+        }
+      : null
+
+  if (selectMode) {
     return (
       <div className="flex items-end justify-center py-2" style={{ minHeight: 100 }}>
         <div className="relative" style={{ width: totalWidth + cardWidth, height: 88 }}>
           {cards.map((card, i) => {
             const cardData = getCardById(card.cardId)
-            const hasCounter = cardData && (cardData.counter !== null || cardData.effectText?.includes('[Counter]'))
-            const isCounterSelected = counterMode.selectedIds.includes(card.instanceId)
+            const hasCounter = selectMode.isEligible(card)
+            const isCounterSelected = selectMode.selectedIds.includes(card.instanceId)
             const left = cards.length === 1 ? totalWidth / 2 : i * spacing
             const mid = (cards.length - 1) / 2
             const offset = i - mid
@@ -139,7 +165,7 @@ export default function HandZone({ cards, faceDown, flipped, selectedId, onSelec
                 }}
               >
                 <button
-                  onClick={() => hasCounter && counterMode.onToggle(card.instanceId)}
+                  onClick={() => hasCounter && selectMode.onToggle(card.instanceId)}
                   className={`w-full overflow-hidden rounded transition-all ${
                     isCounterSelected ? 'ring-2 ring-action-green' : ''
                   } ${!hasCounter ? 'opacity-40' : 'cursor-pointer'}`}
@@ -151,7 +177,7 @@ export default function HandZone({ cards, faceDown, flipped, selectedId, onSelec
                     className="w-full"
                     draggable={false}
                   />
-                  {hasCounter && cardData.counter !== null && (
+                  {selectMode.showCounterValue && hasCounter && cardData && cardData.counter !== null && (
                     <span className="absolute bottom-0.5 left-0.5 rounded bg-action-green/90 px-1 text-[10px] font-bold text-white">
                       +{cardData.counter}
                     </span>

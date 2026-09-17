@@ -4,6 +4,8 @@ import type { CardActions } from './CardActionPopup'
 import LeaderZone from './LeaderZone'
 import LifeZone from './LifeZone'
 import CharacterZone from './CharacterZone'
+import { choiceStateFor } from './choice'
+import type { ChoiceHighlight } from './choice'
 import DonZone from './DonZone'
 import DeckTrashZone from './DeckTrashZone'
 
@@ -16,6 +18,7 @@ interface PlayerSideProps {
   onClickDon: () => void
   cardActions?: CardActions
   attackTargets?: boolean
+  choice?: ChoiceHighlight
 }
 
 export default function PlayerSide({
@@ -27,6 +30,7 @@ export default function PlayerSide({
   onClickDon,
   cardActions,
   attackTargets,
+  choice,
 }: PlayerSideProps) {
   const leaderData = getCardById(player.leader.cardId)
   const maxLife = leaderData?.life ?? 5
@@ -43,6 +47,7 @@ export default function PlayerSide({
         onClick={() => onSelectCard(player.leader.instanceId, 'leader')}
         cardActions={cardActions}
         attackTargetId={attackTargets ? `attack-target-${player.leader.instanceId}` : undefined}
+        choiceState={choiceStateFor(choice, player.leader.instanceId)}
       />
 
       {/* Characters + DON */}
@@ -54,6 +59,7 @@ export default function PlayerSide({
           droppableId={isActive ? 'character-zone' : 'opponent-character-zone'}
           cardActions={cardActions}
           attackTargets={attackTargets}
+          choice={choice}
         />
         <DonZone
           donArea={player.donArea}

@@ -9,9 +9,10 @@ interface ChoicePromptProps {
 }
 
 /**
- * Generic picker for state.pendingChoice: renders the option cards themselves
- * (they may live in any zone - field, hand, trash, DON area, life, or revealed
- * deck cards from a search) and enforces the min/max/exact selection rules.
+ * Bottom-sheet picker for hidden-zone choices (deck reveals, trash, life, DON
+ * piles) - the zones with nothing on the board to click. Renders the option
+ * cards and enforces min/max/exact; the board stays visible above the sheet.
+ * Field and hand choices never come here: they pick in place.
  */
 export default function ChoicePrompt({ gameState, onChoose }: ChoicePromptProps) {
   const [selected, setSelected] = useState<string[]>([])
@@ -38,8 +39,8 @@ export default function ChoicePrompt({ gameState, onChoose }: ChoicePromptProps)
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70">
-      <div className="glass-panel flex max-w-2xl flex-col items-center gap-4 p-6">
+    <div className="pointer-events-none fixed inset-x-0 bottom-2 z-40 flex justify-center px-3">
+      <div className="glass-panel pointer-events-auto flex max-h-[45vh] max-w-2xl flex-col items-center gap-3 overflow-y-auto border border-glass-border-hover bg-ocean-900/95 p-4 shadow-2xl">
         <p className="max-w-md text-center text-sm font-medium">{choice.prompt}</p>
         <p className="text-xs text-text-muted">
           {choice.min === choice.max

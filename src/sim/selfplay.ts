@@ -29,6 +29,8 @@ export interface RunGameOptions {
   agent2: Agent
   seed: number
   maxActions?: number
+  /** Called after every applied action - playtest harnesses hang invariants here */
+  onStep?: (state: GameState, action: GameAction, index: number) => void
 }
 
 /**
@@ -69,7 +71,7 @@ export function makeAutoDeck(leaderId: string): Deck {
 }
 
 export function runGame(options: RunGameOptions): GameRecord {
-  const { deck1, deck2, agent1, agent2, seed, maxActions = 3000 } = options
+  const { deck1, deck2, agent1, agent2, seed, maxActions = 3000, onStep } = options
   setRandomSource(mulberry32(seed))
   try {
     let state: GameState = createGame(deck1, deck2)
@@ -101,6 +103,7 @@ export function runGame(options: RunGameOptions): GameRecord {
       }
       state = result.state
       history.push(action)
+      onStep?.(state, action, history.length - 1)
     }
 
     return {

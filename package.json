@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "preview": "vite preview",
     "selfplay": "vite-node scripts/selfplay.ts --",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "playtest": "vite-node scripts/playtest.ts --"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

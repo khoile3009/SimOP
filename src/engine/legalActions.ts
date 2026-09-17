@@ -5,7 +5,6 @@ import { getOpponent } from './turnManager'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
 import { getEffectDefs } from './effects/registry'
-import { MAX_CHARACTERS } from './constants'
 
 /**
  * Which player must act next, or null if the game is over / no decision is pending.
@@ -73,12 +72,9 @@ function mainPhaseOptions(state: GameState, actor: PlayerId): GameAction[] {
     const data = getCardById(card.cardId)
     if (!data || data.cardType === 'Leader') continue
     if (data.cost > activeDon) continue
-    // The 6th-character replacement flow (trash one, then play) isn't wired up as a
-    // pending decision yet, so a full board makes character plays unavailable here
-    // even though validateAction would accept them.
-    if (data.cardType === 'Character' && player.characters.length >= MAX_CHARACTERS) continue
     // Events are only playable at their printed timing: main here, counter in battle
     if (data.cardType === 'Event' && getEffectDefs(card.cardId, 'main').length === 0) continue
+    // A full board is still playable: the '$boardFull' flow trashes one first
     actions.push({ type: 'PLAY_CARD', cardInstanceId: card.instanceId })
   }
 

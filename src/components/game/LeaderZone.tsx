@@ -8,6 +8,7 @@ import { useGameStore } from '@/stores/gameStore'
 import { useDragCard } from '@/hooks/useDragCard'
 import CardActionPopup from './CardActionPopup'
 import type { CardActions } from './CardActionPopup'
+import { choiceRing } from './choice'
 
 interface LeaderZoneProps {
   leader: GameCard
@@ -15,9 +16,10 @@ interface LeaderZoneProps {
   onClick: () => void
   cardActions?: CardActions
   attackTargetId?: string
+  choiceState?: 'chosen' | 'eligible' | 'excluded'
 }
 
-export default function LeaderZone({ leader, isSelected, onClick, cardActions, attackTargetId }: LeaderZoneProps) {
+export default function LeaderZone({ leader, isSelected, onClick, cardActions, attackTargetId, choiceState }: LeaderZoneProps) {
   const cardData = getCardById(leader.cardId)
   const gameState = useGameStore((s) => s.gameState)
   const power = gameState ? getEffectivePower(gameState, leader) : 0
@@ -53,7 +55,7 @@ export default function LeaderZone({ leader, isSelected, onClick, cardActions, a
             leader.isRested ? 'rotate-90' : ''
           } ${isSelected ? 'ring-2 ring-info-blue scale-105' : 'hover:scale-102'} ${
             isDragging ? 'opacity-50' : ''
-          } ${isOver ? 'ring-2 ring-life-red shadow-[0_0_10px_rgba(239,68,68,0.4)]' : ''}`}
+          } ${isOver ? 'ring-2 ring-life-red shadow-[0_0_10px_rgba(239,68,68,0.4)]' : ''} ${choiceRing(choiceState)}`}
         >
           <img
             src={getCardImageUrl(leader.cardId)}

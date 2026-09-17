@@ -1,5 +1,6 @@
 import type { GameState, GameCard, Modifier, PlayerId } from './types'
 import { DON_PER_TURN, DON_FIRST_TURN } from './constants'
+import { createGameCard } from './gameSetup'
 
 function stripModifiers(card: GameCard, keep: (m: Modifier) => boolean): GameCard {
   if (card.modifiers.length === 0) return card
@@ -29,7 +30,7 @@ function isFirstPlayerFirstTurn(state: GameState): boolean {
   return state.turnNumber === 1
 }
 
-/** Execute Refresh Phase: set all rested cards to active */
+/** Execute Refresh Phase: return given DON, then set all rested cards active */
 export function executeRefresh(state: GameState): GameState {
   const playerId = state.currentPlayer
 
@@ -45,6 +46,17 @@ export function executeRefresh(state: GameState): GameState {
   )
   const player = expired.players[playerId]
 
+  // Given DON returns to the cost area rested (CR 6-2-3), then everything is
+  // set active (CR 6-2-4). Returning here rather than at End Phase keeps DON
+  // attached through the opponent's turn, which [DON!! xN] [Opponent's Turn]
+  // conditions depend on.
+  const givenDon =
+    player.leader.attachedDon + player.characters.reduce((s, c) => s + c.attachedDon, 0)
+  const returned: GameCard[] = []
+  for (let i = 0; i < givenDon; i++) {
+    returned.push({ ...createGameCard('DON', playerId), isRested: true })
+  }
+
   return {
     ...expired,
     phase: 'DRAW',
@@ -52,9 +64,9 @@ export function executeRefresh(state: GameState): GameState {
       ...expired.players,
       [playerId]: {
         ...player,
-        leader: { ...player.leader, isRested: false },
-        characters: player.characters.map((c) => ({ ...c, isRested: false })),
-        donArea: player.donArea.map((d) => ({ ...d, isRested: false })),
+        leader: { ...player.leader, isRested: false, attachedDon: 0 },
+        characters: player.characters.map((c) => ({ ...c, isRested: false, attachedDon: 0 })),
+        donArea: [...player.donArea, ...returned].map((d) => ({ ...d, isRested: false })),
         stage: player.stage ? { ...player.stage, isRested: false } : null,
       },
     },
@@ -113,53 +125,17 @@ export function executeDon(state: GameState): GameState {
   }
 }
 
-/** Execute End Phase: return attached DON to cost area, clear turn-based modifiers */
+/** Execute End Phase: clear per-turn markers and expire turn-scoped modifiers.
+ * DON is deliberately untouched: given DON stays attached and unspent cost-area
+ * DON stays active through the opponent's turn (CR 6-2-3/6-2-4 handle both at
+ * the owner's next Refresh) - that active DON is what pays [Counter] events on
+ * defense. */
 export function executeEndPhase(state: GameState): GameState {
   const playerId = state.currentPlayer
   const player = state.players[playerId]
 
-  // Return attached DON from all characters and leader to cost area (rested)
-  const returnedDon: typeof player.donArea = []
-
-  const newLeader = { ...player.leader }
-  if (newLeader.attachedDon > 0) {
-    for (let i = 0; i < newLeader.attachedDon; i++) {
-      returnedDon.push({
-        instanceId: `don-return-${Date.now()}-${i}`,
-        cardId: 'DON',
-        ownerId: playerId,
-        isRested: true,
-        modifiers: [],
-        attachedDon: 0,
-        activatedThisTurn: [],
-        turnPlayed: 0,
-      })
-    }
-    newLeader.attachedDon = 0
-  }
-
-  const newCharacters = player.characters.map((c) => {
-    if (c.attachedDon > 0) {
-      for (let i = 0; i < c.attachedDon; i++) {
-        returnedDon.push({
-          instanceId: `don-return-${Date.now()}-${c.instanceId}-${i}`,
-          cardId: 'DON',
-          ownerId: playerId,
-          isRested: true,
-          modifiers: [],
-          attachedDon: 0,
-          activatedThisTurn: [],
-          turnPlayed: 0,
-        })
-      }
-      return { ...c, attachedDon: 0, activatedThisTurn: [] }
-    }
-    return { ...c, activatedThisTurn: [] }
-  })
-
-  newLeader.activatedThisTurn = []
-
-  const newDonArea = [...player.donArea.map((d) => ({ ...d, isRested: true })), ...returnedDon]
+  const newLeader = { ...player.leader, activatedThisTurn: [] }
+  const newCharacters = player.characters.map((c) => ({ ...c, activatedThisTurn: [] }))
 
   // Switch to opponent
   const nextPlayer: PlayerId = playerId === 'player1' ? 'player2' : 'player1'
@@ -175,7 +151,6 @@ export function executeEndPhase(state: GameState): GameState {
         ...player,
         leader: newLeader,
         characters: newCharacters,
-        donArea: newDonArea,
       },
     },
   }

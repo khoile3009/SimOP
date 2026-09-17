@@ -10,6 +10,9 @@ import { useDragCard } from '@/hooks/useDragCard'
 import CardActionPopup from './CardActionPopup'
 import type { CardActions } from './CardActionPopup'
 
+import { choiceRing, choiceStateFor } from './choice'
+import type { ChoiceHighlight } from './choice'
+
 interface CharacterZoneProps {
   characters: GameCard[]
   selectedId: string | null
@@ -17,6 +20,7 @@ interface CharacterZoneProps {
   droppableId?: string
   cardActions?: CardActions
   attackTargets?: boolean
+  choice?: ChoiceHighlight
 }
 
 function CharacterCard({
@@ -25,12 +29,14 @@ function CharacterCard({
   onSelect,
   cardActions,
   attackTargetId,
+  choiceState,
 }: {
   char: GameCard
   isSelected: boolean
   onSelect: () => void
   cardActions?: CardActions
   attackTargetId?: string
+  choiceState?: 'chosen' | 'eligible' | 'excluded'
 }) {
   const cardData = getCardById(char.cardId)
   const gameState = useGameStore((s) => s.gameState)
@@ -72,7 +78,7 @@ function CharacterCard({
           char.isRested ? 'rotate-90' : ''
         } ${isSelected ? 'ring-2 ring-info-blue scale-105' : 'hover:scale-102'} ${
           isDragging ? 'opacity-50' : ''
-        } ${isOver ? 'ring-2 ring-life-red shadow-[0_0_10px_rgba(239,68,68,0.4)]' : ''}`}
+        } ${isOver ? 'ring-2 ring-life-red shadow-[0_0_10px_rgba(239,68,68,0.4)]' : ''} ${choiceRing(choiceState)}`}
       >
         <img
           src={getCardImageUrl(char.cardId)}
@@ -110,7 +116,7 @@ function CharacterCard({
   )
 }
 
-export default function CharacterZone({ characters, selectedId, onSelect, droppableId, cardActions, attackTargets }: CharacterZoneProps) {
+export default function CharacterZone({ characters, selectedId, onSelect, droppableId, cardActions, attackTargets, choice }: CharacterZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: droppableId ?? 'character-zone' })
 
   return (
@@ -141,6 +147,7 @@ export default function CharacterZone({ characters, selectedId, onSelect, droppa
             onSelect={() => onSelect(char.instanceId)}
             cardActions={cardActions}
             attackTargetId={attackTargets ? `attack-target-${char.instanceId}` : undefined}
+            choiceState={choiceStateFor(choice, char.instanceId)}
           />
         )
       })}

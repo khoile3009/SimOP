@@ -101,6 +101,8 @@ export type EffectOp =
     }
   | { op: 'ko'; ref: string }
   | { op: 'koAll'; owner: 'opponent' | 'both'; excludeSelf?: boolean }
+  /** Field to trash WITHOUT a K.O. (rule processing / costs; no [On K.O.]) */
+  | { op: 'trashFromField'; ref: string }
   | { op: 'rest'; ref: string }
   | { op: 'setActive'; ref: string }
   | { op: 'bottomDeck'; ref: string } // from controller's hand

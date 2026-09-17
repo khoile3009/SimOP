@@ -51,15 +51,23 @@ describe('Game Setup', () => {
     for (const pid of ['player1', 'player2'] as PlayerId[]) {
       const player = state.players[pid]
       expect(player.hand.length).toBe(STARTING_HAND_SIZE)
-      expect(player.lifeCards.length).toBe(5) // Zoro has life 5
+      // Life is dealt only after both mulligan decisions (CR 5-2-1-6/7)
+      expect(player.lifeCards.length).toBe(0)
       expect(player.donDeck.length).toBe(DON_DECK_SIZE)
       expect(player.donArea.length).toBe(0)
       expect(player.characters.length).toBe(0)
       expect(player.trash.length).toBe(0)
       expect(player.stage).toBe(null)
-      // Main deck = 50 - 5 (hand) - 5 (life) = 40
-      expect(player.deck.length).toBe(DECK_SIZE - STARTING_HAND_SIZE - 5)
+      expect(player.deck.length).toBe(DECK_SIZE - STARTING_HAND_SIZE)
       expect(player.leader.cardId).toBe('OP01-001')
+    }
+
+    // After both mulligans, life is dealt from the top of each deck
+    let started = processAction(state, { type: 'MULLIGAN', accept: true }, 'player1').state
+    started = processAction(started, { type: 'MULLIGAN', accept: true }, 'player2').state
+    for (const pid of ['player1', 'player2'] as PlayerId[]) {
+      expect(started.players[pid].lifeCards.length).toBe(5) // Zoro has life 5
+      expect(started.players[pid].deck.length).toBe(DECK_SIZE - STARTING_HAND_SIZE - 5)
     }
   })
 
@@ -350,7 +358,8 @@ describe('Battle', () => {
     )
     expect(r.error).toBeUndefined()
     expect(r.state.battle).not.toBeNull()
-    expect(r.state.battle!.step).toBe('BLOCK')
+    // No blockers on the board, so the empty block step auto-advances
+    expect(r.state.battle!.step).toBe('COUNTER')
     // Attacker should be rested
     expect(r.state.players[currentPlayer].leader.isRested).toBe(true)
   })
@@ -374,10 +383,7 @@ describe('Battle', () => {
       },
       currentPlayer,
     )
-    expect(r.state.battle!.step).toBe('BLOCK')
-
-    // Decline block
-    r = processAction(r.state, { type: 'DECLINE_BLOCK' }, opponent)
+    // Empty block step auto-advances straight to counter
     expect(r.state.battle!.step).toBe('COUNTER')
 
     // Pass counter
@@ -423,12 +429,12 @@ describe('Battle', () => {
     })
 
     if (counterCard) {
-      // Use counter (adds power to defender); the defender stays in the counter
-      // step and may keep countering (CR 7-1-3-2) - PASS resolves damage
+      // Use counter (adds power to defender). The defender may keep countering
+      // (CR 7-1-3-2); when nothing more can be played the step auto-resolves.
       r = processAction(r.state, { type: 'USE_COUNTER', cardInstanceIds: [counterCard.instanceId] }, opponent)
-      expect(r.state.battle?.step).toBe('COUNTER')
-
-      r = processAction(r.state, { type: 'PASS_COUNTER' }, opponent)
+      if (r.state.battle) {
+        r = processAction(r.state, { type: 'PASS_COUNTER' }, opponent)
+      }
 
       // With counter, defender power > attacker power, so no damage
       expect(r.state.battle).toBeNull()

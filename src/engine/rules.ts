@@ -54,8 +54,6 @@ export function validateAction(
       return validateAdvancePhase(state, actingPlayer)
     case 'END_TURN':
       return validateEndTurn(state, actingPlayer)
-    case 'CHOOSE_CHARACTER_TO_TRASH':
-      return validateChooseCharacterToTrash(state, actingPlayer, action.cardInstanceId)
     case 'ACTIVATE_EFFECT':
       return validateActivateEffect(state, actingPlayer, action.cardInstanceId, action.effectId)
     case 'PLAY_COUNTER_EVENT':
@@ -382,13 +380,3 @@ function validatePlayCounterEvent(
   return { valid: true }
 }
 
-function validateChooseCharacterToTrash(
-  state: GameState,
-  playerId: PlayerId,
-  cardInstanceId: string,
-): ValidationResult {
-  const player = state.players[playerId]
-  const char = player.characters.find((c) => c.instanceId === cardInstanceId)
-  if (!char) return { valid: false, reason: 'Character not found on field' }
-  return { valid: true }
-}

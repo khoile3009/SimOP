@@ -16,6 +16,30 @@ import CardDetail from '@/components/cards/CardDetail'
 import AttackArrow from './AttackArrow'
 import ChoicePrompt from './ChoicePrompt'
 import TriggerPrompt from './TriggerPrompt'
+import type { GameState, PendingChoice } from '@/engine/types'
+
+/**
+ * Where a pending choice's options live decides its picker surface:
+ * on the board -> click the cards directly; in a hand -> hand-row toggles;
+ * anywhere hidden (deck, trash, life, DON piles) -> the bottom sheet.
+ */
+function classifyChoice(
+  state: GameState,
+  choice: PendingChoice,
+): { kind: 'board' } | { kind: 'hand'; owner: PlayerId } | { kind: 'sheet' } {
+  const boardIds = new Set<string>()
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    const p = state.players[pid]
+    boardIds.add(p.leader.instanceId)
+    for (const c of p.characters) boardIds.add(c.instanceId)
+  }
+  if (choice.options.every((id) => boardIds.has(id))) return { kind: 'board' }
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    const hand = new Set(state.players[pid].hand.map((c) => c.instanceId))
+    if (choice.options.every((id) => hand.has(id))) return { kind: 'hand', owner: pid }
+  }
+  return { kind: 'sheet' }
+}
 
 export default function GameBoard({ spectator = false }: { spectator?: boolean }) {
   const {
@@ -36,6 +60,33 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
   const [draggingCard, setDraggingCard] = useState<GameCard | null>(null)
   const [attackArrowSource, setAttackArrowSource] = useState<{ x: number; y: number } | null>(null)
   const [counterSelection, setCounterSelection] = useState<string[]>([])
+  const [choicePicks, setChoicePicks] = useState<string[]>([])
+
+  // Each new pending choice starts with a fresh selection (state adjusted
+  // during render, per React's derive-state pattern, to avoid effect cascades)
+  const pendingChoiceRef = gameState?.pendingChoice ?? null
+  const [prevChoice, setPrevChoice] = useState<PendingChoice | null>(null)
+  if (pendingChoiceRef !== prevChoice) {
+    setPrevChoice(pendingChoiceRef)
+    setChoicePicks([])
+  }
+
+  /** During a pending choice, board clicks toggle picks and everything else is inert. */
+  const choiceClick = useCallback((instanceId: string): boolean => {
+    const s = useGameStore.getState().gameState
+    const pc = s?.pendingChoice
+    if (!pc) return false
+    if (pc.options.includes(instanceId)) {
+      setChoicePicks((prev) =>
+        prev.includes(instanceId)
+          ? prev.filter((x) => x !== instanceId)
+          : prev.length < pc.max
+            ? [...prev, instanceId]
+            : prev,
+      )
+    }
+    return true
+  }, [])
 
 
   const arrowLineRef = useRef<SVGLineElement | null>(null)
@@ -57,6 +108,7 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
   // Handle card selection on own side
   const handleSelectCard = useCallback(
     (instanceId: string, zone: 'leader' | 'character' | 'hand') => {
+      if (choiceClick(instanceId)) return
       if (attackingFrom) {
         dispatch(
           { type: 'DECLARE_ATTACK', attackerId: attackingFrom, targetId: instanceId },
@@ -67,12 +119,13 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
       }
       select({ type: 'card', instanceId, zone })
     },
-    [attackingFrom, current, dispatch, select],
+    [attackingFrom, current, dispatch, select, choiceClick],
   )
 
   // Handle opponent card click (for attack targeting)
   const handleSelectOpponentCard = useCallback(
     (instanceId: string) => {
+      if (choiceClick(instanceId)) return
       if (attackingFrom) {
         dispatch(
           { type: 'DECLARE_ATTACK', attackerId: attackingFrom, targetId: instanceId },
@@ -81,7 +134,7 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
         setAttackingFrom(null)
       }
     },
-    [attackingFrom, current, dispatch],
+    [attackingFrom, current, dispatch, choiceClick],
   )
 
   // Card action handlers (used by popup on each card)
@@ -303,6 +356,35 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
   // driver; in spectator mode the bots answer everything)
   const humanControls = (pid: PlayerId) => !spectator && (!aiPlayer || pid !== aiPlayer)
   const showChoice = gameState.pendingChoice && humanControls(gameState.pendingChoice.playerId)
+
+  // The board is the picker: field choices highlight cards in place, hand
+  // choices reuse the hand-row toggles, and only hidden zones get the sheet
+  const pc = gameState.pendingChoice
+  const choiceSurface = showChoice && pc ? classifyChoice(gameState, pc) : null
+  const choiceHighlight =
+    choiceSurface?.kind === 'board' && pc
+      ? { options: pc.options, selected: choicePicks }
+      : undefined
+  const handPickOwner = choiceSurface?.kind === 'hand' ? choiceSurface.owner : null
+  const handPick =
+    handPickOwner && pc
+      ? { eligible: pc.options, selectedIds: choicePicks, onToggle: (id: string) => choiceClick(id) }
+      : undefined
+  const choiceStrip =
+    pc && choiceSurface && choiceSurface.kind !== 'sheet'
+      ? {
+          prompt: pc.prompt,
+          count: choicePicks.length,
+          min: pc.min,
+          max: pc.max,
+          exact: pc.exact,
+          onConfirm: () => dispatch({ type: 'CHOOSE', instanceIds: choicePicks }, pc.playerId),
+          onSkip:
+            pc.min === 0
+              ? () => dispatch({ type: 'CHOOSE', instanceIds: [] }, pc.playerId)
+              : undefined,
+        }
+      : undefined
   const showTrigger =
     !gameState.pendingChoice &&
     gameState.pendingTrigger &&
@@ -374,6 +456,7 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
           selectedIds: counterSelection,
           onToggle: handleToggleCounter,
         } : undefined}
+        pickMode={handPickOwner === opponent ? handPick : undefined}
       />
 
       {/* Opponent side */}
@@ -385,6 +468,7 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
         onSelectCard={(id) => handleSelectOpponentCard(id)}
         onClickDon={() => {}}
         attackTargets
+        choice={choiceHighlight}
       />
 
       {/* Phase bar */}
@@ -392,7 +476,7 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
         <PhaseBar
           phase={gameState.phase}
           turnNumber={gameState.turnNumber}
-          currentPlayer={current}
+          currentPlayer={gameState.currentPlayer}
         />
         {attackingFrom && (
           <span className="rounded bg-life-red/20 px-3 py-1 text-xs font-medium text-life-red">
@@ -411,6 +495,7 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
         onSelectCard={(id, zone) => handleSelectCard(id, zone)}
         onClickDon={handleDonClick}
         cardActions={cardActions}
+        choice={choiceHighlight}
       />
 
       {/* Current player hand */}
@@ -423,11 +508,13 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
           selectedIds: counterSelection,
           onToggle: handleToggleCounter,
         } : undefined}
+        pickMode={handPickOwner === current ? handPick : undefined}
       />
 
       {/* Controls */}
       <ControlsBar
         gameState={gameState}
+        choice={choiceStrip}
         onEndTurn={() => dispatch({ type: 'END_TURN' }, current)}
         onDeclineBlock={() => dispatch({ type: 'DECLINE_BLOCK' }, gameState.battle?.defenderPlayer ?? opponent)}
         onActivateBlocker={(blockerId) =>
@@ -448,8 +535,8 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
         counterCount={counterSelection.length}
       />
 
-      {/* Effect decisions */}
-      {showChoice && (
+      {/* Hidden-zone choices get the bottom sheet; board/hand choices pick in place */}
+      {showChoice && choiceSurface?.kind === 'sheet' && (
         <ChoicePrompt
           gameState={gameState}
           onChoose={(instanceIds) =>

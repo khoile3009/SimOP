@@ -85,7 +85,7 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
   return { state: newState, events }
 }
 
-function dealLifeDamage(
+export function dealLifeDamage(
   state: GameState,
   playerId: PlayerId,
   count: number,
@@ -137,10 +137,13 @@ function dealLifeDamage(
           playerId,
           description: `Trigger available: ${cardData.name}`,
         })
-        // Set pending trigger (will be resolved by player action)
+        // The trigger suspends damage processing; any remaining damage (e.g.
+        // the second hit of [Double Attack]) is parked and resumes after
+        const remaining = count - i - 1
         return {
           ...state,
           pendingTrigger: { cardInstanceId: lifeCard.instanceId, playerId },
+          pendingDamage: remaining > 0 ? { playerId, count: remaining, banish } : null,
           players: {
             ...state.players,
             [playerId]: { ...player, lifeCards: newLifeCards, hand: newHand, trash: newTrash },

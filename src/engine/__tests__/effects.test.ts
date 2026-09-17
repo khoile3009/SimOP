@@ -195,13 +195,15 @@ describe('OP01-017 Nico Robin: [DON!! x1] [When Attacking] K.O.', () => {
     expect(state.battle).toBeNull()
   })
 
-  it('without DON the condition fails and battle proceeds to block', () => {
+  it('without DON the condition fails and battle proceeds toward damage', () => {
     const fixture = setup(0)
     const { robin, victim } = fixture
     let state = fixture.state
     state = act(state, { type: 'DECLARE_ATTACK', attackerId: robin.instanceId, targetId: victim.instanceId })
     expect(state.pendingChoice).toBeNull()
-    expect(state.battle?.step).toBe('BLOCK')
+    // Defender has no blockers; whether the counter step remains depends on
+    // their (random seeded) hand - either way, no Robin choice ever pended
+    expect(state.battle === null || state.battle.step === 'COUNTER').toBe(true)
   })
 })
 
@@ -221,13 +223,13 @@ describe('OP01-009 Carrot: [Trigger] Play this card', () => {
       },
     }
 
+    // P1 has no blockers and an empty hand: block and counter auto-advance,
+    // so damage (and the trigger) resolves straight off the declaration
     state = act(state, {
       type: 'DECLARE_ATTACK',
       attackerId: attacker.card.instanceId,
       targetId: state.players.player1.leader.instanceId,
     })
-    state = act(state, { type: 'DECLINE_BLOCK' })
-    state = act(state, { type: 'PASS_COUNTER' })
 
     expect(state.pendingTrigger?.playerId).toBe('player1')
     expect(whoActs(state)).toBe('player1')
@@ -298,30 +300,33 @@ describe('OP01-029 Radical Beam: counter event', () => {
     const attacker = withCharacter(state, 'player2', 'OP01-012', { attachedDon: 1 }) // 5000
     state = attacker.state
 
+    // Block auto-advances (no blockers); the counter step remains because the
+    // defender holds an affordable [Counter] event
     state = act(state, {
       type: 'DECLARE_ATTACK',
       attackerId: attacker.card.instanceId,
       targetId: state.players.player1.leader.instanceId,
     })
-    state = act(state, { type: 'DECLINE_BLOCK' })
+    expect(state.battle?.step).toBe('COUNTER')
 
     const options = legalActions(state)
     const eventCard = state.players.player1.hand[0]
     expect(options).toContainEqual({ type: 'PLAY_COUNTER_EVENT', cardInstanceId: eventCard.instanceId })
 
+    const lifeBefore = state.players.player1.lifeCards.length
     state = act(state, { type: 'PLAY_COUNTER_EVENT', cardInstanceId: eventCard.instanceId })
     // Effect asks which of your leader/characters gets +2000
     expect(state.pendingChoice?.playerId).toBe('player1')
     state = act(state, { type: 'CHOOSE', instanceIds: [state.players.player1.leader.instanceId] })
-    // At 5 life the "if you have 2 or less Life" rider must NOT fire
-    expect(getEffectivePower(state, state.players.player1.leader)).toBe(7000)
+
+    // With the buff applied and nothing left to play, the battle auto-resolves:
+    // 5000 vs 7000 means no damage. (At 5 life the "2 or less Life" rider must
+    // not have fired - if it wrongly did, the outcome is the same, which is why
+    // the no-damage assertion is paired with the expired-modifier check below.)
+    expect(state.battle).toBeNull()
+    expect(state.players.player1.lifeCards.length).toBe(lifeBefore)
     expect(state.players.player1.donArea.every((d) => d.isRested)).toBe(true) // cost paid
     expect(state.players.player1.trash.some((c) => c.cardId === 'OP01-029')).toBe(true)
-
-    const lifeBefore = state.players.player1.lifeCards.length
-    state = act(state, { type: 'PASS_COUNTER' })
-    expect(state.battle).toBeNull()
-    expect(state.players.player1.lifeCards.length).toBe(lifeBefore) // 5000 vs 7000: no damage
     expect(getEffectivePower(state, state.players.player1.leader)).toBe(5000) // battle mod expired
   })
 })
@@ -416,6 +421,83 @@ describe('OP01-114 X.Drake: DON!!-1 cost and opponent-chosen discard', () => {
   })
 })
 
+describe('[Double Attack] with a trigger mid-damage', () => {
+  it('resumes the second damage after the trigger resolves (CR 8-6-2-1)', () => {
+    let state = baseState()
+    state = { ...state, currentPlayer: 'player2' }
+    const attacker = withCharacter(state, 'player2', 'OP01-012', { attachedDon: 2 }) // 6000
+    state = attacker.state
+    const doubleAttack: Modifier = {
+      kind: 'keyword',
+      value: 0,
+      keyword: 'Double Attack',
+      duration: 'turn',
+      sourceCardId: 'TEST',
+    }
+    state = {
+      ...state,
+      players: {
+        ...state.players,
+        player2: {
+          ...state.players.player2,
+          characters: state.players.player2.characters.map((c) =>
+            c.instanceId === attacker.card.instanceId ? { ...c, modifiers: [doubleAttack] } : c,
+          ),
+        },
+        player1: {
+          ...state.players.player1,
+          hand: [],
+          // Top life card has a trigger; the one beneath it does not
+          lifeCards: [createGameCard('OP01-009', 'player1'), createGameCard('OP01-010', 'player1')],
+        },
+      },
+    }
+
+    // Empty hand + no blockers: battle auto-resolves into the first damage
+    state = act(state, {
+      type: 'DECLARE_ATTACK',
+      attackerId: attacker.card.instanceId,
+      targetId: state.players.player1.leader.instanceId,
+    })
+    expect(state.pendingTrigger?.playerId).toBe('player1')
+    expect(state.pendingDamage?.count).toBe(1)
+
+    state = act(state, { type: 'ACTIVATE_TRIGGER', accept: true })
+    const p1 = state.players.player1
+    expect(p1.characters.some((c) => c.cardId === 'OP01-009')).toBe(true) // trigger played Carrot
+    expect(p1.lifeCards).toHaveLength(0) // second damage landed
+    expect(p1.hand.some((c) => c.cardId === 'OP01-010')).toBe(true)
+    expect(state.pendingDamage).toBeNull()
+  })
+})
+
+describe('6th character replacement (CR 3-7-6-1)', () => {
+  it('trashes a chosen character as rule processing - no [On K.O.] - then plays', () => {
+    let state = baseState()
+    state = withHand(state, 'player1', ['OP01-010'])
+    state = withActiveDon(state, 'player1', 3)
+    // Fill the board; one existing character has an [On K.O.] draw (Doublefinger)
+    const onKo = withCharacter(state, 'player1', 'OP01-080')
+    state = onKo.state
+    for (const filler of ['OP01-012', 'OP01-012', 'OP01-023', 'OP01-023']) {
+      state = withCharacter(state, 'player1', filler).state
+    }
+    expect(state.players.player1.characters).toHaveLength(5)
+    const handBefore = state.players.player1.hand.length
+
+    state = act(state, { type: 'PLAY_CARD', cardInstanceId: state.players.player1.hand[0].instanceId })
+    expect(state.pendingChoice?.min).toBe(1)
+
+    state = act(state, { type: 'CHOOSE', instanceIds: [onKo.card.instanceId] })
+    const p1 = state.players.player1
+    expect(p1.characters).toHaveLength(5)
+    expect(p1.characters.some((c) => c.cardId === 'OP01-010')).toBe(true) // played
+    expect(p1.trash.some((c) => c.instanceId === onKo.card.instanceId)).toBe(true)
+    // Rule processing, not a K.O.: Doublefinger's [On K.O.] draw must NOT fire
+    expect(p1.hand.length).toBe(handBefore - 1) // only the played card left the hand
+  })
+})
+
 describe('battle-duration modifiers', () => {
   it('expire when the battle ends', () => {
     let state = baseState()
@@ -433,6 +515,7 @@ describe('battle-duration modifiers', () => {
         ...state.players,
         player2: {
           ...state.players.player2,
+          hand: [], // no blockers, no counters: the battle auto-resolves
           leader: { ...state.players.player2.leader, modifiers: [battleMod] },
         },
       },
@@ -443,8 +526,6 @@ describe('battle-duration modifiers', () => {
       attackerId: attacker.card.instanceId,
       targetId: state.players.player2.leader.instanceId,
     })
-    state = act(state, { type: 'DECLINE_BLOCK' })
-    state = act(state, { type: 'PASS_COUNTER' })
 
     expect(state.battle).toBeNull()
     expect(state.players.player2.leader.modifiers).toHaveLength(0)

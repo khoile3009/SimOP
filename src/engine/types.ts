@@ -91,6 +91,7 @@ export interface GameState {
   /** A choice demanded by the top effect frame; blocks all other actions until resolved */
   pendingChoice: PendingChoice | null
   pendingTrigger: TriggerState | null
+  pendingDamage: PendingDamage | null
   actionHistory: GameAction[]
   winner: PlayerId | null
   setupComplete: boolean
@@ -100,6 +101,14 @@ export interface GameState {
 export interface TriggerState {
   cardInstanceId: string
   playerId: PlayerId
+}
+
+/** Damage left over when a [Trigger] suspends damage processing (CR 8-6-2-1),
+ * e.g. the second hit of [Double Attack]; resumes once the trigger settles. */
+export interface PendingDamage {
+  playerId: PlayerId
+  count: number
+  banish: boolean
 }
 
 export interface EffectFrame {
@@ -139,7 +148,6 @@ export type GameAction =
   | { type: 'ADVANCE_PHASE' }
   | { type: 'END_TURN' }
   | { type: 'MULLIGAN'; accept: boolean }
-  | { type: 'CHOOSE_CHARACTER_TO_TRASH'; cardInstanceId: string }
   | { type: 'ACTIVATE_EFFECT'; cardInstanceId: string; effectId: string }
   | { type: 'PLAY_COUNTER_EVENT'; cardInstanceId: string }
   | { type: 'CHOOSE'; instanceIds: string[] }

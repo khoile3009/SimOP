@@ -3,9 +3,11 @@ import { getCardById } from '@/data/cardService'
 import { validateAction } from './rules'
 import { getOpponent, executeEndPhase, autoAdvancePhases, expireModifiers } from './turnManager'
 import { performMulligan, acceptHand, isMulliganComplete, startGame } from './gameSetup'
-import { resolveDamage } from './battleManager'
+import { resolveDamage, dealLifeDamage } from './battleManager'
 import { queueEffects, runStack, applyChoice, pushFrame } from './effects/interpreter'
 import { getEffectDefs } from './effects/registry'
+import { legalActions } from './legalActions'
+import { MAX_CHARACTERS } from './constants'
 
 export function processAction(
   state: GameState,
@@ -52,11 +54,14 @@ export function processAction(
     case 'END_TURN':
       newState = processEndTurn(state, events)
       break
-    case 'CHOOSE_CHARACTER_TO_TRASH':
-      newState = processChooseCharacterToTrash(state, actingPlayer, action.cardInstanceId, events)
-      break
     case 'CHOOSE':
-      newState = checkBattleExit(runStack(applyChoice(state, action.instanceIds), events), events)
+      newState = settleDamage(
+        autoAdvanceBattle(
+          checkBattleExit(runStack(applyChoice(state, action.instanceIds), events), events),
+          events,
+        ),
+        events,
+      )
       break
     case 'ACTIVATE_EFFECT':
       newState = processActivateEffect(state, actingPlayer, action.cardInstanceId, action.effectId, events)
@@ -121,6 +126,23 @@ function processPlayCard(
       newDonArea[i] = { ...newDonArea[i], isRested: true }
       costRemaining--
     }
+  }
+
+  // Playing a 6th character: an existing one is trashed first (rule processing,
+  // CR 3-7-6-1), then the staged card is played - handled by the '$boardFull'
+  // pseudo-def so the trash choice flows through the normal decision machinery
+  if (cardData.cardType === 'Character' && player.characters.length >= MAX_CHARACTERS) {
+    events.push({
+      type: 'BOARD_FULL',
+      playerId,
+      description: `${playerId} must trash a Character to play ${cardData.name}`,
+    })
+    let staged: GameState = {
+      ...state,
+      players: { ...state.players, [playerId]: { ...player, donArea: newDonArea } },
+    }
+    staged = pushFrame(staged, card, playerId, 'main', 0, '$boardFull')
+    return runStack(staged, events)
   }
 
   // Remove card from hand
@@ -282,7 +304,7 @@ function processDeclareAttack(
   if (attacker) {
     newState = runStack(queueEffects(newState, attacker, 'whenAttacking', playerId), events)
   }
-  return checkBattleExit(newState, events)
+  return autoAdvanceBattle(checkBattleExit(newState, events), events)
 }
 
 /**
@@ -290,6 +312,32 @@ function processDeclareAttack(
  * straight to end of battle. Deferred while a choice is pending; re-checked when
  * the stack resumes.
  */
+/**
+ * Skip battle steps where the defender has literally nothing to decide - a
+ * block step with no legal blocker, a counter step with no counters or
+ * affordable events. The fleet measured 91% / 68% of these prompts as empty;
+ * auto-advancing them removes dead clicks for humans and dead nodes for bots.
+ */
+function autoAdvanceBattle(state: GameState, events: GameEvent[]): GameState {
+  let s = state
+  let guard = 10
+  while (guard-- > 0 && s.battle && !s.pendingChoice && !s.pendingTrigger && !s.winner) {
+    const options = legalActions(s)
+    if (s.battle.step === 'BLOCK' && options.length === 1 && options[0].type === 'DECLINE_BLOCK') {
+      s = { ...s, battle: { ...s.battle, step: 'COUNTER' } }
+      continue
+    }
+    if (s.battle.step === 'COUNTER' && options.length === 1 && options[0].type === 'PASS_COUNTER') {
+      const result = resolveDamage({ ...s, battle: { ...s.battle, step: 'DAMAGE' } })
+      events.push(...result.events)
+      s = settleDamage(runStack(result.state, events), events)
+      continue
+    }
+    break
+  }
+  return s
+}
+
 function checkBattleExit(state: GameState, events: GameEvent[]): GameState {
   const battle = state.battle
   if (!battle || state.pendingChoice) return state
@@ -345,7 +393,7 @@ function processActivateBlocker(
   if (blocker) {
     newState = runStack(queueEffects(newState, blocker, 'onBlock', playerId), events)
   }
-  return checkBattleExit(newState, events)
+  return autoAdvanceBattle(checkBattleExit(newState, events), events)
 }
 
 function processDeclineBlock(state: GameState, events: GameEvent[]): GameState {
@@ -392,19 +440,23 @@ function processUseCounter(
   })
 
   // The defender stays in the counter step and may keep countering; only
-  // PASS_COUNTER proceeds to damage (CR 7-1-3-2: any number of times)
-  return {
-    ...state,
-    battle: {
-      ...battle,
-      defenderPowerBonus: battle.defenderPowerBonus + totalCounterPower,
-      counterCardsUsed: [...battle.counterCardsUsed, ...cardInstanceIds],
+  // PASS_COUNTER proceeds to damage (CR 7-1-3-2: any number of times). If
+  // nothing more can be played, damage resolves automatically.
+  return autoAdvanceBattle(
+    {
+      ...state,
+      battle: {
+        ...battle,
+        defenderPowerBonus: battle.defenderPowerBonus + totalCounterPower,
+        counterCardsUsed: [...battle.counterCardsUsed, ...cardInstanceIds],
+      },
+      players: {
+        ...state.players,
+        [playerId]: { ...player, hand: newHand, trash: newTrash },
+      },
     },
-    players: {
-      ...state.players,
-      [playerId]: { ...player, hand: newHand, trash: newTrash },
-    },
-  }
+    events,
+  )
 }
 
 function processActivateEffect(
@@ -502,7 +554,7 @@ function processPlayCounterEvent(
       newState = pushFrame(newState, card, playerId, 'counter', i)
     }
   }
-  return checkBattleExit(runStack(newState, events), events)
+  return autoAdvanceBattle(checkBattleExit(runStack(newState, events), events), events)
 }
 
 function processPassCounter(state: GameState, events: GameEvent[]): GameState {
@@ -536,27 +588,50 @@ function processActivateTrigger(
   })
 
   let newState: GameState = { ...state, pendingTrigger: null }
-  if (!accept) return newState
 
-  const player = newState.players[playerId]
-  const card = player.hand.find((c) => c.instanceId === trigger.cardInstanceId)
-  if (!card || getEffectDefs(card.cardId, 'trigger').length === 0) {
-    // No automated trigger effect registered: legacy behavior, card stays in hand
-    return newState
+  if (accept) {
+    const player = newState.players[playerId]
+    const card = player.hand.find((c) => c.instanceId === trigger.cardInstanceId)
+    if (card && getEffectDefs(card.cardId, 'trigger').length > 0) {
+      // An activated trigger card is trashed after resolving unless the effect
+      // moves it (CR 10-1-5-3). It is trashed up front; 'playSelf' plays it
+      // from the trash.
+      const hand = player.hand.filter((c) => c.instanceId !== card.instanceId)
+      newState = {
+        ...newState,
+        players: {
+          ...newState.players,
+          [playerId]: { ...player, hand, trash: [...player.trash, card] },
+        },
+      }
+      newState = runStack(queueEffects(newState, card, 'trigger', playerId), events)
+    }
   }
 
-  // An activated trigger card is trashed after resolving unless the effect moves it
-  // (CR 10-1-5-3). It is trashed up front here; 'playSelf' then plays it from trash.
-  const hand = player.hand.filter((c) => c.instanceId !== card.instanceId)
-  newState = {
-    ...newState,
-    players: {
-      ...newState.players,
-      [playerId]: { ...player, hand, trash: [...player.trash, card] },
-    },
+  return settleDamage(newState, events)
+}
+
+/**
+ * Resume damage that a [Trigger] suspended (CR 8-6-2-1) once nothing else is
+ * pending. The resumed damage can itself pend a new trigger or choice, so this
+ * runs as a loop and is safe to call after any resolution step.
+ */
+function settleDamage(state: GameState, events: GameEvent[]): GameState {
+  let s = state
+  let guard = 10
+  while (
+    guard-- > 0 &&
+    s.pendingDamage &&
+    !s.winner &&
+    !s.pendingChoice &&
+    !s.pendingTrigger &&
+    s.stack.length === 0
+  ) {
+    const pd = s.pendingDamage
+    s = { ...s, pendingDamage: null }
+    s = runStack(dealLifeDamage(s, pd.playerId, pd.count, pd.banish, events), events)
   }
-  newState = queueEffects(newState, card, 'trigger', playerId)
-  return runStack(newState, events)
+  return s
 }
 
 function processEndTurn(state: GameState, events: GameEvent[]): GameState {
@@ -570,35 +645,3 @@ function processEndTurn(state: GameState, events: GameEvent[]): GameState {
   return autoAdvancePhases(afterEnd)
 }
 
-function processChooseCharacterToTrash(
-  state: GameState,
-  playerId: PlayerId,
-  cardInstanceId: string,
-  events: GameEvent[],
-): GameState {
-  const player = state.players[playerId]
-  const charIndex = player.characters.findIndex((c) => c.instanceId === cardInstanceId)
-  const char = player.characters[charIndex]
-
-  const newCharacters = [...player.characters]
-  newCharacters.splice(charIndex, 1)
-
-  const cardData = getCardById(char.cardId)
-  events.push({
-    type: 'TRASH_CHARACTER',
-    playerId,
-    description: `${playerId} trashed ${cardData?.name ?? 'a character'} (field limit)`,
-  })
-
-  return {
-    ...state,
-    players: {
-      ...state.players,
-      [playerId]: {
-        ...player,
-        characters: newCharacters,
-        trash: [...player.trash, char],
-      },
-    },
-  }
-}
