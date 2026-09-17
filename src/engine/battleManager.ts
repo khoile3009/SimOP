@@ -1,7 +1,10 @@
 import type { GameState, GameEvent, PlayerId } from './types'
 import { getCardById } from '@/data/cardService'
-import { getOpponent } from './turnManager'
+import { getOpponent, expireModifiers } from './turnManager'
 import { getBattlePower } from './powerCalc'
+import { hasKeyword } from './keywords'
+import { koById } from './effects/interpreter'
+import { hasFlag } from './effects/statics'
 
 /** Resolve the damage step of battle */
 export function resolveDamage(state: GameState): { state: GameState; events: GameEvent[] } {
@@ -36,24 +39,30 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
     return { state: { ...state, battle: null }, events }
   }
 
-  const attackerPower = getBattlePower(attacker, battle.attackerPowerBonus)
-  const defenderPower = getBattlePower(defender, battle.defenderPowerBonus)
+  const attackerPower = getBattlePower(state, attacker, battle.attackerPowerBonus)
+  const defenderPower = getBattlePower(state, defender, battle.defenderPowerBonus)
 
   let newState = state
 
   if (attackerPower >= defenderPower) {
     // Attack succeeds
-    const attackerData = getCardById(attacker.cardId)
-    const hasDoubleAttack = attackerData?.effectText?.includes('[Double Attack]') ?? false
-    const hasBanish = attackerData?.effectText?.includes('[Banish]') ?? false
+    const hasDoubleAttack = hasKeyword(state, attacker, 'Double Attack')
+    const hasBanish = hasKeyword(state, attacker, 'Banish')
 
     if (isLeaderTarget) {
       // Leader hit: deal life damage
       const damageCount = hasDoubleAttack ? 2 : 1
       newState = dealLifeDamage(newState, battle.defenderPlayer, damageCount, hasBanish, events)
+    } else if (defenderChar && hasFlag(state, defenderChar, 'noBattleKo')) {
+      // Protected (e.g. Semimaru's aura): the battle is won but nothing happens
+      events.push({
+        type: 'KO_PREVENTED',
+        playerId: battle.defenderPlayer,
+        description: `${getCardById(defenderChar.cardId)?.name ?? 'Character'} cannot be K.O.'d in battle`,
+      })
     } else {
-      // Character KO
-      newState = koCharacter(newState, battle.defenderPlayer, battle.currentTargetId, events)
+      // Character KO (queues the target's [On K.O.] effects; processor runs the stack)
+      newState = koById(newState, battle.currentTargetId, events)
     }
 
     events.push({
@@ -69,7 +78,8 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
     })
   }
 
-  // Clear battle
+  // End of battle: "during this battle" effects expire, then clear the battle
+  newState = expireModifiers(newState, (m) => m.duration === 'battle')
   newState = { ...newState, battle: null }
 
   return { state: newState, events }
@@ -155,37 +165,3 @@ function dealLifeDamage(
   }
 }
 
-function koCharacter(
-  state: GameState,
-  playerId: PlayerId,
-  characterId: string,
-  events: GameEvent[],
-): GameState {
-  const player = state.players[playerId]
-  const charIndex = player.characters.findIndex((c) => c.instanceId === characterId)
-
-  if (charIndex < 0) return state
-
-  const char = player.characters[charIndex]
-  const cardData = getCardById(char.cardId)
-  const newCharacters = [...player.characters]
-  newCharacters.splice(charIndex, 1)
-
-  events.push({
-    type: 'CHARACTER_KO',
-    playerId,
-    description: `${cardData?.name ?? 'Character'} was KO'd`,
-  })
-
-  return {
-    ...state,
-    players: {
-      ...state.players,
-      [playerId]: {
-        ...player,
-        characters: newCharacters,
-        trash: [...player.trash, char],
-      },
-    },
-  }
-}

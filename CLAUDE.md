@@ -46,6 +46,47 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 - `src/utils/` — Pure helper functions (shuffle, id generation, image URLs).
 - `tests/` — Test files mirroring src structure.
 
+## Effect System
+
+OP01 coverage: ~75 cards with effect defs + 11 auras in `src/data/op01/effects.ts`; the
+`NOT_IMPLEMENTED` list there documents the 7 deferred cards and the machinery each needs.
+Key mechanisms beyond the basics: statics/auras (`effects/statics.ts`, applied at read
+time — `getEffectivePower`/`hasKeyword`/`hasFlag` all take `state`), [Activate: Main]
+abilities (`ACTIVATE_EFFECT` action, costs + once-per-turn), counter events
+(`PLAY_COUNTER_EVENT`, pays DON cost; `USE_COUNTER` chains and `PASS_COUNTER` resolves),
+[On Block] timing, two-phase choice ops (searches/scries pause on `pendingChoice` and
+re-execute), opponent-as-chooser selects, all-or-nothing DON!!-X cost selects (`exact`),
+restriction flags (taunt / cannotAttack / noBattleKo / noBlockPowerAtMost), and
+`untilTurn` modifier durations. Characters leaving the field return attached DON to the
+owner's cost area (conservation invariant is tested).
+
+## Effect System (Phase A)
+
+- `src/engine/effects/ast.ts` — data-DSL for card effects: an `EffectDef` is timing + condition + `[DON!! xN]` requirement + a list of ops (draw, select, powerMod, grantKeyword, ko, rest, bottomDeck, playSelf, abortIfEmpty). Effects are data so cards can be added without engine changes.
+- `src/data/op01/effects.ts` — effect definitions keyed by card ID (grow coverage here); `src/engine/effects/registry.ts` looks them up.
+- `src/engine/effects/interpreter.ts` — runs `GameState.stack` frames until empty or a `select` op pauses on `state.pendingChoice`; the choice is answered by a `CHOOSE` action (enumerated by legalActions, validated by rules). Shared helpers: `koById` (queues [On K.O.]), `drawCards`, `updateFieldCard`.
+- Modifiers: `GameCard.modifiers` carry power deltas and keyword grants with durations (`turn`/`battle`/`untilYourNextTurn`/`permanent`); expiry happens in `executeEndPhase`, `executeRefresh`, and end of battle. Power is always computed (`getEffectivePower`), never stored.
+- Keywords: `src/engine/keywords.ts` parses PRINTED keywords positionally (ability-opener position only — "gains [Rush]" or "cannot activate a [Blocker]" are mentions, not possession) and checks modifier-granted keywords. Never use `effectText.includes` for keywords.
+
+## Playing vs the AI
+
+`/play` offers "vs AI" (greedy agent drives player2 via `useAiDriver` in PlayPage; its hand
+renders face-down, mulligan auto-decided) and "Hotseat". Human decision surfaces, all
+driven by `legalActions`: ChoicePrompt modal for `state.pendingChoice` (any zone,
+min/max/exact enforced), TriggerPrompt for life triggers, blocker buttons and
+counter-event buttons in ControlsBar during battle, and "Activate: <name>" buttons for
+[Activate: Main] abilities in the main phase. The coverage ledger for unimplemented
+cards lives in `src/data/op01/effects.ts` (`COVERAGE_NOTES`, enforced by
+`src/data/op01/__tests__/coverage.test.ts`).
+
+## AI / Simulation Layer
+
+- `src/engine/legalActions.ts` — `whoActs(state)` + `legalActions(state)`: enumerates every legal action for the acting player (mulligan, main phase, block/counter steps, trigger prompts). Candidates are generated structurally and filtered through `validateAction`, so enumeration can never disagree with the rules module. Counter-step options are deliberately pruned to PASS + the cheapest battle-flipping subset.
+- `src/ai/evaluate.ts` — hand-tuned logistic evaluation returning a win-probability estimate in [0,1]. Same shape as logistic regression so weights can later be fitted from self-play logs. `explainEvaluation` returns per-feature contributions for the analyzer UI.
+- `src/ai/agents.ts` — `Agent` interface + `RandomAgent` + `GreedyAgent` (one-ply, with opponent best-response rollout through battle interrupts).
+- `src/sim/selfplay.ts` — headless seeded self-play (`runGame`, `runMatch`, `makeAutoDeck`). Deterministic per seed via `src/utils/rng.ts` (`setRandomSource`); the UI keeps `Math.random`.
+- `npm run selfplay -- <n> <modes>` — e.g. `npm run selfplay -- 30 gr` (greedy vs random), modes: `g`/`r` per player. Prints win counts and a per-turn win-probability trace.
+
 ## Card Data
 
 Card data is a **static JSON file** at `src/data/op01/cards.json` (no runtime API dependency). Card images are loaded from the [Limitless TCG CDN](https://onepiece.limitlesstcg.com/cards):

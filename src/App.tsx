@@ -3,6 +3,7 @@ import HomePage from '@/components/pages/HomePage'
 import DeckBuilderPage from '@/components/pages/DeckBuilderPage'
 import PlayPage from '@/components/pages/PlayPage'
 import CardsPage from '@/components/pages/CardsPage'
+import WatchPage from '@/components/pages/WatchPage'
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/deck-builder" element={<DeckBuilderPage />} />
         <Route path="/play" element={<PlayPage />} />
+        <Route path="/watch" element={<WatchPage />} />
         <Route path="/cards" element={<CardsPage />} />
       </Routes>
     </BrowserRouter>

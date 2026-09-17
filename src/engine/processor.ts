@@ -1,9 +1,11 @@
 import type { GameState, GameAction, GameResult, GameEvent, PlayerId, BattleState } from './types'
 import { getCardById } from '@/data/cardService'
 import { validateAction } from './rules'
-import { getOpponent, executeEndPhase, autoAdvancePhases } from './turnManager'
+import { getOpponent, executeEndPhase, autoAdvancePhases, expireModifiers } from './turnManager'
 import { performMulligan, acceptHand, isMulliganComplete, startGame } from './gameSetup'
 import { resolveDamage } from './battleManager'
+import { queueEffects, runStack, applyChoice, pushFrame } from './effects/interpreter'
+import { getEffectDefs } from './effects/registry'
 
 export function processAction(
   state: GameState,
@@ -52,6 +54,15 @@ export function processAction(
       break
     case 'CHOOSE_CHARACTER_TO_TRASH':
       newState = processChooseCharacterToTrash(state, actingPlayer, action.cardInstanceId, events)
+      break
+    case 'CHOOSE':
+      newState = checkBattleExit(runStack(applyChoice(state, action.instanceIds), events), events)
+      break
+    case 'ACTIVATE_EFFECT':
+      newState = processActivateEffect(state, actingPlayer, action.cardInstanceId, action.effectId, events)
+      break
+    case 'PLAY_COUNTER_EVENT':
+      newState = processPlayCounterEvent(state, actingPlayer, action.cardInstanceId, events)
       break
     default:
       return { state, events: [], error: 'Unhandled action type' }
@@ -141,7 +152,7 @@ function processPlayCard(
     description: `${playerId} played ${cardData.name}`,
   })
 
-  return {
+  let newState: GameState = {
     ...state,
     players: {
       ...state.players,
@@ -155,6 +166,10 @@ function processPlayCard(
       },
     },
   }
+
+  const timing = cardData.cardType === 'Event' ? 'main' : 'onPlay'
+  newState = queueEffects(newState, playedCard, timing, playerId)
+  return runStack(newState, events)
 }
 
 function processAttachDon(
@@ -166,12 +181,14 @@ function processAttachDon(
 ): GameState {
   const player = state.players[playerId]
 
-  // Rest DON from cost area
+  // Giving DON moves the card out of the cost area to sit under the target
+  // (tracked as a count); the End Phase returns that many to the cost area.
+  // Resting them in place instead would duplicate DON on return.
   const newDonArea = [...player.donArea]
   let attached = 0
-  for (let i = 0; i < newDonArea.length && attached < count; i++) {
+  for (let i = newDonArea.length - 1; i >= 0 && attached < count; i--) {
     if (!newDonArea[i].isRested) {
-      newDonArea[i] = { ...newDonArea[i], isRested: true }
+      newDonArea.splice(i, 1)
       attached++
     }
   }
@@ -248,7 +265,7 @@ function processDeclareAttack(
     description: `${playerId} declared attack`,
   })
 
-  return {
+  let newState: GameState = {
     ...state,
     battle,
     players: {
@@ -256,6 +273,42 @@ function processDeclareAttack(
       [playerId]: { ...player, leader: newLeader, characters: newCharacters },
     },
   }
+
+  // [When Attacking] effects fire in the attack step, before blocks (CR 7-1-1-3)
+  const attacker =
+    newLeader.instanceId === attackerId
+      ? newLeader
+      : newCharacters.find((c) => c.instanceId === attackerId)
+  if (attacker) {
+    newState = runStack(queueEffects(newState, attacker, 'whenAttacking', playerId), events)
+  }
+  return checkBattleExit(newState, events)
+}
+
+/**
+ * Exit clause (CR 7-1-1-4): if an attack-step effect removed the target, skip
+ * straight to end of battle. Deferred while a choice is pending; re-checked when
+ * the stack resumes.
+ */
+function checkBattleExit(state: GameState, events: GameEvent[]): GameState {
+  const battle = state.battle
+  if (!battle || state.pendingChoice) return state
+  const defender = state.players[battle.defenderPlayer]
+  const targetPresent =
+    defender.leader.instanceId === battle.currentTargetId ||
+    defender.characters.some((c) => c.instanceId === battle.currentTargetId)
+  const attackerSide = state.players[battle.attackerPlayer]
+  const attackerPresent =
+    attackerSide.leader.instanceId === battle.attackerId ||
+    attackerSide.characters.some((c) => c.instanceId === battle.attackerId)
+  if (targetPresent && attackerPresent) return state
+  events.push({
+    type: 'BATTLE_ENDED',
+    playerId: battle.attackerPlayer,
+    description: 'Battle ended: attacker or target left the field',
+  })
+  const cleaned = expireModifiers(state, (m) => m.duration === 'battle')
+  return { ...cleaned, battle: null }
 }
 
 function processActivateBlocker(
@@ -278,7 +331,7 @@ function processActivateBlocker(
     description: `${playerId} activated blocker`,
   })
 
-  return {
+  let newState: GameState = {
     ...state,
     battle: { ...battle, currentTargetId: blockerId, step: 'COUNTER' },
     players: {
@@ -286,6 +339,13 @@ function processActivateBlocker(
       [playerId]: { ...player, characters: newCharacters },
     },
   }
+
+  // [On Block] effects fire when the blocker is activated (CR 7-1-2-2)
+  const blocker = newState.players[playerId].characters.find((c) => c.instanceId === blockerId)
+  if (blocker) {
+    newState = runStack(queueEffects(newState, blocker, 'onBlock', playerId), events)
+  }
+  return checkBattleExit(newState, events)
 }
 
 function processDeclineBlock(state: GameState, events: GameEvent[]): GameState {
@@ -331,24 +391,118 @@ function processUseCounter(
     description: `${playerId} used counter (+${totalCounterPower})`,
   })
 
-  // Move to damage step and resolve
-  const afterCounter: GameState = {
+  // The defender stays in the counter step and may keep countering; only
+  // PASS_COUNTER proceeds to damage (CR 7-1-3-2: any number of times)
+  return {
     ...state,
     battle: {
       ...battle,
       defenderPowerBonus: battle.defenderPowerBonus + totalCounterPower,
       counterCardsUsed: [...battle.counterCardsUsed, ...cardInstanceIds],
-      step: 'DAMAGE',
     },
     players: {
       ...state.players,
       [playerId]: { ...player, hand: newHand, trash: newTrash },
     },
   }
+}
 
-  const result = resolveDamage(afterCounter)
-  events.push(...result.events)
-  return result.state
+function processActivateEffect(
+  state: GameState,
+  playerId: PlayerId,
+  cardInstanceId: string,
+  effectId: string,
+  events: GameEvent[],
+): GameState {
+  const player = state.players[playerId]
+  const isLeader = player.leader.instanceId === cardInstanceId
+  const defIndex = Number(effectId)
+  let card = isLeader
+    ? player.leader
+    : player.characters.find((c) => c.instanceId === cardInstanceId)!
+  const def = getEffectDefs(card.cardId)[defIndex]
+
+  // Pay costs: rest DON in the cost area, rest the card itself, mark once-per-turn
+  let costRemaining = def.cost?.restDon ?? 0
+  const donArea = player.donArea.map((d) => {
+    if (costRemaining > 0 && !d.isRested) {
+      costRemaining--
+      return { ...d, isRested: true }
+    }
+    return d
+  })
+  card = {
+    ...card,
+    isRested: def.cost?.restSelf ? true : card.isRested,
+    activatedThisTurn: def.oncePerTurn
+      ? [...card.activatedThisTurn, `am${defIndex}`]
+      : card.activatedThisTurn,
+  }
+
+  const newState: GameState = {
+    ...state,
+    players: {
+      ...state.players,
+      [playerId]: {
+        ...player,
+        donArea,
+        leader: isLeader ? card : player.leader,
+        characters: isLeader
+          ? player.characters
+          : player.characters.map((c) => (c.instanceId === cardInstanceId ? card : c)),
+      },
+    },
+  }
+
+  events.push({
+    type: 'ACTIVATE_EFFECT',
+    playerId,
+    description: `${playerId} activated ${getCardById(card.cardId)?.name ?? 'a card'}'s ability`,
+  })
+  return runStack(pushFrame(newState, card, playerId, 'activateMain', defIndex), events)
+}
+
+function processPlayCounterEvent(
+  state: GameState,
+  playerId: PlayerId,
+  cardInstanceId: string,
+  events: GameEvent[],
+): GameState {
+  const player = state.players[playerId]
+  const idx = player.hand.findIndex((c) => c.instanceId === cardInstanceId)
+  const card = player.hand[idx]
+  const data = getCardById(card.cardId)!
+
+  let costRemaining = data.cost
+  const donArea = player.donArea.map((d) => {
+    if (costRemaining > 0 && !d.isRested) {
+      costRemaining--
+      return { ...d, isRested: true }
+    }
+    return d
+  })
+  const hand = [...player.hand]
+  hand.splice(idx, 1)
+
+  let newState: GameState = {
+    ...state,
+    players: {
+      ...state.players,
+      [playerId]: { ...player, hand, donArea, trash: [...player.trash, card] },
+    },
+  }
+  events.push({
+    type: 'PLAY_COUNTER_EVENT',
+    playerId,
+    description: `${playerId} played ${data.name}`,
+  })
+  const counterDefs = getEffectDefs(card.cardId)
+  for (let i = counterDefs.length - 1; i >= 0; i--) {
+    if (counterDefs[i].timing === 'counter') {
+      newState = pushFrame(newState, card, playerId, 'counter', i)
+    }
+  }
+  return checkBattleExit(runStack(newState, events), events)
 }
 
 function processPassCounter(state: GameState, events: GameEvent[]): GameState {
@@ -365,7 +519,7 @@ function processPassCounter(state: GameState, events: GameEvent[]): GameState {
 
   const result = resolveDamage(afterPass)
   events.push(...result.events)
-  return result.state
+  return runStack(result.state, events)
 }
 
 function processActivateTrigger(
@@ -374,17 +528,35 @@ function processActivateTrigger(
   accept: boolean,
   events: GameEvent[],
 ): GameState {
-  // For now, just clear the trigger. Full effect system comes in Phase 5.
+  const trigger = state.pendingTrigger!
   events.push({
     type: 'ACTIVATE_TRIGGER',
     playerId,
     description: accept ? 'Trigger activated' : 'Trigger declined',
   })
 
-  return {
-    ...state,
-    pendingTrigger: null,
+  let newState: GameState = { ...state, pendingTrigger: null }
+  if (!accept) return newState
+
+  const player = newState.players[playerId]
+  const card = player.hand.find((c) => c.instanceId === trigger.cardInstanceId)
+  if (!card || getEffectDefs(card.cardId, 'trigger').length === 0) {
+    // No automated trigger effect registered: legacy behavior, card stays in hand
+    return newState
   }
+
+  // An activated trigger card is trashed after resolving unless the effect moves it
+  // (CR 10-1-5-3). It is trashed up front here; 'playSelf' then plays it from trash.
+  const hand = player.hand.filter((c) => c.instanceId !== card.instanceId)
+  newState = {
+    ...newState,
+    players: {
+      ...newState.players,
+      [playerId]: { ...player, hand, trash: [...player.trash, card] },
+    },
+  }
+  newState = queueEffects(newState, card, 'trigger', playerId)
+  return runStack(newState, events)
 }
 
 function processEndTurn(state: GameState, events: GameEvent[]): GameState {

@@ -18,9 +18,11 @@ interface GameStore {
   selectedTarget: SelectionTarget
   donAttachCount: number
   viewingPlayer: PlayerId
+  /** When set, this seat is driven by an agent and its hidden zones stay hidden */
+  aiPlayer: PlayerId | null
 
   // Actions
-  startNewGame: (deck1: Deck, deck2: Deck) => void
+  startNewGame: (deck1: Deck, deck2: Deck, aiPlayer?: PlayerId | null) => void
   dispatch: (action: GameAction, player: PlayerId) => void
   select: (target: SelectionTarget) => void
   clearSelection: () => void
@@ -36,8 +38,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectedTarget: null,
   donAttachCount: 0,
   viewingPlayer: 'player1',
+  aiPlayer: null,
 
-  startNewGame: (deck1, deck2) => {
+  startNewGame: (deck1, deck2, aiPlayer = null) => {
     const state = createGame(deck1, deck2)
     set({
       gameState: state,
@@ -46,6 +49,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       selectedTarget: null,
       donAttachCount: 0,
       viewingPlayer: state.currentPlayer,
+      aiPlayer,
     })
   },
 

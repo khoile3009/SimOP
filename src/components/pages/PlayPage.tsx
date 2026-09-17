@@ -1,7 +1,10 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { Deck } from '@/engine/types'
+import { legalActions, whoActs } from '@/engine/legalActions'
 import { useGameStore } from '@/stores/gameStore'
 import { useDeckStore } from '@/stores/deckStore'
+import { GreedyAgent } from '@/ai/agents'
 import GameBoard from '@/components/game/GameBoard'
 
 // Fallback test deck if user has no saved decks
@@ -30,9 +33,31 @@ function makeQuickDeck(): Deck {
   }
 }
 
+/** Drives the AI seat: whenever the engine is waiting on the AI, play its move. */
+function useAiDriver() {
+  const gameState = useGameStore((s) => s.gameState)
+  const aiPlayer = useGameStore((s) => s.aiPlayer)
+  const dispatch = useGameStore((s) => s.dispatch)
+  const agentRef = useRef(new GreedyAgent())
+
+  useEffect(() => {
+    if (!gameState || gameState.winner || !aiPlayer) return
+    if (whoActs(gameState) !== aiPlayer) return
+    const timer = setTimeout(() => {
+      const state = useGameStore.getState().gameState
+      if (!state || state.winner || whoActs(state) !== aiPlayer) return
+      const actions = legalActions(state)
+      if (actions.length === 0) return
+      dispatch(agentRef.current.choose(state, actions, aiPlayer), aiPlayer)
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [gameState, aiPlayer, dispatch])
+}
+
 export default function PlayPage() {
-  const { gameState, startNewGame } = useGameStore()
+  const { gameState, aiPlayer, startNewGame } = useGameStore()
   const { savedDecks } = useDeckStore()
+  useAiDriver()
 
   if (gameState) {
     return (
@@ -41,6 +66,11 @@ export default function PlayPage() {
           <Link to="/" className="text-xs text-text-secondary hover:text-text-primary">
             &larr; Home
           </Link>
+          {aiPlayer && (
+            <span className="text-xs text-text-muted">
+              You are Player 1 &middot; AI plays Player 2
+            </span>
+          )}
         </div>
         <GameBoard />
       </div>
@@ -49,6 +79,23 @@ export default function PlayPage() {
 
   // Game setup screen
   const validDecks = savedDecks.filter((d) => d.leader && d.cards.length > 0)
+
+  const startButtons = (deck: Deck) => (
+    <div className="flex gap-2">
+      <button
+        onClick={() => startNewGame(deck, deck, 'player2')}
+        className="rounded bg-action-green px-4 py-1.5 text-sm font-medium text-white hover:bg-green-600"
+      >
+        vs AI
+      </button>
+      <button
+        onClick={() => startNewGame(deck, deck)}
+        className="rounded bg-ocean-700 px-4 py-1.5 text-sm font-medium hover:bg-ocean-600"
+      >
+        Hotseat
+      </button>
+    </div>
+  )
 
   return (
     <div className="flex flex-1 flex-col p-6">
@@ -60,21 +107,25 @@ export default function PlayPage() {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-6">
-        <p className="text-text-secondary">Self-play: you control both sides.</p>
+        <p className="text-text-secondary">
+          Play against the AI, or control both sides in hotseat mode.
+        </p>
 
         {validDecks.length > 0 ? (
           <div className="flex flex-col gap-3">
             {validDecks.map((deck) => (
-              <button
+              <div
                 key={deck.id}
-                onClick={() => startNewGame(deck, deck)}
-                className="glass-panel px-6 py-3 text-left hover:border-glass-border-hover"
+                className="glass-panel flex items-center justify-between gap-6 px-6 py-3"
               >
-                <p className="font-medium">{deck.name}</p>
-                <p className="text-sm text-text-muted">
-                  {deck.cards.reduce((s, c) => s + c.qty, 0)} cards
-                </p>
-              </button>
+                <div>
+                  <p className="font-medium">{deck.name}</p>
+                  <p className="text-sm text-text-muted">
+                    {deck.cards.reduce((s, c) => s + c.qty, 0)} cards
+                  </p>
+                </div>
+                {startButtons(deck)}
+              </div>
             ))}
           </div>
         ) : (
@@ -87,15 +138,13 @@ export default function PlayPage() {
           </p>
         )}
 
-        <button
-          onClick={() => {
-            const deck = makeQuickDeck()
-            startNewGame(deck, deck)
-          }}
-          className="rounded bg-action-green px-6 py-2 font-medium text-white hover:bg-green-600"
-        >
-          Quick Start (Red Zoro Mirror)
-        </button>
+        <div className="glass-panel flex items-center justify-between gap-6 px-6 py-3">
+          <div>
+            <p className="font-medium">Quick Start</p>
+            <p className="text-sm text-text-muted">Red Zoro mirror</p>
+          </div>
+          {startButtons(makeQuickDeck())}
+        </div>
       </div>
     </div>
   )

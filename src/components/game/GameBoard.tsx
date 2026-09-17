@@ -5,7 +5,7 @@ import type { PlayerId, CardData, GameCard } from '@/engine/types'
 import { getCardById } from '@/data/cardService'
 import { getCardImageUrl } from '@/utils/images'
 import { useGameStore } from '@/stores/gameStore'
-import { getOpponent } from '@/engine'
+import { legalActions } from '@/engine/legalActions'
 import type { DragCardData } from '@/hooks/useDragCard'
 import type { CardActions } from './CardActionPopup'
 import PlayerSide from './PlayerSide'
@@ -14,13 +14,16 @@ import PhaseBar from './PhaseBar'
 import ControlsBar from './ControlsBar'
 import CardDetail from '@/components/cards/CardDetail'
 import AttackArrow from './AttackArrow'
+import ChoicePrompt from './ChoicePrompt'
+import TriggerPrompt from './TriggerPrompt'
 
-export default function GameBoard() {
+export default function GameBoard({ spectator = false }: { spectator?: boolean }) {
   const {
     gameState,
     selectedTarget,
     donAttachCount,
     error,
+    aiPlayer,
     dispatch,
     select,
     clearSelection,
@@ -40,8 +43,14 @@ export default function GameBoard() {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
-  const current = gameState?.currentPlayer ?? 'player1'
-  const opponent = gameState ? getOpponent(current) : 'player2'
+  // In vs-AI mode the human's seat stays at the bottom regardless of whose turn
+  // it is; in hotseat the view follows the turn player.
+  const current: PlayerId = aiPlayer
+    ? aiPlayer === 'player1'
+      ? 'player2'
+      : 'player1'
+    : (gameState?.currentPlayer ?? 'player1')
+  const opponent: PlayerId = current === 'player1' ? 'player2' : 'player1'
 
   const selectedId = selectedTarget?.type === 'card' ? selectedTarget.instanceId : null
 
@@ -230,7 +239,19 @@ export default function GameBoard() {
         <h2 className="text-xl font-bold">Mulligan Phase</h2>
         {(['player1', 'player2'] as PlayerId[]).map((pid) => (
           <div key={pid} className="glass-panel flex flex-col items-center gap-3 p-4">
-            <p className="text-sm font-medium">{pid === 'player1' ? 'Player 1' : 'Player 2'}</p>
+            <p className="text-sm font-medium">
+              {pid === aiPlayer ? 'AI Opponent' : pid === 'player1' ? 'Player 1' : 'Player 2'}
+            </p>
+            {pid === aiPlayer ? (
+              <p className="text-sm text-text-muted">
+                {gameState.mulliganState[pid] === 'pending'
+                  ? 'Deciding...'
+                  : gameState.mulliganState[pid] === 'accepted'
+                    ? 'Kept hand'
+                    : 'Mulliganed'}
+              </p>
+            ) : (
+              <>
             <div className="flex items-center gap-1.5">
               {gameState.players[pid].hand.map((card) => {
                 const data = getCardById(card.cardId)
@@ -266,6 +287,8 @@ export default function GameBoard() {
                 {gameState.mulliganState[pid] === 'accepted' ? 'Kept hand' : 'Mulliganed'}
               </p>
             )}
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -275,6 +298,43 @@ export default function GameBoard() {
   // Counter mode: determine which hand should show counter selection
   const isCounterStep = !!gameState.battle && gameState.battle.step === 'COUNTER'
   const defenderPlayer = gameState.battle?.defenderPlayer
+
+  // Pending decisions the human must resolve (the AI answers its own via its
+  // driver; in spectator mode the bots answer everything)
+  const humanControls = (pid: PlayerId) => !spectator && (!aiPlayer || pid !== aiPlayer)
+  const showChoice = gameState.pendingChoice && humanControls(gameState.pendingChoice.playerId)
+  const showTrigger =
+    !gameState.pendingChoice &&
+    gameState.pendingTrigger &&
+    humanControls(gameState.pendingTrigger.playerId)
+  const blockerIds =
+    gameState.battle?.step === 'BLOCK' && humanControls(gameState.battle.defenderPlayer)
+      ? legalActions(gameState).flatMap((a) => (a.type === 'ACTIVATE_BLOCKER' ? [a.blockerId] : []))
+      : []
+  const counterEvents =
+    isCounterStep && defenderPlayer && humanControls(defenderPlayer)
+      ? legalActions(gameState).flatMap((a) => {
+          if (a.type !== 'PLAY_COUNTER_EVENT') return []
+          const card = gameState.players[defenderPlayer].hand.find(
+            (c) => c.instanceId === a.cardInstanceId,
+          )
+          const data = card ? getCardById(card.cardId) : null
+          return [{ cardInstanceId: a.cardInstanceId, name: data?.name ?? 'Event', cost: data?.cost ?? 0 }]
+        })
+      : []
+  const activatables =
+    gameState.phase === 'MAIN' &&
+    !gameState.battle &&
+    gameState.currentPlayer === current &&
+    humanControls(current)
+      ? legalActions(gameState).flatMap((a) => {
+          if (a.type !== 'ACTIVATE_EFFECT') return []
+          const p = gameState.players[current]
+          const card = [p.leader, ...p.characters].find((c) => c.instanceId === a.cardInstanceId)
+          const name = card ? (getCardById(card.cardId)?.name ?? 'Card') : 'Card'
+          return [{ cardInstanceId: a.cardInstanceId, effectId: a.effectId, name }]
+        })
+      : []
   const counterTotal = counterSelection.reduce((sum, id) => {
     const defHand = defenderPlayer ? gameState.players[defenderPlayer].hand : []
     const card = defHand.find((c) => c.instanceId === id)
@@ -303,13 +363,14 @@ export default function GameBoard() {
       onDragCancel={handleDragCancel}
     >
     <div className="flex flex-1 flex-col gap-1 overflow-hidden p-2">
-      {/* Opponent hand */}
+      {/* Opponent hand (hidden when an AI holds it) */}
       <HandZone
         cards={gameState.players[opponent].hand}
         flipped
+        faceDown={opponent === aiPlayer}
         selectedId={null}
         onSelect={() => {}}
-        counterMode={isCounterStep && defenderPlayer === opponent ? {
+        counterMode={isCounterStep && defenderPlayer === opponent && humanControls(opponent) ? {
           selectedIds: counterSelection,
           onToggle: handleToggleCounter,
         } : undefined}
@@ -369,11 +430,41 @@ export default function GameBoard() {
         gameState={gameState}
         onEndTurn={() => dispatch({ type: 'END_TURN' }, current)}
         onDeclineBlock={() => dispatch({ type: 'DECLINE_BLOCK' }, gameState.battle?.defenderPlayer ?? opponent)}
+        onActivateBlocker={(blockerId) =>
+          dispatch({ type: 'ACTIVATE_BLOCKER', blockerId }, gameState.battle?.defenderPlayer ?? opponent)
+        }
+        blockerIds={blockerIds}
+        activatables={activatables}
+        onActivateEffect={(cardInstanceId, effectId) =>
+          dispatch({ type: 'ACTIVATE_EFFECT', cardInstanceId, effectId }, current)
+        }
+        counterEvents={counterEvents}
+        onPlayCounterEvent={(cardInstanceId) =>
+          dispatch({ type: 'PLAY_COUNTER_EVENT', cardInstanceId }, gameState.battle!.defenderPlayer)
+        }
         onPassCounter={handlePassCounter}
         onUseCounter={handleUseCounter}
         counterTotal={counterTotal}
         counterCount={counterSelection.length}
       />
+
+      {/* Effect decisions */}
+      {showChoice && (
+        <ChoicePrompt
+          gameState={gameState}
+          onChoose={(instanceIds) =>
+            dispatch({ type: 'CHOOSE', instanceIds }, gameState.pendingChoice!.playerId)
+          }
+        />
+      )}
+      {showTrigger && (
+        <TriggerPrompt
+          gameState={gameState}
+          onResolve={(activate) =>
+            dispatch({ type: 'ACTIVATE_TRIGGER', accept: activate }, gameState.pendingTrigger!.playerId)
+          }
+        />
+      )}
 
       {/* Card inspect modal */}
       {inspecting && <CardDetail card={inspecting} onClose={() => setInspecting(null)} />}

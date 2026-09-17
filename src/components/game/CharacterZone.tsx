@@ -4,6 +4,7 @@ import type { GameCard } from '@/engine/types'
 import { getCardById } from '@/data/cardService'
 import { getCardImageUrl } from '@/utils/images'
 import { getEffectivePower } from '@/engine'
+import { useGameStore } from '@/stores/gameStore'
 import { MAX_CHARACTERS } from '@/engine/constants'
 import { useDragCard } from '@/hooks/useDragCard'
 import CardActionPopup from './CardActionPopup'
@@ -32,7 +33,8 @@ function CharacterCard({
   attackTargetId?: string
 }) {
   const cardData = getCardById(char.cardId)
-  const power = getEffectivePower(char)
+  const gameState = useGameStore((s) => s.gameState)
+  const power = gameState ? getEffectivePower(gameState, char) : 0
 
   const hasSummonSickness = cardActions
     ? char.turnPlayed === cardActions.turnNumber && !cardData?.effectText?.includes('[Rush]')

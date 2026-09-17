@@ -29,12 +29,27 @@ export type GamePhase = 'SETUP' | 'REFRESH' | 'DRAW' | 'DON' | 'MAIN' | 'END'
 
 export type BattleStep = 'ATTACK' | 'BLOCK' | 'COUNTER' | 'DAMAGE'
 
+export type ModifierDuration = 'turn' | 'battle' | 'untilYourNextTurn' | 'untilTurn' | 'permanent'
+
+export interface Modifier {
+  kind: 'power' | 'keyword' | 'flag'
+  value: number // power delta; flag value (e.g. the power threshold of a blocker lock); 0 otherwise
+  keyword?: string
+  flag?: string
+  duration: ModifierDuration
+  sourceCardId: string
+  /** For 'untilYourNextTurn': expires when this player's Refresh Phase runs */
+  expiresFor?: PlayerId
+  /** For 'untilTurn': expires in the End Phase of this turn number */
+  untilTurn?: number
+}
+
 export interface GameCard {
   instanceId: string
   cardId: string // Reference to CardData.id
   ownerId: PlayerId
   isRested: boolean
-  powerModifier: number
+  modifiers: Modifier[]
   attachedDon: number
   activatedThisTurn: string[]
   turnPlayed: number
@@ -71,7 +86,10 @@ export interface GameState {
   phase: GamePhase
   turnNumber: number
   battle: BattleState | null
-  effectQueue: QueuedEffect[]
+  /** Resolution stack of in-progress effects; top frame runs until done or paused on a choice */
+  stack: EffectFrame[]
+  /** A choice demanded by the top effect frame; blocks all other actions until resolved */
+  pendingChoice: PendingChoice | null
   pendingTrigger: TriggerState | null
   actionHistory: GameAction[]
   winner: PlayerId | null
@@ -84,10 +102,27 @@ export interface TriggerState {
   playerId: PlayerId
 }
 
-export interface QueuedEffect {
+export interface EffectFrame {
+  sourceInstanceId: string
   sourceCardId: string
-  trigger: string
+  controller: PlayerId
+  /** Index into the effect's op list (see engine/effects/ast.ts) */
+  pc: number
+  /** Which registered EffectDef on the source card is running */
+  timing: string
+  defIndex: number
+  bindings: Record<string, string[]>
+}
+
+export interface PendingChoice {
   playerId: PlayerId
+  prompt: string
+  options: string[] // instanceIds
+  min: number
+  max: number
+  /** All-or-nothing choices (e.g. paying a DON!!-X cost): only sizes min and max are legal */
+  exact?: boolean
+  bind: string
 }
 
 // ─── Game Actions (Command Pattern) ────────────────────────────────────────
@@ -106,6 +141,8 @@ export type GameAction =
   | { type: 'MULLIGAN'; accept: boolean }
   | { type: 'CHOOSE_CHARACTER_TO_TRASH'; cardInstanceId: string }
   | { type: 'ACTIVATE_EFFECT'; cardInstanceId: string; effectId: string }
+  | { type: 'PLAY_COUNTER_EVENT'; cardInstanceId: string }
+  | { type: 'CHOOSE'; instanceIds: string[] }
 
 // ─── Game Result ────────────────────────────────────────────────────────────
 

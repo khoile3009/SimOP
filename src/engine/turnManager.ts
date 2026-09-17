@@ -1,5 +1,29 @@
-import type { GameState, PlayerId } from './types'
+import type { GameState, GameCard, Modifier, PlayerId } from './types'
 import { DON_PER_TURN, DON_FIRST_TURN } from './constants'
+
+function stripModifiers(card: GameCard, keep: (m: Modifier) => boolean): GameCard {
+  if (card.modifiers.length === 0) return card
+  const modifiers = card.modifiers.filter(keep)
+  return modifiers.length === card.modifiers.length ? card : { ...card, modifiers }
+}
+
+/** Remove modifiers matching the predicate from every card on both fields. */
+export function expireModifiers(
+  state: GameState,
+  expired: (m: Modifier) => boolean,
+): GameState {
+  const keep = (m: Modifier) => !expired(m)
+  const players = { ...state.players }
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    const p = players[pid]
+    players[pid] = {
+      ...p,
+      leader: stripModifiers(p.leader, keep),
+      characters: p.characters.map((c) => stripModifiers(c, keep)),
+    }
+  }
+  return { ...state, players }
+}
 
 function isFirstPlayerFirstTurn(state: GameState): boolean {
   return state.turnNumber === 1
@@ -8,29 +32,30 @@ function isFirstPlayerFirstTurn(state: GameState): boolean {
 /** Execute Refresh Phase: set all rested cards to active */
 export function executeRefresh(state: GameState): GameState {
   const playerId = state.currentPlayer
-  const player = state.players[playerId]
 
   // Skip refresh on very first turn of the game (turn 1)
   if (state.turnNumber === 1) {
     return { ...state, phase: 'DRAW' }
   }
 
-  const refreshedCharacters = player.characters.map((c) => ({ ...c, isRested: false }))
-  const refreshedDon = player.donArea.map((d) => ({ ...d, isRested: false }))
-  const refreshedLeader = { ...player.leader, isRested: false }
-  const refreshedStage = player.stage ? { ...player.stage, isRested: false } : null
+  // "Until the start of your next turn" effects end here (CR 6-2-1)
+  const expired = expireModifiers(
+    state,
+    (m) => m.duration === 'untilYourNextTurn' && m.expiresFor === playerId,
+  )
+  const player = expired.players[playerId]
 
   return {
-    ...state,
+    ...expired,
     phase: 'DRAW',
     players: {
-      ...state.players,
+      ...expired.players,
       [playerId]: {
         ...player,
-        leader: refreshedLeader,
-        characters: refreshedCharacters,
-        donArea: refreshedDon,
-        stage: refreshedStage,
+        leader: { ...player.leader, isRested: false },
+        characters: player.characters.map((c) => ({ ...c, isRested: false })),
+        donArea: player.donArea.map((d) => ({ ...d, isRested: false })),
+        stage: player.stage ? { ...player.stage, isRested: false } : null,
       },
     },
   }
@@ -104,7 +129,7 @@ export function executeEndPhase(state: GameState): GameState {
         cardId: 'DON',
         ownerId: playerId,
         isRested: true,
-        powerModifier: 0,
+        modifiers: [],
         attachedDon: 0,
         activatedThisTurn: [],
         turnPlayed: 0,
@@ -121,19 +146,17 @@ export function executeEndPhase(state: GameState): GameState {
           cardId: 'DON',
           ownerId: playerId,
           isRested: true,
-          powerModifier: 0,
+          modifiers: [],
           attachedDon: 0,
           activatedThisTurn: [],
           turnPlayed: 0,
         })
       }
-      return { ...c, attachedDon: 0, powerModifier: 0, activatedThisTurn: [] }
+      return { ...c, attachedDon: 0, activatedThisTurn: [] }
     }
-    return { ...c, powerModifier: 0, activatedThisTurn: [] }
+    return { ...c, activatedThisTurn: [] }
   })
 
-  // Reset leader modifiers
-  newLeader.powerModifier = 0
   newLeader.activatedThisTurn = []
 
   const newDonArea = [...player.donArea.map((d) => ({ ...d, isRested: true })), ...returnedDon]
@@ -141,15 +164,7 @@ export function executeEndPhase(state: GameState): GameState {
   // Switch to opponent
   const nextPlayer: PlayerId = playerId === 'player1' ? 'player2' : 'player1'
 
-  // Also clear opponent's turn-based modifiers
-  const opponent = state.players[nextPlayer]
-  const cleanedOpponentLeader = { ...opponent.leader, powerModifier: 0 }
-  const cleanedOpponentCharacters = opponent.characters.map((c) => ({
-    ...c,
-    powerModifier: 0,
-  }))
-
-  return {
+  const switched: GameState = {
     ...state,
     phase: 'REFRESH',
     currentPlayer: nextPlayer,
@@ -162,13 +177,19 @@ export function executeEndPhase(state: GameState): GameState {
         characters: newCharacters,
         donArea: newDonArea,
       },
-      [nextPlayer]: {
-        ...opponent,
-        leader: cleanedOpponentLeader,
-        characters: cleanedOpponentCharacters,
-      },
     },
   }
+
+  // "During this turn" effects on both fields end with the turn (CR 6-6-1-2).
+  // Battle-duration mods are also swept as a safety net (a trigger can create one
+  // outside any battle), and 'untilTurn' mods whose turn has passed expire here.
+  return expireModifiers(
+    switched,
+    (m) =>
+      m.duration === 'turn' ||
+      m.duration === 'battle' ||
+      (m.duration === 'untilTurn' && (m.untilTurn ?? 0) < switched.turnNumber),
+  )
 }
 
 /** Auto-advance through non-interactive phases (Refresh → Draw → DON → MAIN) */

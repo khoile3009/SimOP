@@ -3,14 +3,15 @@ import { DON_DECK_SIZE, STARTING_HAND_SIZE } from './constants'
 import { getCardById } from '@/data/cardService'
 import { generateId } from '@/utils/id'
 import { shuffle } from '@/utils/shuffle'
+import { random } from '@/utils/rng'
 
-function createGameCard(cardId: string, ownerId: PlayerId): GameCard {
+export function createGameCard(cardId: string, ownerId: PlayerId): GameCard {
   return {
     instanceId: generateId(),
     cardId,
     ownerId,
     isRested: false,
-    powerModifier: 0,
+    modifiers: [],
     attachedDon: 0,
     activatedThisTurn: [],
     turnPlayed: 0,
@@ -23,11 +24,21 @@ function createDonCard(ownerId: PlayerId): GameCard {
     cardId: 'DON',
     ownerId,
     isRested: false,
-    powerModifier: 0,
+    modifiers: [],
     attachedDon: 0,
     activatedThisTurn: [],
     turnPlayed: 0,
   }
+}
+
+/**
+ * Deal life so the card from the top of the deck ends at the BOTTOM of the life
+ * stack (CR 5-2-1-7): cards are taken one at a time, each placed on top of the
+ * previous. Index 0 is the top of the life stack (taken first by damage).
+ */
+export function dealLife<T>(deckCards: T[], count: number): { life: T[]; deck: T[] } {
+  const taken = deckCards.slice(0, count)
+  return { life: taken.reverse(), deck: deckCards.slice(count) }
 }
 
 function setupPlayer(deck: Deck, playerId: PlayerId): PlayerState {
@@ -50,7 +61,10 @@ function setupPlayer(deck: Deck, playerId: PlayerId): PlayerState {
 
   // Set life cards from top of deck
   const lifeCount = leaderData.life ?? 0
-  const lifeCards = deckCards.splice(0, lifeCount)
+  const dealt = dealLife(deckCards, lifeCount)
+  const lifeCards = dealt.life
+  deckCards.length = 0
+  deckCards.push(...dealt.deck)
 
   // Build DON deck
   const donDeck: GameCard[] = []
@@ -76,7 +90,7 @@ export function createGame(deck1: Deck, deck2: Deck): GameState {
   const player2 = setupPlayer(deck2, 'player2')
 
   // Random first player
-  const firstPlayer: PlayerId = Math.random() < 0.5 ? 'player1' : 'player2'
+  const firstPlayer: PlayerId = random() < 0.5 ? 'player1' : 'player2'
 
   return {
     id: generateId(),
@@ -85,7 +99,8 @@ export function createGame(deck1: Deck, deck2: Deck): GameState {
     phase: 'SETUP',
     turnNumber: 1,
     battle: null,
-    effectQueue: [],
+    stack: [],
+    pendingChoice: null,
     pendingTrigger: null,
     actionHistory: [],
     winner: null,

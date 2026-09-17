@@ -20,6 +20,12 @@ export default function HomePage() {
           Play
         </Link>
         <Link
+          to="/watch"
+          className="glass-panel px-6 py-3 text-life-red transition-colors hover:text-text-primary"
+        >
+          Watch Bots
+        </Link>
+        <Link
           to="/cards"
           className="glass-panel px-6 py-3 text-info-blue transition-colors hover:text-text-primary"
         >

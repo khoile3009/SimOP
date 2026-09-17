@@ -297,7 +297,7 @@ describe('DON Attachment', () => {
     const currentPlayer = state.currentPlayer
     const player = state.players[currentPlayer]
 
-    const basePower = getEffectivePower(player.leader)
+    const basePower = getEffectivePower(state, player.leader)
 
     const r = processAction(
       state,
@@ -305,7 +305,7 @@ describe('DON Attachment', () => {
       currentPlayer,
     )
 
-    const newPower = getEffectivePower(r.state.players[currentPlayer].leader)
+    const newPower = getEffectivePower(r.state, r.state.players[currentPlayer].leader)
     expect(newPower).toBe(basePower + 1000) // DON_POWER_BONUS = 1000
   })
 })
@@ -423,8 +423,12 @@ describe('Battle', () => {
     })
 
     if (counterCard) {
-      // Use counter (adds power to defender)
+      // Use counter (adds power to defender); the defender stays in the counter
+      // step and may keep countering (CR 7-1-3-2) - PASS resolves damage
       r = processAction(r.state, { type: 'USE_COUNTER', cardInstanceIds: [counterCard.instanceId] }, opponent)
+      expect(r.state.battle?.step).toBe('COUNTER')
+
+      r = processAction(r.state, { type: 'PASS_COUNTER' }, opponent)
 
       // With counter, defender power > attacker power, so no damage
       expect(r.state.battle).toBeNull()

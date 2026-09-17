@@ -4,6 +4,7 @@ import type { GameCard } from '@/engine/types'
 import { getCardById } from '@/data/cardService'
 import { getCardImageUrl } from '@/utils/images'
 import { getEffectivePower } from '@/engine'
+import { useGameStore } from '@/stores/gameStore'
 import { useDragCard } from '@/hooks/useDragCard'
 import CardActionPopup from './CardActionPopup'
 import type { CardActions } from './CardActionPopup'
@@ -18,7 +19,8 @@ interface LeaderZoneProps {
 
 export default function LeaderZone({ leader, isSelected, onClick, cardActions, attackTargetId }: LeaderZoneProps) {
   const cardData = getCardById(leader.cardId)
-  const power = getEffectivePower(leader)
+  const gameState = useGameStore((s) => s.gameState)
+  const power = gameState ? getEffectivePower(gameState, leader) : 0
   const canAttack = cardActions ? !leader.isRested && cardActions.isMainPhase && !cardActions.isInBattle : false
 
   // Draggable for attack (current player side)
