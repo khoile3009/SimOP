@@ -4,8 +4,9 @@ import type { CardActions } from './CardActionPopup'
 import LeaderZone from './LeaderZone'
 import LifeZone from './LifeZone'
 import CharacterZone from './CharacterZone'
-import { choiceStateFor } from './choice'
+import { choiceStateFor, choiceRing } from './choice'
 import type { ChoiceHighlight } from './choice'
+import { getCardImageUrl } from '@/utils/images'
 import DonZone from './DonZone'
 import DeckTrashZone from './DeckTrashZone'
 
@@ -68,6 +69,21 @@ export default function PlayerSide({
           onClickPool={onClickDon}
         />
       </div>
+
+      {/* Stage */}
+      {player.stage && (
+        <div
+          className={`w-14 shrink-0 transition-transform ${player.stage.isRested ? 'rotate-90' : ''} ${choiceRing(choiceStateFor(choice, player.stage.instanceId))}`}
+          title={getCardById(player.stage.cardId)?.name ?? 'Stage'}
+        >
+          <img
+            src={getCardImageUrl(player.stage.cardId)}
+            alt={getCardById(player.stage.cardId)?.name ?? 'Stage'}
+            className="w-full rounded"
+            draggable={false}
+          />
+        </div>
+      )}
 
       {/* Deck + Trash */}
       <DeckTrashZone deckCount={player.deck.length} trashCount={player.trash.length} />

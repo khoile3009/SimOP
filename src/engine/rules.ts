@@ -4,7 +4,7 @@ import { getCardById } from '@/data/cardService'
 import { getOpponent } from './turnManager'
 import { hasKeyword } from './keywords'
 import { getEffectDefs } from './effects/registry'
-import { evalCond, getFlag, hasFlag, getEffectiveCost } from './effects/statics'
+import { evalCond, getFlag, hasFlag, getEffectiveCost, getEffectiveFieldCost } from './effects/statics'
 import { getEffectivePower } from './powerCalc'
 
 export interface ValidationResult {
@@ -230,6 +230,10 @@ function validateActivateBlocker(
     if (lock.present && getEffectivePower(state, blocker) <= lock.value) {
       return { valid: false, reason: 'This Character cannot block this attack' }
     }
+    const costLock = getFlag(state, attacker, 'noBlockCostAtMost')
+    if (costLock.present && getEffectiveFieldCost(state, blocker) <= costLock.value) {
+      return { valid: false, reason: 'This Character cannot block this attack' }
+    }
   }
 
   return { valid: true }
@@ -330,7 +334,9 @@ function validateActivateEffect(
   const card =
     player.leader.instanceId === cardInstanceId
       ? player.leader
-      : player.characters.find((c) => c.instanceId === cardInstanceId)
+      : player.stage?.instanceId === cardInstanceId
+        ? player.stage
+        : player.characters.find((c) => c.instanceId === cardInstanceId)
   if (!card) return { valid: false, reason: 'Card not on your field' }
 
   const defIndex = Number(effectId)
@@ -350,6 +356,9 @@ function validateActivateEffect(
   const activeDon = player.donArea.filter((d) => !d.isRested).length
   if (def.cost?.restDon && activeDon < def.cost.restDon) {
     return { valid: false, reason: `Needs ${def.cost.restDon} active DON!!` }
+  }
+  if (def.cost?.returnDon && player.donArea.length < def.cost.returnDon) {
+    return { valid: false, reason: `Needs ${def.cost.returnDon} DON!! to return` }
   }
   if (def.cost?.restSelf && card.isRested) {
     return { valid: false, reason: 'Card must be active to rest as cost' }

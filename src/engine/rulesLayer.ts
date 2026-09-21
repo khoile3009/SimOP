@@ -1,6 +1,9 @@
 import { getCardById } from '@/data/cardService'
 import { MAX_CARD_COPIES } from './constants'
-import battleAttributes from '@/data/op01/battleAttributes.json'
+import op01Attributes from '@/data/op01/battleAttributes.json'
+import op02Attributes from '@/data/op02/battleAttributes.json'
+
+const battleAttributes: Record<string, string> = { ...op01Attributes, ...op02Attributes }
 
 /**
  * Rules-layer registry: per-card overrides of the game's own rules, as opposed
@@ -18,7 +21,9 @@ export interface CardRules {
 
 export const CARD_RULES: Record<string, CardRules> = {
   'OP01-075': { deckCopyLimit: 'any' },
-  'OP01-121': { extraNames: ['Kozuki Oden'] },
+  // Both official romanizations, so cross-set name references resolve
+  'OP01-121': { extraNames: ['Kozuki Oden', 'Kouzuki Oden'] },
+  'OP02-042': { extraNames: ['Kouzuki Oden', 'Kozuki Oden'] },
 }
 
 export function deckCopyLimit(cardId: string): number {
@@ -36,5 +41,5 @@ export function cardHasName(cardId: string, name: string): boolean {
  * separately because cards.json's `attribute` field holds the TYPE list.
  */
 export function getBattleAttribute(cardId: string): string | null {
-  return (battleAttributes as Record<string, string>)[cardId] ?? null
+  return battleAttributes[cardId] ?? null
 }

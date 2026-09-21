@@ -21,13 +21,14 @@ export interface CoverageDeck {
 export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
   const leaders = getLeaders(set)
   const pool = getCardsBySet(set).filter(
-    (c) => c.cardType === 'Character' || c.cardType === 'Event',
+    (c) => c.cardType === 'Character' || c.cardType === 'Event' || c.cardType === 'Stage',
   )
 
-  // Anchor on one leader per color, then add any extra leader some card's
-  // condition specifically needs (by name or type)
+  // Anchor on one leader per color the set actually has, then add any extra
+  // leader some card's condition specifically needs (by name or type)
   const anchors = new Map<string, (typeof leaders)[number]>()
-  for (const color of ['Red', 'Green', 'Blue', 'Purple'] as const) {
+  const setColors = [...new Set(leaders.flatMap((l) => l.color))]
+  for (const color of setColors) {
     const mono = leaders.find((l) => l.color.length === 1 && l.color[0] === color)
     const any = mono ?? leaders.find((l) => l.color.includes(color))
     if (any) anchors.set(any.id, any)
@@ -76,6 +77,30 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
       if (provider) home = provider
     }
     if (home) assignments.get(home.id)!.push(card.id)
+  }
+
+  // Cards whose conditions name another character (Fullbody wants Jango) must
+  // ride WITH that character or their effects can never fire: put the named
+  // partner directly after the referencing card so chunking keeps them together
+  for (const ids of assignments.values()) {
+    for (const id of [...ids]) {
+      const names = new Set<string>()
+      for (const def of getEffectDefs(id)) {
+        if (def.condition?.hasCharacterNamed) names.add(def.condition.hasCharacterNamed)
+      }
+      for (const st of getStatics(id)) {
+        if (st.condition?.hasCharacterNamed) names.add(st.condition.hasCharacterNamed)
+      }
+      for (const name of names) {
+        const partner = pool.find((c) => c.cardType === 'Character' && cardHasName(c.id, name))
+        if (!partner || partner.id === id) continue
+        const anchor = ids.indexOf(id)
+        if (anchor < 0) continue
+        const existing = ids.indexOf(partner.id)
+        if (existing >= 0) ids.splice(existing, 1)
+        ids.splice(ids.indexOf(id) + 1, 0, partner.id)
+      }
+    }
   }
 
   // Build 50-card decks: 4x each assigned card, split into multiple decks per

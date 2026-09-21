@@ -36,6 +36,18 @@ export function evalCond(
   if (cond.leaderTypeIncludes && !cardTypes(me.leader.cardId).includes(cond.leaderTypeIncludes)) {
     return false
   }
+  if (cond.anyCharacterCostAtMost !== undefined) {
+    const anyMatch = (['player1', 'player2'] as PlayerId[]).some((pid) =>
+      state.players[pid].characters.some(
+        (c) => getEffectiveFieldCost(state, c) <= cond.anyCharacterCostAtMost!,
+      ),
+    )
+    if (!anyMatch) return false
+  }
+  if (cond.allSelfDonRested && me.donArea.some((d) => !d.isRested)) return false
+  if (cond.maxSelfCharacters !== undefined && me.characters.length > cond.maxSelfCharacters) {
+    return false
+  }
   if (cond.minSelfCharacters !== undefined && me.characters.length < cond.minSelfCharacters) {
     return false
   }
@@ -54,6 +66,12 @@ export function evalCond(
   if (cond.minHandSelf !== undefined && me.hand.length < cond.minHandSelf) return false
   if (cond.maxHandSelf !== undefined && me.hand.length > cond.maxHandSelf) return false
   if (cond.minDonField !== undefined && donOnField(state, controller) < cond.minDonField) {
+    return false
+  }
+  if (
+    cond.minDonFieldOpp !== undefined &&
+    donOnField(state, getOpponent(controller)) < cond.minDonFieldOpp
+  ) {
     return false
   }
   if (cond.maxLifeSelf !== undefined && me.lifeCards.length > cond.maxLifeSelf) return false
@@ -75,25 +93,31 @@ export function evalCond(
 
 interface AuraGrant {
   power: number
+  cost: number
   keywords: string[]
   flags: { flag: FlagName; value: number }[]
 }
 
 /** Everything active auras grant to `card` right now. Auras never stack recursively. */
 export function auraGrants(state: GameState, card: GameCard): AuraGrant {
-  const result: AuraGrant = { power: 0, keywords: [], flags: [] }
+  const result: AuraGrant = { power: 0, cost: 0, keywords: [], flags: [] }
 
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
-    for (const source of [p.leader, ...p.characters]) {
+    for (const source of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
       for (const def of getStatics(source.cardId)) {
         if (def.donRequired && source.attachedDon < def.donRequired) continue
         if (!evalCond(state, pid, source, def.condition)) continue
 
         const t = def.target
         if (t.scope === 'myHand') continue // cost modifiers: see getEffectiveCost
+        // Character-scoped auras never hit stages (or leaders, below)
+        const targetIsStage = state.players[card.ownerId].stage?.instanceId === card.instanceId
+        if (targetIsStage && t.scope !== 'self') continue
         if (t.scope === 'self') {
           if (source.instanceId !== card.instanceId) continue
+        } else if (t.scope === 'myLeader') {
+          if (card.ownerId !== pid || !isLeader(state, card)) continue
         } else if (t.scope === 'oppCharacters') {
           if (card.ownerId === pid || isLeader(state, card)) continue
         } else {
@@ -102,6 +126,7 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
           if (t.scope === 'myCharactersOther' && card.instanceId === source.instanceId) continue
         }
         if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) continue
+        if (t.nameIs && !cardHasName(card.cardId, t.nameIs)) continue
         if (t.nameNot && cardHasName(card.cardId, t.nameNot)) continue
 
         let power = def.power ?? 0
@@ -116,6 +141,7 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
           }
         }
         result.power += power
+        result.cost += def.costMod ?? 0
         if (def.keyword) result.keywords.push(def.keyword)
         if (def.flag) result.flags.push({ flag: def.flag, value: def.flagValue ?? 0 })
       }
@@ -156,9 +182,36 @@ export function hasFlag(state: GameState, card: GameCard, flag: FlagName): boole
 }
 
 /**
+ * A FIELD card's cost after cost modifiers and field-scoped cost auras
+ * (Black's -N cost effects). Cost-based targeting and conditions read this,
+ * never the printed cost.
+ *
+ * Recursion guard: an aura's CONDITION may itself ask about costs (Onigumo's
+ * "if there is a Character with a cost of 0"), which would re-enter
+ * auraGrants forever. Nested cost reads settle on printed cost + modifiers -
+ * exact for this pool, since no cost aura's own condition depends on costs.
+ */
+let costEvalDepth = 0
+export function getEffectiveFieldCost(state: GameState, card: GameCard): number {
+  let cost = getCardById(card.cardId)?.cost ?? 0
+  for (const m of card.modifiers) {
+    if (m.kind === 'cost') cost += m.value
+  }
+  if (costEvalDepth === 0) {
+    costEvalDepth++
+    try {
+      cost += auraGrants(state, card).cost
+    } finally {
+      costEvalDepth--
+    }
+  }
+  return Math.max(0, cost)
+}
+
+/**
  * A hand card's cost after 'myHand' cost statics on the owner's field
- * (e.g. OP01-067 Crocodile: blue Events in your hand -1 cost). Computed on
- * read, never stored, like power.
+ * (e.g. OP01-067 Crocodile: blue Events in your hand -1 cost) and one-shot
+ * play discounts (Kin'emon). Computed on read, never stored, like power.
  */
 export function getEffectiveCost(state: GameState, playerId: PlayerId, card: GameCard): number {
   const data = getCardById(card.cardId)
@@ -176,5 +229,19 @@ export function getEffectiveCost(state: GameState, playerId: PlayerId, card: Gam
       cost += def.costMod
     }
   }
+  for (const d of state.playDiscounts?.[playerId] ?? []) {
+    if (discountMatches(card, d)) cost -= d.amount
+  }
   return Math.max(0, cost)
+}
+
+export function discountMatches(
+  card: GameCard,
+  d: { amount: number; cardType?: string; typeIncludes?: string; minCost?: number },
+): boolean {
+  const data = getCardById(card.cardId)
+  if (d.cardType && data?.cardType !== d.cardType) return false
+  if (d.typeIncludes && !cardTypes(card.cardId).includes(d.typeIncludes)) return false
+  if (d.minCost !== undefined && (data?.cost ?? 0) < d.minCost) return false
+  return true
 }

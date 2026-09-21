@@ -55,12 +55,31 @@
       effects. Coverage decks upgraded: leaders with abilities always anchor a
       deck, and every deck carries >=2 Events (this caught Crocodile leader's
       draw never firing - his deck had no Events to activate).
-- [ ] M6 Card ingestion + OP02 — LLM emits EffectDefs, schema+coverage-ledger gates.
-      Per-set checklist (mostly automatic): ingest defs -> coverage decks auto-expand ->
-      fleet campaign (correctness: violations/usage holes) -> RETRAIN EVAL (one command;
-      features are set-agnostic, weights drift with the meta) -> A/B ladder gate.
-      A new MECHANIC (not just new cards) may warrant a new feature - a calibration drop
-      on new-set games is the signal that the feature set can't express something.
+- [x] M6 Card ingestion + OP02 — DONE (Sep 2026). The "adding a set is a data drop"
+      thesis held: OP02's 121 cards ingested with ZERO MISSING ledger entries.
+      Harness: `npm run ingest -- OP-02` (scripts/ingest.ts) fetches optcgapi, converts
+      to CardData, writes cards.json + battleAttributes.json; handles parallel-art
+      dupes, embedded [Trigger] text, literal-NULL texts, space-joined colors, and
+      type lists via a vocabulary splitter (unsegmentable strings are flagged, then
+      added to SEED_TYPES by hand).
+      New vocabulary OP02 forced (all incremental, no re-architecture): field cost
+      modifiers (Modifier kind 'cost' + cost auras + getEffectiveFieldCost, recursion-
+      guarded for cost-dependent aura conditions), stages as effect sources, endOfTurn
+      timing with a pause-able turn switch (state.pendingEndTurn), 3 event kinds
+      (donAttached/donReturned/characterPlayed with noBaseEffect filter), afterBattleKo
+      timing (Isuka), player turnFlags (noLifeToHand) + one-shot playDiscounts
+      (Kin'emon), DON!!-X as a first-class activation cost (cost.returnDon - the fleet
+      caught bots spamming Byrnndi World's free activation before this), flags
+      noEffectKo/noOppEffectRemove/noBlockCostAtMost/bottomDeckAtBattleEnd, ops
+      drawTo/lifeTopToHand/oppReturnDon/powerModAll/costMod/restrictSelf/searchDeck.
+      Coverage decks: leaders with abilities anchor, >=2 Events per deck, named-partner
+      pairing (Fullbody rides with Jango - the fleet caught this too), Stage cards ride.
+      Fleet-certified: 4800 games across 23 coverage decks (OP01+OP02), zero invariant
+      violations; 1 advisory (OP02-017's DON!!x2 attack never fired - twin machinery
+      OP02-004 fires; bot DON-stacking rarity, not a wiring hole). 92 tests green.
+      NOT done here: eval retrain (parked with M4 gen-2 per the training-data decision).
+      Per-set checklist for OP03+: ingest -> author defs vs the coverage test ->
+      fleet 1200+ -> (once training resumes) RETRAIN EVAL -> A/B ladder gate.
 - [ ] M7 Online multiplayer (original P2) — serializable actions make this feasible whenever.
 
 ## Tasks

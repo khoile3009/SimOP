@@ -5,7 +5,7 @@ import { getOpponent, expireModifiers } from './turnManager'
 import { getBattleAttribute } from './rulesLayer'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
-import { koById } from './effects/interpreter'
+import { koById, queueEffects, removeFromField } from './effects/interpreter'
 import { hasFlag } from './effects/statics'
 
 /** Battle-KO protection: blanket, or scoped to the attacker's battle attribute. */
@@ -71,7 +71,15 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
       })
     } else {
       // Character KO (queues the target's [On K.O.] effects; processor runs the stack)
-      newState = koById(newState, battle.currentTargetId, events)
+      newState = koById(newState, battle.currentTargetId, events, { byBattle: true })
+      // The attacker's "when this battles and K.O.s a Character" effects (Isuka)
+      const koed = !newState.players[battle.defenderPlayer].characters.some(
+        (c) => c.instanceId === battle.currentTargetId,
+      )
+      const attackerIsCharacter = attackerPlayer.leader.instanceId !== battle.attackerId
+      if (koed && attackerIsCharacter) {
+        newState = queueEffects(newState, attacker, 'afterBattleKo', battle.attackerPlayer)
+      }
     }
 
     events.push({
@@ -87,11 +95,34 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
     })
   }
 
-  // End of battle: "during this battle" effects expire, then clear the battle
-  newState = expireModifiers(newState, (m) => m.duration === 'battle')
-  newState = { ...newState, battle: null }
+  // End of battle: scheduled battle-end moves, then "during this battle"
+  // effects expire and the battle clears
+  newState = endOfBattleCleanup(newState, battle.attackerId, events)
 
   return { state: newState, events }
+}
+
+/** Shared battle-end path: an attacker flagged 'bottomDeckAtBattleEnd' (Mr.2)
+ * leaves for the deck bottom BEFORE battle-duration modifiers are swept. */
+export function endOfBattleCleanup(
+  state: GameState,
+  attackerId: string,
+  events: GameEvent[],
+): GameState {
+  let s = state
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    const attacker = s.players[pid].characters.find((c) => c.instanceId === attackerId)
+    if (attacker && hasFlag(s, attacker, 'bottomDeckAtBattleEnd')) {
+      events.push({
+        type: 'BATTLE_END_MOVE',
+        playerId: pid,
+        description: `${getCardById(attacker.cardId)?.name ?? 'Character'} returns to the deck bottom`,
+      })
+      s = removeFromField(s, attackerId, 'deckBottom')
+    }
+  }
+  s = expireModifiers(s, (m) => m.duration === 'battle')
+  return { ...s, battle: null }
 }
 
 export function dealLifeDamage(

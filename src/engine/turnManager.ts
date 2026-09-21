@@ -21,6 +21,7 @@ export function expireModifiers(
       ...p,
       leader: stripModifiers(p.leader, keep),
       characters: p.characters.map((c) => stripModifiers(c, keep)),
+      stage: p.stage ? stripModifiers(p.stage, keep) : null,
     }
   }
   return { ...state, players }
@@ -136,6 +137,7 @@ export function executeEndPhase(state: GameState): GameState {
 
   const newLeader = { ...player.leader, activatedThisTurn: [] }
   const newCharacters = player.characters.map((c) => ({ ...c, activatedThisTurn: [] }))
+  const newStage = player.stage ? { ...player.stage, activatedThisTurn: [] } : null
 
   // Switch to opponent
   const nextPlayer: PlayerId = playerId === 'player1' ? 'player2' : 'player1'
@@ -151,6 +153,7 @@ export function executeEndPhase(state: GameState): GameState {
         ...player,
         leader: newLeader,
         characters: newCharacters,
+        stage: newStage,
       },
     },
   }

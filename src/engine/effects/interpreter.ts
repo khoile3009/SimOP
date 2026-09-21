@@ -9,7 +9,7 @@ import type {
 import type { CardDataFilter, EffectOp, EffectTiming, EngineEventKind, SelectFilter } from './ast'
 import { getEffectDefs } from './registry'
 import { recordEffectFired } from './telemetry'
-import { evalCond, cardTypes } from './statics'
+import { evalCond, cardTypes, hasFlag, getEffectiveFieldCost } from './statics'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '../powerCalc'
 import { getOpponent } from '../turnManager'
@@ -22,6 +22,10 @@ export interface EngineEvent {
   kind: EngineEventKind
   /** The player the event happened to (who activated / whose character died) */
   player: PlayerId
+  /** characterPlayed: the played card */
+  cardId?: string
+  /** characterPlayed: played from its owner's hand */
+  fromHand?: boolean
 }
 
 /**
@@ -85,19 +89,41 @@ export function emitEngineEvent(state: GameState, ev: EngineEvent): GameState {
   let s = state
   for (const pid of order) {
     const p = s.players[pid]
-    for (const card of [p.leader, ...p.characters]) {
+    for (const card of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
       const defs = getEffectDefs(card.cardId)
       for (let i = 0; i < defs.length; i++) {
         const def = defs[i]
         if (def.timing !== 'onEvent' || !def.on || def.on.kind !== ev.kind) continue
         const expected = def.on.who === 'self' ? pid : getOpponent(pid)
         if (ev.player !== expected) continue
+        if (def.on.fromHand && !ev.fromHand) continue
+        if (def.on.noBaseEffect && (!ev.cardId || getCardById(ev.cardId)?.effectText)) continue
         if (!defMatches(s, pid, card, 'onEvent', i)) continue
         const marked = markOncePerTurn(s, card, def.oncePerTurn, `t${i}`)
         if (!marked) continue
         s = marked
         frames.push(makeFrame(card, pid, 'onEvent', i))
       }
+    }
+  }
+  if (frames.length === 0) return s
+  return { ...s, stack: [...s.stack, ...frames.reverse()] }
+}
+
+/** Queue the turn player's [End of Your Turn] effects (leader, characters, stage). */
+export function queueEndOfTurnEffects(state: GameState): GameState {
+  const pid = state.currentPlayer
+  const p = state.players[pid]
+  const frames: EffectFrame[] = []
+  let s = state
+  for (const card of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
+    const defs = getEffectDefs(card.cardId)
+    for (let i = 0; i < defs.length; i++) {
+      if (!defMatches(s, pid, card, 'endOfTurn', i)) continue
+      const marked = markOncePerTurn(s, card, defs[i].oncePerTurn, `t${i}`)
+      if (!marked) continue
+      s = marked
+      frames.push(makeFrame(card, pid, 'endOfTurn', i))
     }
   }
   if (frames.length === 0) return s
@@ -258,8 +284,108 @@ function executeOp(
 
     case 'ko': {
       let s = state
-      for (const id of refs(op.ref)) s = koById(s, id, events)
+      for (const id of refs(op.ref)) s = koById(s, id, events, { controller })
       return advance(s)
+    }
+
+    case 'costMod': {
+      const modifier: Modifier = {
+        kind: 'cost',
+        value: op.amount,
+        duration: op.duration,
+        sourceCardId: frame.sourceCardId,
+      }
+      let s = state
+      for (const id of refs(op.ref)) {
+        s = updateFieldCard(s, id, (c) => ({ ...c, modifiers: [...c.modifiers, modifier] }))
+      }
+      return advance(s)
+    }
+
+    case 'powerModAll': {
+      const modifier: Modifier = {
+        kind: 'power',
+        value: op.amount,
+        duration: op.duration,
+        sourceCardId: frame.sourceCardId,
+      }
+      if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
+      const p = state.players[controller]
+      const targets = [...(op.includeLeader ? [p.leader.instanceId] : []), ...p.characters.map((c) => c.instanceId)]
+      let s = state
+      for (const id of targets) {
+        s = updateFieldCard(s, id, (c) => ({ ...c, modifiers: [...c.modifiers, modifier] }))
+      }
+      return advance(s)
+    }
+
+    case 'drawTo': {
+      const deficit = op.count - state.players[controller].hand.length
+      return advance(deficit > 0 ? drawCards(state, controller, deficit, events) : state)
+    }
+
+    case 'lifeTopToHand': {
+      if (state.turnFlags[controller]?.includes('noLifeToHand')) return advance(state)
+      let s = state
+      for (let i = 0; i < op.count; i++) {
+        const p = s.players[controller]
+        if (p.lifeCards.length === 0) break
+        const [top, ...rest] = p.lifeCards
+        s = {
+          ...s,
+          players: {
+            ...s.players,
+            [controller]: { ...p, lifeCards: rest, hand: [...p.hand, { ...top, revealed: false }] },
+          },
+        }
+      }
+      return advance(s)
+    }
+
+    case 'oppReturnDon': {
+      const oppId = getOpponent(controller)
+      const opp = state.players[oppId]
+      // Forced return; returning rested DON first is the opponent-optimal pick
+      const sorted = [...opp.donArea].sort((a, b) => Number(b.isRested) - Number(a.isRested))
+      const returned = sorted.slice(0, op.count)
+      if (returned.length === 0) return advance(state)
+      const ids = new Set(returned.map((d) => d.instanceId))
+      let s: GameState = {
+        ...state,
+        players: {
+          ...state.players,
+          [oppId]: {
+            ...opp,
+            donArea: opp.donArea.filter((d) => !ids.has(d.instanceId)),
+            donDeck: [...opp.donDeck, ...returned.map((d) => ({ ...d, isRested: false }))],
+          },
+        },
+      }
+      s = emitEngineEvent(s, { kind: 'donReturned', player: oppId })
+      return advance(s)
+    }
+
+    case 'restrictSelf': {
+      const flags = state.turnFlags[controller] ?? []
+      if (flags.includes(op.restriction)) return advance(state)
+      return advance({
+        ...state,
+        turnFlags: { ...state.turnFlags, [controller]: [...flags, op.restriction] },
+      })
+    }
+
+    case 'grantPlayDiscount': {
+      const discounts = state.playDiscounts[controller] ?? []
+      const discount = {
+        amount: op.amount,
+        cardType: op.cardType,
+        typeIncludes: op.typeIncludes,
+        minCost: op.minCost,
+      }
+      return advance({
+        ...state,
+        playDiscounts: { ...state.playDiscounts, [controller]: [...discounts, discount] },
+      })
     }
 
     case 'koAll': {
@@ -272,7 +398,7 @@ function executeOp(
         }
       }
       let s = state
-      for (const id of targets) s = koById(s, id, events)
+      for (const id of targets) s = koById(s, id, events, { controller })
       return advance(s)
     }
 
@@ -301,13 +427,19 @@ function executeOp(
 
     case 'bottomDeckFromField': {
       let s = state
-      for (const id of refs(op.ref)) s = removeFromField(s, id, 'deckBottom')
+      for (const id of refs(op.ref)) {
+        if (removalBlocked(s, id, controller, events)) continue
+        s = removeFromField(s, id, 'deckBottom')
+      }
       return advance(s)
     }
 
     case 'returnToHand': {
       let s = state
-      for (const id of refs(op.ref)) s = removeFromField(s, id, 'hand')
+      for (const id of refs(op.ref)) {
+        if (removalBlocked(s, id, controller, events)) continue
+        s = removeFromField(s, id, 'hand')
+      }
       return advance(s)
     }
 
@@ -324,6 +456,7 @@ function executeOp(
     }
 
     case 'lifeToHand': {
+      if (state.turnFlags[controller]?.includes('noLifeToHand')) return advance(state)
       let s = state
       for (const id of refs(op.ref)) {
         const p = s.players[controller]
@@ -353,7 +486,38 @@ function executeOp(
     }
 
     case 'playSelf':
-      return advance(playCardFree(state, controller, frame.sourceInstanceId, false, events))
+      return advance(
+        playCardFree(state, controller, frame.sourceInstanceId, op.rested ?? false, events),
+      )
+
+    case 'searchDeck': {
+      const bind = `$op${frame.pc}`
+      const p = state.players[controller]
+      if (!(bind in frame.bindings)) {
+        const options = p.deck
+          .filter((c) => matchCardData(c.cardId, op.filter))
+          .slice(0, 8)
+          .map((c) => c.instanceId)
+        if (options.length === 0) return advance(shuffleDeck(state, controller))
+        return {
+          ...state,
+          pendingChoice: {
+            playerId: controller,
+            prompt: `Reveal up to ${op.upTo} from your deck`,
+            options,
+            min: 0,
+            max: op.upTo,
+            bind,
+          },
+        }
+      }
+      let s = state
+      for (const id of frame.bindings[bind]) {
+        if (op.to === 'play') s = playCardFree(s, controller, id, false, events)
+        else s = deckToHand(s, controller, id)
+      }
+      return advance(shuffleDeck(s, controller))
+    }
 
     case 'searchTop': {
       const bind = `$op${frame.pc}`
@@ -498,6 +662,7 @@ function executeOp(
         ...c,
         attachedDon: c.attachedDon + moved,
       }))
+      s = emitEngineEvent(s, { kind: 'donAttached', player: controller })
       return advance(s)
     }
 
@@ -506,7 +671,7 @@ function executeOp(
       const ids = new Set(refs(op.ref))
       const returned = p.donArea.filter((d) => ids.has(d.instanceId))
       const donArea = p.donArea.filter((d) => !ids.has(d.instanceId))
-      return advance({
+      let s: GameState = {
         ...state,
         players: {
           ...state.players,
@@ -516,7 +681,11 @@ function executeOp(
             donDeck: [...p.donDeck, ...returned.map((d) => ({ ...d, isRested: false }))],
           },
         },
-      })
+      }
+      if (returned.length > 0) {
+        s = emitEngineEvent(s, { kind: 'donReturned', player: controller })
+      }
+      return advance(s)
     }
 
     case 'activateTiming': {
@@ -574,6 +743,24 @@ function executeOp(
   }
 }
 
+/** "Cannot be removed from the field by your opponent's effects" (Inuarashi). */
+function removalBlocked(
+  state: GameState,
+  instanceId: string,
+  controller: PlayerId,
+  events: GameEvent[],
+): boolean {
+  const card = findFieldCard(state, instanceId)
+  if (!card || card.ownerId === controller) return false
+  if (!hasFlag(state, card, 'noOppEffectRemove')) return false
+  events.push({
+    type: 'REMOVAL_PREVENTED',
+    playerId: card.ownerId,
+    description: `${getCardById(card.cardId)?.name ?? 'Card'} cannot be removed by opponent effects`,
+  })
+  return true
+}
+
 function withBinding(stack: EffectFrame[], bind: string, ids: string[]): EffectFrame[] {
   const next = [...stack]
   const top = { ...next[next.length - 1] }
@@ -606,9 +793,17 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
     case 'leaderOrCharacters':
       pool = [player.leader, ...player.characters]
       break
+    case 'leader':
+      pool = [player.leader]
+      break
+    case 'stage':
+      pool = player.stage ? [player.stage] : []
+      break
     default:
       pool = player.characters
   }
+  // Cost modifiers apply to cards on the field; hidden/hand zones use printed cost
+  const onField = ['characters', 'leaderOrCharacters', 'leader', 'stage'].includes(filter.zone)
 
   const excluded = new Set<string>()
   if (filter.differentColorThanRef) {
@@ -630,7 +825,12 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
       if (excluded.has(c.instanceId)) return false
       const data = getCardById(c.cardId)
       if (filter.rested !== undefined && c.isRested !== filter.rested) return false
-      if (filter.costAtMost !== undefined && (data?.cost ?? 0) > filter.costAtMost) return false
+      if (filter.costAtMost !== undefined || filter.costIs !== undefined) {
+        const cost = onField ? getEffectiveFieldCost(state, c) : (data?.cost ?? 0)
+        if (filter.costAtMost !== undefined && cost > filter.costAtMost) return false
+        if (filter.costIs !== undefined && cost !== filter.costIs) return false
+      }
+      if (filter.noBaseEffect && data?.effectText) return false
       if (filter.powerAtMost !== undefined && getEffectivePower(state, c) > filter.powerAtMost) {
         return false
       }
@@ -657,6 +857,7 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
   if (!data) return false
   if (filter.cardType && data.cardType !== filter.cardType) return false
   if (filter.costAtMost !== undefined && data.cost > filter.costAtMost) return false
+  if (filter.costIs !== undefined && data.cost !== filter.costIs) return false
   if (filter.typeIncludes && !data.attribute.includes(filter.typeIncludes)) return false
   if (filter.colorIncludes && !data.color.some((c) => c === filter.colorIncludes)) return false
   if (filter.nameIs && !cardHasName(cardId, filter.nameIs)) return false
@@ -670,6 +871,7 @@ export function findFieldCard(state: GameState, instanceId: string): GameCard | 
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
     if (p.leader.instanceId === instanceId) return p.leader
+    if (p.stage?.instanceId === instanceId) return p.stage
     const c = p.characters.find((x) => x.instanceId === instanceId)
     if (c) return c
   }
@@ -727,6 +929,10 @@ export function updateFieldCard(
       players[pid] = { ...p, leader: fn(p.leader) }
       return { ...state, players }
     }
+    if (p.stage?.instanceId === instanceId) {
+      players[pid] = { ...p, stage: fn(p.stage) }
+      return { ...state, players }
+    }
     let idx = p.characters.findIndex((c) => c.instanceId === instanceId)
     if (idx >= 0) {
       const characters = [...p.characters]
@@ -749,13 +955,21 @@ export function updateFieldCard(
  * A character leaving the field: attached DON returns to the owner's cost area
  * rested (CR 6-5-5-4), and the instance loses modifiers (new-object rule 3-1-6).
  */
-function removeFromField(
+export function removeFromField(
   state: GameState,
   instanceId: string,
   dest: 'trash' | 'hand' | 'deckBottom',
 ): GameState {
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
+    if (p.stage?.instanceId === instanceId) {
+      const stageCard: GameCard = { ...p.stage, modifiers: [], activatedThisTurn: [] }
+      const next = { ...p, stage: null as GameCard | null }
+      if (dest === 'trash') next.trash = [...p.trash, stageCard]
+      else if (dest === 'hand') next.hand = [...p.hand, { ...stageCard, revealed: true }]
+      else next.deck = [...p.deck, { ...stageCard, revealed: false }]
+      return { ...state, players: { ...state.players, [pid]: next } }
+    }
     const idx = p.characters.findIndex((c) => c.instanceId === instanceId)
     if (idx < 0) continue
     const characters = [...p.characters]
@@ -775,11 +989,34 @@ function removeFromField(
   return state
 }
 
-/** K.O. a character by instance id: field -> trash, then queue its [On K.O.] effects. */
-export function koById(state: GameState, instanceId: string, events: GameEvent[]): GameState {
+/** K.O. a character (or stage) by instance id: field -> trash, then queue its
+ * [On K.O.] effects. Effect K.O.s pass the effect's controller so protection
+ * flags apply; battle K.O.s pass byBattle. */
+export function koById(
+  state: GameState,
+  instanceId: string,
+  events: GameEvent[],
+  opts: { byBattle?: boolean; controller?: PlayerId } = {},
+): GameState {
   const card = findFieldCard(state, instanceId)
   if (!card) return state
   const owner = card.ownerId
+
+  if (!opts.byBattle) {
+    const protectedFromEffects =
+      hasFlag(state, card, 'noEffectKo') ||
+      (opts.controller !== undefined &&
+        opts.controller !== owner &&
+        hasFlag(state, card, 'noOppEffectRemove'))
+    if (protectedFromEffects) {
+      events.push({
+        type: 'KO_PREVENTED',
+        playerId: owner,
+        description: `${getCardById(card.cardId)?.name ?? 'Card'} cannot be K.O.'d by effects`,
+      })
+      return state
+    }
+  }
 
   // Socket 2, the replacement window: a matching 'replaceKo' def on the card
   // runs INSTEAD of the K.O. - the card stays, no trash, no [On K.O.], no
@@ -921,13 +1158,13 @@ function playCardFree(
   events: GameEvent[],
 ): GameState {
   const p = state.players[controller]
-  if (p.characters.length >= MAX_CHARACTERS) return state
   for (const zone of ['hand', 'trash', 'deck'] as const) {
     const idx = p[zone].findIndex((c) => c.instanceId === instanceId)
     if (idx < 0) continue
     const source = [...p[zone]]
     const [raw] = source.splice(idx, 1)
-    if (getCardById(raw.cardId)?.cardType !== 'Character') return state
+    const cardType = getCardById(raw.cardId)?.cardType
+    if (cardType !== 'Character' && cardType !== 'Stage') return state
     const played: GameCard = {
       ...raw,
       isRested: rested,
@@ -936,6 +1173,20 @@ function playCardFree(
       attachedDon: 0,
       activatedThisTurn: [],
     }
+    if (cardType === 'Stage') {
+      // A new stage replaces the old one (old to trash); when playing FROM the
+      // trash, build on the already-spliced list so the card isn't duplicated
+      const baseTrash = zone === 'trash' ? source : p.trash
+      const trash = p.stage ? [...baseTrash, p.stage] : baseTrash
+      return {
+        ...state,
+        players: {
+          ...state.players,
+          [controller]: { ...p, [zone]: source, trash, stage: played },
+        },
+      }
+    }
+    if (p.characters.length >= MAX_CHARACTERS) return state
     let s: GameState = {
       ...state,
       players: {
@@ -947,6 +1198,12 @@ function playCardFree(
       type: 'PLAY_CARD',
       playerId: controller,
       description: `${getCardById(raw.cardId)?.name ?? 'Card'} played by effect`,
+    })
+    s = emitEngineEvent(s, {
+      kind: 'characterPlayed',
+      player: controller,
+      cardId: played.cardId,
+      fromHand: zone === 'hand',
     })
     s = queueEffects(s, played, 'onPlay', controller)
     return s

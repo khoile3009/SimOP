@@ -32,8 +32,8 @@ export type BattleStep = 'ATTACK' | 'BLOCK' | 'COUNTER' | 'DAMAGE'
 export type ModifierDuration = 'turn' | 'battle' | 'untilYourNextTurn' | 'untilTurn' | 'permanent'
 
 export interface Modifier {
-  kind: 'power' | 'keyword' | 'flag'
-  value: number // power delta; flag value (e.g. the power threshold of a blocker lock); 0 otherwise
+  kind: 'power' | 'keyword' | 'flag' | 'cost'
+  value: number // power/cost delta; flag value (e.g. the power threshold of a blocker lock); 0 otherwise
   keyword?: string
   flag?: string
   duration: ModifierDuration
@@ -94,10 +94,23 @@ export interface GameState {
   pendingChoice: PendingChoice | null
   pendingTrigger: TriggerState | null
   pendingDamage: PendingDamage | null
+  /** [End of Your Turn] effects are resolving; the turn switch completes when they finish */
+  pendingEndTurn?: boolean
+  /** Per-player restrictions that expire at end of turn (e.g. 'noLifeToHand') */
+  turnFlags: Record<PlayerId, string[]>
+  /** One-shot cost discounts for playing matching cards this turn (Kin'emon) */
+  playDiscounts: Record<PlayerId, PlayDiscount[]>
   actionHistory: GameAction[]
   winner: PlayerId | null
   setupComplete: boolean
   mulliganState: Record<PlayerId, 'pending' | 'accepted' | 'declined'>
+}
+
+export interface PlayDiscount {
+  amount: number
+  cardType?: CardType
+  typeIncludes?: string
+  minCost?: number
 }
 
 export interface TriggerState {

@@ -17,6 +17,7 @@ npm run format:check # Prettier check (no write)
 npm run test         # Run all tests once (Vitest)
 npm run test:watch   # Run tests in watch mode
 npx vitest run src/engine/rules.test.ts  # Run a single test file
+npm run ingest -- OP-02  # Fetch + convert a set from optcgapi into src/data/<set>/
 ```
 
 ## Architecture
@@ -48,9 +49,11 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 
 ## Effect System
 
-OP01 coverage: FULL (Sep 2026) — every card is automated via effect defs + statics in
-`src/data/op01/effects.ts`, printed-keyword parsing, or the rules layer; `COVERAGE_NOTES`
-there documents the remaining SIMPLIFIED deviations (enforced by coverage.test.ts).
+OP01 and OP02 coverage: FULL (Sep 2026) — every card is automated via effect defs +
+statics in `src/data/<set>/effects.ts`, printed-keyword parsing, or the rules layer;
+each set's `COVERAGE_NOTES` documents the remaining SIMPLIFIED deviations (enforced by
+that set's coverage.test.ts). New sets enter via `npm run ingest -- <API set id>`, then
+defs are authored against the printed text until the coverage test passes.
 Key mechanisms beyond the basics: statics/auras (`effects/statics.ts`, applied at read
 time — `getEffectivePower`/`hasKeyword`/`hasFlag` all take `state`), [Activate: Main]
 abilities (`ACTIVATE_EFFECT` action, costs + once-per-turn), counter events
@@ -75,6 +78,20 @@ holds the TYPE list). **Revealed knowledge** — `GameCard.revealed` marks publi
 cards in hands (reveal ops, field bounces, trash-to-hand); life cards added to hand stay
 HIDDEN — the official ruling reveals a life card only to activate its [Trigger]; cleared
 on draw or bottom-deck; `determinize` pins revealed cards instead of resampling them.
+
+M6 additions (OP02): **field cost modifiers** — `Modifier` kind `'cost'`, cost auras
+(StaticDef `costMod` on field scopes), and `getEffectiveFieldCost(state, card)` for all
+cost-based targeting/conditions (recursion-guarded: aura conditions that ask about costs
+settle on printed+modifiers). **Stages are effect sources** — activatables, statics,
+[Trigger] plays, and K.O. targets all handle `player.stage`. **`endOfTurn` timing** —
+[End of Your Turn] defs queue on END_TURN; a choice inside one sets
+`state.pendingEndTurn` and the turn switch completes when the stack drains. **Events**
+`donAttached` / `donReturned` / `characterPlayed` (with `noBaseEffect`/`fromHand`
+query filters), and `afterBattleKo` timing on attackers. **Player turn state** —
+`state.turnFlags` (e.g. 'noLifeToHand') and one-shot `state.playDiscounts`, both cleared
+at end of turn. **DON!!-X activation costs** — `EffectDef.cost.returnDon` pays up front
+(rested first) and emits `donReturned`; ops-encoded DON!!-X selects are only for
+auto-timing effects where paying is optional.
 
 ## Effect System (Phase A)
 

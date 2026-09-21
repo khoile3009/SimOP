@@ -98,6 +98,8 @@ export function createGame(deck1: Deck, deck2: Deck): GameState {
     pendingChoice: null,
     pendingTrigger: null,
     pendingDamage: null,
+    turnFlags: { player1: [], player2: [] },
+    playDiscounts: { player1: [], player2: [] },
     actionHistory: [],
     winner: null,
     setupComplete: false,

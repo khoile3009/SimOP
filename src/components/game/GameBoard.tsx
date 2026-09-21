@@ -428,7 +428,9 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
       ? legalActions(gameState).flatMap((a) => {
           if (a.type !== 'ACTIVATE_EFFECT') return []
           const p = gameState.players[current]
-          const card = [p.leader, ...p.characters].find((c) => c.instanceId === a.cardInstanceId)
+          const card = [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])].find(
+            (c) => c.instanceId === a.cardInstanceId,
+          )
           const name = card ? (getCardById(card.cardId)?.name ?? 'Card') : 'Card'
           return [{ cardInstanceId: a.cardInstanceId, effectId: a.effectId, name }]
         })

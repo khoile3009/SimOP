@@ -79,8 +79,8 @@ function mainPhaseOptions(state: GameState, actor: PlayerId): GameAction[] {
     actions.push({ type: 'PLAY_CARD', cardInstanceId: card.instanceId })
   }
 
-  // Activated abilities on the leader and characters
-  for (const card of [player.leader, ...player.characters]) {
+  // Activated abilities on the leader, characters, and stage
+  for (const card of [player.leader, ...player.characters, ...(player.stage ? [player.stage] : [])]) {
     const defs = getEffectDefs(card.cardId)
     for (let i = 0; i < defs.length; i++) {
       if (defs[i].timing !== 'activateMain') continue

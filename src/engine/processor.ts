@@ -1,12 +1,19 @@
 import type { GameState, GameAction, GameResult, GameEvent, PlayerId, BattleState } from './types'
 import { getCardById } from '@/data/cardService'
 import { validateAction } from './rules'
-import { getOpponent, executeEndPhase, autoAdvancePhases, expireModifiers } from './turnManager'
+import { getOpponent, executeEndPhase, autoAdvancePhases } from './turnManager'
 import { performMulligan, acceptHand, isMulliganComplete, startGame } from './gameSetup'
-import { resolveDamage, dealLifeDamage } from './battleManager'
-import { queueEffects, runStack, applyChoice, pushFrame, emitEngineEvent } from './effects/interpreter'
+import { resolveDamage, dealLifeDamage, endOfBattleCleanup } from './battleManager'
+import {
+  queueEffects,
+  runStack,
+  applyChoice,
+  pushFrame,
+  emitEngineEvent,
+  queueEndOfTurnEffects,
+} from './effects/interpreter'
 import { getEffectDefs } from './effects/registry'
-import { getEffectiveCost } from './effects/statics'
+import { getEffectiveCost, discountMatches } from './effects/statics'
 import { legalActions } from './legalActions'
 import { MAX_CHARACTERS } from './constants'
 
@@ -56,12 +63,14 @@ export function processAction(
       newState = processEndTurn(state, events)
       break
     case 'CHOOSE':
-      newState = settleDamage(
-        autoAdvanceBattle(
-          checkBattleExit(runStack(applyChoice(state, action.instanceIds), events), events),
+      newState = maybeFinishEndTurn(
+        settleDamage(
+          autoAdvanceBattle(
+            checkBattleExit(runStack(applyChoice(state, action.instanceIds), events), events),
+            events,
+          ),
           events,
         ),
-        events,
       )
       break
     case 'ACTIVATE_EFFECT':
@@ -128,6 +137,11 @@ function processPlayCard(
       costRemaining--
     }
   }
+  // One-shot play discounts that priced this card are used up
+  const remainingDiscounts = (state.playDiscounts[playerId] ?? []).filter(
+    (d) => !discountMatches(card, d),
+  )
+  const playDiscounts = { ...state.playDiscounts, [playerId]: remainingDiscounts }
 
   // Playing a 6th character: an existing one is trashed first (rule processing,
   // CR 3-7-6-1), then the staged card is played - handled by the '$boardFull'
@@ -140,6 +154,7 @@ function processPlayCard(
     })
     let staged: GameState = {
       ...state,
+      playDiscounts,
       players: { ...state.players, [playerId]: { ...player, donArea: newDonArea } },
     }
     staged = pushFrame(staged, card, playerId, 'main', 0, '$boardFull')
@@ -177,6 +192,7 @@ function processPlayCard(
 
   let newState: GameState = {
     ...state,
+    playDiscounts,
     players: {
       ...state.players,
       [playerId]: {
@@ -190,6 +206,14 @@ function processPlayCard(
     },
   }
 
+  if (cardData.cardType === 'Character') {
+    newState = emitEngineEvent(newState, {
+      kind: 'characterPlayed',
+      player: playerId,
+      cardId: playedCard.cardId,
+      fromHand: true,
+    })
+  }
   if (cardData.cardType === 'Event') {
     // Listeners queue first so the event's own frames land on top and resolve first
     newState = emitEngineEvent(newState, { kind: 'eventActivated', player: playerId })
@@ -239,7 +263,7 @@ function processAttachDon(
     description: `${playerId} attached ${count} DON`,
   })
 
-  return {
+  const afterAttach: GameState = {
     ...state,
     players: {
       ...state.players,
@@ -251,6 +275,7 @@ function processAttachDon(
       },
     },
   }
+  return runStack(emitEngineEvent(afterAttach, { kind: 'donAttached', player: playerId }), events)
 }
 
 function processDeclareAttack(
@@ -361,8 +386,7 @@ function checkBattleExit(state: GameState, events: GameEvent[]): GameState {
     playerId: battle.attackerPlayer,
     description: 'Battle ended: attacker or target left the field',
   })
-  const cleaned = expireModifiers(state, (m) => m.duration === 'battle')
-  return { ...cleaned, battle: null }
+  return endOfBattleCleanup(state, battle.attackerId, events)
 }
 
 function processActivateBlocker(
@@ -474,21 +498,33 @@ function processActivateEffect(
 ): GameState {
   const player = state.players[playerId]
   const isLeader = player.leader.instanceId === cardInstanceId
+  const isStage = player.stage?.instanceId === cardInstanceId
   const defIndex = Number(effectId)
   let card = isLeader
     ? player.leader
-    : player.characters.find((c) => c.instanceId === cardInstanceId)!
+    : isStage
+      ? player.stage!
+      : player.characters.find((c) => c.instanceId === cardInstanceId)!
   const def = getEffectDefs(card.cardId)[defIndex]
 
-  // Pay costs: rest DON in the cost area, rest the card itself, mark once-per-turn
+  // Pay costs: rest DON in the cost area, return DON!!-X to the DON deck
+  // (rested first), rest the card itself, mark once-per-turn
   let costRemaining = def.cost?.restDon ?? 0
-  const donArea = player.donArea.map((d) => {
+  let donArea = player.donArea.map((d) => {
     if (costRemaining > 0 && !d.isRested) {
       costRemaining--
       return { ...d, isRested: true }
     }
     return d
   })
+  let donDeck = player.donDeck
+  const returnCost = def.cost?.returnDon ?? 0
+  if (returnCost > 0) {
+    const sorted = [...donArea].sort((a, b) => Number(b.isRested) - Number(a.isRested))
+    const returned = new Set(sorted.slice(0, returnCost).map((d) => d.instanceId))
+    donDeck = [...donDeck, ...donArea.filter((d) => returned.has(d.instanceId)).map((d) => ({ ...d, isRested: false }))]
+    donArea = donArea.filter((d) => !returned.has(d.instanceId))
+  }
   card = {
     ...card,
     isRested: def.cost?.restSelf ? true : card.isRested,
@@ -497,19 +533,25 @@ function processActivateEffect(
       : card.activatedThisTurn,
   }
 
-  const newState: GameState = {
+  let newState: GameState = {
     ...state,
     players: {
       ...state.players,
       [playerId]: {
         ...player,
         donArea,
+        donDeck,
         leader: isLeader ? card : player.leader,
-        characters: isLeader
-          ? player.characters
-          : player.characters.map((c) => (c.instanceId === cardInstanceId ? card : c)),
+        stage: isStage ? card : player.stage,
+        characters:
+          isLeader || isStage
+            ? player.characters
+            : player.characters.map((c) => (c.instanceId === cardInstanceId ? card : c)),
       },
     },
+  }
+  if (returnCost > 0) {
+    newState = emitEngineEvent(newState, { kind: 'donReturned', player: playerId })
   }
 
   events.push({
@@ -663,7 +705,30 @@ function processEndTurn(state: GameState, events: GameEvent[]): GameState {
     description: `${state.currentPlayer} ended their turn`,
   })
 
-  const afterEnd = executeEndPhase(state)
-  return autoAdvancePhases(afterEnd)
+  // [End of Your Turn] auto effects resolve before the turn switches; a choice
+  // inside one pauses here, and the CHOOSE handler completes the switch
+  const withEffects = runStack(queueEndOfTurnEffects({ ...state, pendingEndTurn: true }), events)
+  return maybeFinishEndTurn(withEffects)
+}
+
+/** Complete a pending turn switch once nothing is left to resolve. */
+function maybeFinishEndTurn(state: GameState): GameState {
+  if (
+    !state.pendingEndTurn ||
+    state.stack.length > 0 ||
+    state.pendingChoice ||
+    state.pendingTrigger ||
+    state.winner
+  ) {
+    return state
+  }
+  // "During this turn" player restrictions and unused play discounts expire now
+  const cleared: GameState = {
+    ...state,
+    pendingEndTurn: false,
+    turnFlags: { player1: [], player2: [] },
+    playDiscounts: { player1: [], player2: [] },
+  }
+  return autoAdvancePhases(executeEndPhase(cleared))
 }
 
