@@ -136,8 +136,9 @@ export function dealLifeDamage(
         description: `Life card banished to trash`,
       })
     } else {
-      // Normal: card goes to hand, revealed to both players (trigger check is public)
-      newHand.push({ ...lifeCard, revealed: true })
+      // Normal: card goes to hand WITHOUT being revealed - the owner checks it
+      // privately, and only revealing to activate a [Trigger] makes it public
+      newHand.push({ ...lifeCard, revealed: false })
       const cardData = getCardById(lifeCard.cardId)
 
       if (cardData?.triggerText) {

@@ -6,6 +6,7 @@ import { whoActs } from '@/engine/legalActions'
 import { koById, runStack } from '@/engine/effects/interpreter'
 import { registerEffects } from '@/engine/effects/registry'
 import { evalCond, getEffectiveCost } from '@/engine/effects/statics'
+import { getEffectivePower } from '@/engine/powerCalc'
 import { cardHasName, deckCopyLimit, getBattleAttribute } from '@/engine/rulesLayer'
 import { canAddCard } from '@/stores/deckStore'
 import { determinize } from '@/ai/determinize'
@@ -201,6 +202,86 @@ describe('reveals and revealed-hand knowledge', () => {
     const world = determinize(state, 'player1', mulberry32(7))
     const worldHandIds = world.players.player2.hand.map((c) => c.instanceId)
     for (const id of targets) expect(worldHandIds).toContain(id)
+  })
+})
+
+describe('OP01-013 Sanji life-pay', () => {
+  function sanjiState() {
+    let state = baseState()
+    const sanji = withCharacter(state, 'player1', 'OP01-013')
+    state = sanji.state
+    const p1 = state.players.player1
+    // Force a life card WITH a trigger on top: paying it must not fire the trigger
+    const triggerLife = createGameCard('OP01-030', 'player1')
+    const donArea = [
+      { ...createGameCard('DON', 'player1'), isRested: true },
+      { ...createGameCard('DON', 'player1'), isRested: true },
+      createGameCard('DON', 'player1'),
+    ]
+    state = {
+      ...state,
+      players: {
+        ...state.players,
+        player1: { ...p1, lifeCards: [triggerLife, ...p1.lifeCards.slice(1)], donArea },
+      },
+    }
+    return { state, sanji: sanji.card, triggerLife }
+  }
+
+  it('takes the TOP life card to hand privately, without firing its trigger', () => {
+    const { state: s0, sanji, triggerLife } = sanjiState()
+    let state = processAction(s0, { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' }, 'player1').state
+    expect(state.pendingChoice?.options).toEqual([triggerLife.instanceId])
+    state = choose(state, [triggerLife.instanceId])
+
+    const p1 = state.players.player1
+    expect(p1.lifeCards.length).toBe(4)
+    const paid = p1.hand.find((c) => c.instanceId === triggerLife.instanceId)
+    expect(paid).toBeDefined()
+    expect(paid!.revealed).toBeFalsy() // hidden: only [Trigger] activation reveals a life card
+    expect(state.pendingTrigger).toBeNull() // effect pays never fire triggers
+
+    const live = p1.characters.find((c) => c.instanceId === sanji.instanceId)!
+    expect(getEffectivePower(state, live)).toBe(7000) // 3000 base + 2000 effect + 2×1000 DON
+    expect(live.attachedDon).toBe(2) // both rested DON vacuumed up
+    expect(p1.donArea.length).toBe(1) // only the active one remains
+  })
+
+  it('declining the pay ends the effect but consumes the once-per-turn', () => {
+    const { state: s0, sanji } = sanjiState()
+    let state = processAction(s0, { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' }, 'player1').state
+    state = choose(state, [])
+
+    const p1 = state.players.player1
+    expect(p1.lifeCards.length).toBe(5)
+    const live = p1.characters.find((c) => c.instanceId === sanji.instanceId)!
+    expect(getEffectivePower(state, live)).toBe(3000)
+    expect(live.attachedDon).toBe(0)
+    const again = processAction(state, { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' }, 'player1')
+    expect(again.error).toBeDefined()
+  })
+
+  it('life cards taken as battle damage also stay hidden', () => {
+    let state = baseState()
+    const attacker = withCharacter(state, 'player1', 'OP01-025', { attachedDon: 1 })
+    state = attacker.state
+    // No-trigger life card on top so damage resolves without a prompt
+    const plainLife = createGameCard('OP01-013', 'player2')
+    state = {
+      ...state,
+      players: {
+        ...state.players,
+        player2: {
+          ...state.players.player2,
+          hand: [],
+          lifeCards: [plainLife, ...state.players.player2.lifeCards.slice(1)],
+        },
+      },
+    }
+    state = processAction(state, { type: 'DECLARE_ATTACK', attackerId: attacker.card.instanceId, targetId: state.players.player2.leader.instanceId }, 'player1').state
+    const taken = state.players.player2.hand.find((c) => c.instanceId === plainLife.instanceId)
+    expect(taken).toBeDefined()
+    expect(taken!.revealed).toBeFalsy()
   })
 })
 

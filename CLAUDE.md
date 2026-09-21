@@ -72,8 +72,9 @@ only correct way to read a hand card's cost (rules, processor, legalActions all 
 compare `data.name` directly), `deckCopyLimit`, `getBattleAttribute` (real battle
 attributes live in `src/data/op01/battleAttributes.json`; cards.json's `attribute` field
 holds the TYPE list). **Revealed knowledge** — `GameCard.revealed` marks publicly-known
-cards in hands (reveal ops, field bounces, trash-to-hand, life hits); cleared on draw or
-bottom-deck; `determinize` pins revealed cards instead of resampling them.
+cards in hands (reveal ops, field bounces, trash-to-hand); life cards added to hand stay
+HIDDEN — the official ruling reveals a life card only to activate its [Trigger]; cleared
+on draw or bottom-deck; `determinize` pins revealed cards instead of resampling them.
 
 ## Effect System (Phase A)
 

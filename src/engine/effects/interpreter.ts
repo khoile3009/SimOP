@@ -330,13 +330,14 @@ function executeOp(
         const idx = p.lifeCards.findIndex((c) => c.instanceId === id)
         if (idx < 0) continue
         const lifeCards = [...p.lifeCards]
-        // Life cards are shown when they change zones: it enters hand revealed
+        // Life cards added to hand by an effect stay hidden from the opponent
+        // (only revealing to activate a [Trigger] makes a life card public)
         const [card] = lifeCards.splice(idx, 1)
         s = {
           ...s,
           players: {
             ...s.players,
-            [controller]: { ...p, lifeCards, hand: [...p.hand, { ...card, revealed: true }] },
+            [controller]: { ...p, lifeCards, hand: [...p.hand, { ...card, revealed: false }] },
           },
         }
       }

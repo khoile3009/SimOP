@@ -599,6 +599,21 @@ function processActivateTrigger(
   if (accept) {
     const player = newState.players[playerId]
     const card = player.hand.find((c) => c.instanceId === trigger.cardInstanceId)
+    if (card && getEffectDefs(card.cardId, 'trigger').length === 0) {
+      // Legacy stay-in-hand trigger: activating revealed it to both players
+      newState = {
+        ...newState,
+        players: {
+          ...newState.players,
+          [playerId]: {
+            ...player,
+            hand: player.hand.map((c) =>
+              c.instanceId === card.instanceId ? { ...c, revealed: true } : c,
+            ),
+          },
+        },
+      }
+    }
     if (card && getEffectDefs(card.cardId, 'trigger').length > 0) {
       // An activated trigger card is trashed after resolving unless the effect
       // moves it (CR 10-1-5-3). It is trashed up front; 'playSelf' plays it

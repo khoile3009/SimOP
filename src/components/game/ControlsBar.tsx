@@ -20,6 +20,8 @@ export interface ChoiceStrip {
 interface ControlsBarProps {
   gameState: GameState
   choice?: ChoiceStrip
+  /** It is actually this seat's Main Phase: no battle, no pending decisions */
+  canEndTurn: boolean
   onEndTurn: () => void
   onDeclineBlock: () => void
   onActivateBlocker: (blockerId: string) => void
@@ -37,6 +39,7 @@ interface ControlsBarProps {
 export default function ControlsBar({
   gameState,
   choice,
+  canEndTurn,
   onEndTurn,
   onDeclineBlock,
   onActivateBlocker,
@@ -147,8 +150,9 @@ export default function ControlsBar({
     )
   }
 
-  // Main phase controls
-  if (phase === 'MAIN') {
+  // Main phase controls - only when this seat can actually act (End Turn used
+  // to render through the opponent's turn and mid-battle, as a dead button)
+  if (phase === 'MAIN' && canEndTurn) {
     return (
       <div className="flex flex-wrap items-center justify-center gap-3 py-2">
         {activatables.map((a) => (

@@ -47,9 +47,10 @@
       (OP01-075 Pacifista any-number), battle attributes (battleAttributes.json
       from optcgapi; OP01-024 Strike shield). (5) revealed-hand knowledge -
       GameCard.revealed set by reveal ops (OP01-063 Arlong, OP01-105 Bao Huang),
-      bounces, trash-to-hand, and life hits; determinize pins revealed cards
-      (first real knowledge tracking); vs-AI UI renders revealed opponent cards
-      face-up and supports blind picks over face-down hands.
+      bounces, and trash-to-hand; life cards added to hand stay hidden (official
+      ruling: revealed only to activate a [Trigger]); determinize pins revealed
+      cards (first real knowledge tracking); vs-AI UI renders revealed opponent
+      cards face-up and supports blind picks over face-down hands.
       Fleet-certified: 1200 games, zero invariant violations, ZERO unused
       effects. Coverage decks upgraded: leaders with abilities always anchor a
       deck, and every deck carries >=2 Events (this caught Crocodile leader's

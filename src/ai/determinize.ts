@@ -26,8 +26,9 @@ export function determinize(
   const ownDeck = ownPool.slice(own.lifeCards.length)
 
   // Opponent: the unrevealed part of their hand joins their hidden pool.
-  // Revealed hand cards (effect reveals, bounced characters, life hits) are
-  // public knowledge and stay fixed.
+  // Revealed hand cards (effect reveals, bounced characters) are public
+  // knowledge and stay fixed. Life cards taken to hand are NOT revealed:
+  // per the official rules they stay hidden unless a [Trigger] is activated.
   const theirs = state.players[opp]
   const known = theirs.hand.filter((c) => c.revealed)
   const unknown = theirs.hand.filter((c) => !c.revealed)

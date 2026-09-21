@@ -533,6 +533,13 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
       <ControlsBar
         gameState={gameState}
         choice={choiceStrip}
+        canEndTurn={
+          !gameState.battle &&
+          !gameState.pendingChoice &&
+          !gameState.pendingTrigger &&
+          gameState.currentPlayer === current &&
+          humanControls(current)
+        }
         onEndTurn={() => dispatch({ type: 'END_TURN' }, current)}
         onDeclineBlock={() => dispatch({ type: 'DECLINE_BLOCK' }, gameState.battle?.defenderPlayer ?? opponent)}
         onActivateBlocker={(blockerId) =>
