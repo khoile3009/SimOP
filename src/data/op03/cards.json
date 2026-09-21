@@ -1,0 +1,2513 @@
+[
+  {
+    "id": "OP03-001",
+    "name": "Portgas.D.Ace",
+    "cardType": "Leader",
+    "color": [
+      "Red"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "When this Leader attacks or is attacked, you may trash any number of Event or Stage cards from your hand. This Leader gains +1000 power during this battle for every card trashed.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-002",
+    "name": "Adio",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "ODYSSEY"
+    ],
+    "effectText": "[DON!! x1] [When Attacking] Your opponent cannot activate a [Blocker] Character that has 2000 or less power during this battle.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-003",
+    "name": "Izo",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[On Play] Look at 5 cards from the top of your deck; reveal up to 1 card with a type including \"Whitebeard Pirates\" other than [Izo] and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-004",
+    "name": "Curiel",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "This Character cannot attack a Leader on the turn in which it is played. [DON!! x1] This Character gains [Rush]. (This card can attack on the turn in which it is played.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-005",
+    "name": "Thatch",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Activate:Main] [Once Per Turn] This Character gains +2000 power during this turn. Then, trash this Character at the end of this turn.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-006",
+    "name": "Speed Jil",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 4,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-007",
+    "name": "Namule",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "Whitebeard Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-008",
+    "name": "Buggy",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": 3000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Buggy Pirates"
+    ],
+    "effectText": "This Character cannot be K.O.'d in battle by \"Slash\" attribute cards. [On Play] Look at 5 cards from the top of your deck; reveal up to 1 red Event and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-009",
+    "name": "Haruta",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Activate:Main] [Once Per Turn] Give up to 1 rested DON!! card to your Leader or 1 of your Characters.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-010",
+    "name": "Fossa",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-011",
+    "name": "Blamenco",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[DON!! x1] [When Attacking] Give up to 1 of your opponent's Characters -2000 power during this turn.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-012",
+    "name": "Marshall.D.Teach",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[When Attacking] You may trash 1 of your red Characters with 4000 power or more: Draw 1 card. Then, this Character gains +1000 power during this battle.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-013",
+    "name": "Marco",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Your Turn] [On Play] K.O. up to 1 of your opponent's Characters with 3000 power or less. [On K.O.] You may trash 1 Event from your hand",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-014",
+    "name": "Monkey.D.Garp",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[When Attacking] Play up to 1 red Character card with a cost of 1 from your hand.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-015",
+    "name": "Lim",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 3,
+    "power": 2000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "ODYSSEY"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-016",
+    "name": "Flame Emperor",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 7,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Main] If your Leader is [Portgas.D.Ace], K.O. up to 1 of your opponent's Characters with 8000 power or less, and your Leader gains [Double Attack] and +3000 power during this turn. (This card deals 2 damage.)",
+    "triggerText": "K.O. up to 1 of your opponent's Characters with 6000 power or less.",
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-017",
+    "name": "Cross Fire",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Main] / [Counter] If your Leader's type includes \"Whitebeard Pirates\", give up to 1 of your opponent's Characters -4000 power during this turn.",
+    "triggerText": "Activate this card's [Main] effect.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-018",
+    "name": "Fire Fist",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Main] You may trash 1 Event from your hand: K.O. up to 1 of your opponent's Characters with 5000 power or less and up to 1 of your opponent's Characters with 4000 power or less.",
+    "triggerText": "K.O. up to 1 of your opponent's Characters with 5000 power or less.",
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-019",
+    "name": "Fiery Doll",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Main] Your Leader gains +4000 power during this turn.",
+    "triggerText": "Give up to 1 of your opponent's Leader or Character cards -10000 power during this turn.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-020",
+    "name": "Striker",
+    "cardType": "Stage",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Activate:Main] (2) (You may rest the specified number of DON!! cards in your cost area.) You may rest this Stage: If your Leader is [Portgas.D.Ace], look at 5 cards from the top of your deck; reveal up to 1 Event and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-021",
+    "name": "Kuro",
+    "cardType": "Leader",
+    "color": [
+      "Green"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "East Blue",
+      "Black Cat Pirates"
+    ],
+    "effectText": "[Activate:Main] (3) (You may rest the specified number of DON!! cards in your cost area.) You may rest 2 of your [East Blue] type Characters: Set this Leader as active, and rest up to 1 of your opponent's Characters with a cost of 5 or less.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-022",
+    "name": "Arlong",
+    "cardType": "Leader",
+    "color": [
+      "Green",
+      "Yellow"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 4,
+    "attribute": [
+      "Fish-Man",
+      "Arlong Pirates",
+      "East Blue"
+    ],
+    "effectText": "[DON!! x2] [When Attacking (1) (You may rest the specified number of DON!! cards in your cost area.): Play up to 1 Character card with a cost of 4 or less and a [Trigger] from your hand.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-023",
+    "name": "Alvida",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue",
+      "Alvida Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-024",
+    "name": "Gin",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Krieg Pirates",
+      "East Blue"
+    ],
+    "effectText": "[On Play] If your Leader has the [East Blue] type, rest up to 2 of your opponent's Characters with a cost of 4 or less.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-025",
+    "name": "Krieg",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Krieg Pirates",
+      "East Blue"
+    ],
+    "effectText": "[On Play] You may trash 1 card from your hand: K.O. up to 2 of your opponent's rested Characters with a cost of 4 or less. [DON!! x1] This Character gains [Double Attack]. (This card deals 2 damage.)",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-026",
+    "name": "Kuroobi",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "Arlong Pirates",
+      "East Blue"
+    ],
+    "effectText": "[On Play] If your Leader has the [East Blue] type, rest up to 1 of your opponent's Characters.",
+    "triggerText": "Play this card.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-027",
+    "name": "Sham",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue",
+      "Black Cat Pirates"
+    ],
+    "effectText": "[On Play] If your Leader has the [East Blue] type, rest up to 1 of your opponent's Characters with a cost of 2 or less and, if you don't have [Buchi], play up to 1 [Buchi] from your hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-028",
+    "name": "Jango",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "East Blue",
+      "Black Cat Pirates"
+    ],
+    "effectText": "[On Play] Choose one: • Set up to 1 of your [East Blue] type Leader or Character cards with a cost of 6 or less as active. • Rest this Character and up to 1 of your opponent's Characters.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-029",
+    "name": "Chew",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "Arlong Pirates",
+      "East Blue"
+    ],
+    "effectText": "[On Play] K.O. up to 1 of your opponent's rested Characters with a cost of 4 or less.",
+    "triggerText": "Play this card.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-030",
+    "name": "Nami",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Arlong Pirates",
+      "East Blue"
+    ],
+    "effectText": "[On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [East Blue] type card other than [Nami] and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": "Play this card.",
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-031",
+    "name": "Pearl",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Krieg Pirates",
+      "East Blue"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-032",
+    "name": "Buggy",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Buggy Pirates",
+      "East Blue"
+    ],
+    "effectText": "This Character cannot be K.O.'d in battle by \"Slash\" attribute cards.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-033",
+    "name": "Hatchan",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 4000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "Arlong Pirates",
+      "East Blue"
+    ],
+    "effectText": "",
+    "triggerText": "If your Leader has the [East Blue] type, play this card.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-034",
+    "name": "Buchi",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue",
+      "Black Cat Pirates"
+    ],
+    "effectText": "[On Play] K.O. up to 1 of your opponent's rested Characters with a cost of 2 or less.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-035",
+    "name": "Momoo",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 2,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal",
+      "East Blue"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-036",
+    "name": "Out-of-the-Bag",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [],
+    "effectText": "[Main] You may rest 1 of your [East Blue] type Characters: Set up to 1 of your [Kuro] cards as active.",
+    "triggerText": "K.O. up to 1 of your opponent's rested Characters with a cost of 3 or less.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-037",
+    "name": "Tooth Attack",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "Arlong Pirates",
+      "East Blue"
+    ],
+    "effectText": "[Main] You may rest 1 of your [East Blue] type Characters: K.O. up to 1 of your opponent's rested Characters with a cost of 3 or less.",
+    "triggerText": "Play up to 1 Character card with a cost of 4 or less and a [Trigger] from your hand.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-038",
+    "name": "Deathly Poison Gas Bomb MH5",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [],
+    "effectText": "[Main] Rest up to 2 of your opponent's Characters with a cost of 2 or less.",
+    "triggerText": "Rest up to 1 of your opponent's Characters with a cost of 5 or less.",
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-039",
+    "name": "One, Two, Jango",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "East Blue",
+      "Black Cat Pirates"
+    ],
+    "effectText": "[Main] Rest up to 1 of your opponent's Characters with a cost of 1 or less. Then, up to 1 of your Characters gains +1000 power during this turn.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-040",
+    "name": "Nami",
+    "cardType": "Leader",
+    "color": [
+      "Blue"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "When your deck is reduced to 0, you win the game instead of losing, according to the rules. [DON!! x1] When this Leader's attack deals damage to your opponent's Life, you may trash 1 card from the top of your deck.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-041",
+    "name": "Usopp",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[Rush] (This card can attack on the turn in which it is played.) [DON!! x1] When this Character's attack deals damage to your opponent's Life, you may trash 7 cards from the top of your deck.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-042",
+    "name": "Usopp's Pirate Crew",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[On Play] Add up to 1 blue [Usopp from your trash to your hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-043",
+    "name": "Gaimon",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 2,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "When you deal damage to your opponent's Life, you may trash 3 cards from the top of your deck. If you do, trash this Character.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-044",
+    "name": "Kaya",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": 0,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[On Play] Draw 2 cards and trash 2 cards from your hand.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-045",
+    "name": "Carne",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 3,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.) [Opponent's Turn] If you have 20 or less cards in your deck, this Character gains +3000 power.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-046",
+    "name": "Genzo",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 2,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-047",
+    "name": "Zeff",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[DON!! x1] When this Character's attack deals damage to your opponent's Life, you may trash 7 cards from the top of your deck. [On Play] Return up to 1 Character with a cost of 3 or less to the owner's hand, and you may trash 2 cards from the top of your deck.  This card has been officially errata'd.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-048",
+    "name": "Nojiko",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 2,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[On Play] If your Leader is [Nami], return up to 1 of your opponent's Characters with a cost of 5 or less to the owner's hand.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-049",
+    "name": "Patty",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[On Play] If you have 20 or less cards in your deck, return up to 1 Character with a cost of 3 or less to the owner's hand.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-050",
+    "name": "Boodle",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 2,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.) [On K.O.] You may trash 1 card from the top of your deck.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-051",
+    "name": "Bell-mere",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Former Navy",
+      "East Blue"
+    ],
+    "effectText": "[DON!! x1] When this Character's attack deals damage to your opponent's Life, you may trash 7 cards from the top of your deck. [On K.O.] You may trash 3 cards from the top of your deck.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-052",
+    "name": "Merry",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-053",
+    "name": "Yosaku & Johnny",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": 3000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[DON!! x1] If you have 20 or less cards in your deck, this Character gains +2000 power.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-054",
+    "name": "Usopp's Rubber Band of Doom!!!",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "East Blue"
+    ],
+    "effectText": "[Counter] Up to 1 of your Leader or Character cards gains +2000 power during this battle. Then, you may trash 1 card from the top of your deck.",
+    "triggerText": "Draw 1 card and you may trash 1 card from the top of your deck.  This card has been officially errata'd.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-055",
+    "name": "Gum-Gum Giant Gavel",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "East Blue"
+    ],
+    "effectText": "[Counter] You may trash 1 card from your hand: Up to 1 of your Leader gains +4000 power during this battle. Then, you may trash 2 cards from the top of your deck.",
+    "triggerText": "Return up to 1 Character with a cost of 4 or less to the owner's hand.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-056",
+    "name": "Sanji's Pilaf",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[Main] Draw 2 cards.",
+    "triggerText": "Activate this card's [Main] effect.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-057",
+    "name": "Three Thousand Worlds",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 4,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "East Blue"
+    ],
+    "effectText": "[Main] Place up to 1 Character with a cost of 5 or less at the bottom of the owner's deck.",
+    "triggerText": "Place up to 1 Character with a cost of 3 or less at the bottom of the owner's deck.",
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-058",
+    "name": "Iceburg",
+    "cardType": "Leader",
+    "color": [
+      "Purple"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "This Leader cannot attack. [Activate:Main] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.) You may rest this Leader: Play up to 1 [Galley-La Company] type Character card with a cost of 5 or less from your hand.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-059",
+    "name": "Kaku",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[When Attacking] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): This Character gains [Banish] during this battle. (When this card deals damage, the target card is trashed without activating its Trigger.)",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-060",
+    "name": "Kalifa",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 4,
+    "power": 4000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[When Attacking] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): Draw 2 cards and trash 1 card from your hand.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-061",
+    "name": "Kiwi & Mozu",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 2,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Water Seven",
+      "The Franky Family"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-062",
+    "name": "Kokoro",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Water Seven",
+      "Merfolk"
+    ],
+    "effectText": "[On Play] Look at 5 cards from the top of your deck; reveal up to 1 [Water Seven] type card other than [Kokoro] and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-063",
+    "name": "Zambai",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": 2000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Water Seven",
+      "The Franky Family"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.) [On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader has the [Water Seven] type, draw 1 card.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-064",
+    "name": "Tilestone",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[On K.O.] If your Leader has the [Galley-La Company] type, add up to 1 DON!! card from your DON!! deck and rest it.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-065",
+    "name": "Chimney & Gonbe",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal",
+      "Water Seven"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-066",
+    "name": "Paulie",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[On Play] (2) (You may rest the specified number of DON!! cards in your cost area.): Add up to 1 DON!! card from your DON!! deck and set it as active. Then, if you have 8 or more DON!! cards on your field, K.O. up to 1 of your opponent's Characters with a cost of 4 or less.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-067",
+    "name": "Peepley Lulu",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[DON!! x1] [When Attacking] If your Leader has the [Galley-La Company] type, add up to 1 DON!! card from your DON!! deck and rest it.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-068",
+    "name": "Minozebra",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Impel Down",
+      "Jailer Beast"
+    ],
+    "effectText": "[Banish] (When this card deals damage, the target card is trashed without activating its Trigger.) [On K.O.] If your Leader has the [Impel Down] type, add up to 1 DON!! card from your DON!! deck and rest it.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-069",
+    "name": "Minorhinoceros",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Impel Down",
+      "Jailer Beast"
+    ],
+    "effectText": "[On K.O.] If your Leader has the [Impel Down] type, draw 2 cards and trash 1 card from your hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-070",
+    "name": "Monkey.D.Luffy",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Water Seven"
+    ],
+    "effectText": "[On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.) You may trash 1 Character card with a cost of 5 from your hand: This Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-071",
+    "name": "Rob Lucci",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[When Attacking] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): Rest up to 1 of your opponent's Characters with a cost of 5 or less.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-072",
+    "name": "Gum-Gum Jet Gatling",
+    "cardType": "Event",
+    "color": [
+      "Purple"
+    ],
+    "cost": 0,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Water Seven"
+    ],
+    "effectText": "[Counter] You may trash 1 card from your hand: Up to 1 of your Leader or Character cards gains +3000 power during this battle.",
+    "triggerText": "Add up to 1 DON!! card from your DON!! deck and set it as active.",
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-073",
+    "name": "Hull Dismantler Slash",
+    "cardType": "Event",
+    "color": [
+      "Purple"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Water Seven",
+      "The Franky Family"
+    ],
+    "effectText": "[Main] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader has the [Water Seven] type, K.O. up to 1 of your opponent's Characters with a cost of 2 or less.",
+    "triggerText": "Activate this card's [Main] effect.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-074",
+    "name": "Top Knot",
+    "cardType": "Event",
+    "color": [
+      "Purple"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[Main] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): Place up to 1 of your opponent's Characters with a cost of 4 or less at the bottom of the owner's deck.",
+    "triggerText": "Activate this card's [Main] effect.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-075",
+    "name": "Galley-La Company",
+    "cardType": "Stage",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[Activate:Main] You may rest this Stage: If your Leader is [Iceburg], add up to 1 DON!! card from your DON!! deck and rest it.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-076",
+    "name": "Rob Lucci",
+    "cardType": "Leader",
+    "color": [
+      "Black"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[Your Turn] [Once Per Turn] You may trash 2 cards from your hand: When your opponent's Character is K.O.'d, set this Leader as active.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-077",
+    "name": "Charlotte Linlin",
+    "cardType": "Leader",
+    "color": [
+      "Yellow",
+      "Black"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 4,
+    "attribute": [
+      "The Four Emperors",
+      "Big Mom Pirates"
+    ],
+    "effectText": "[DON!! x2] [When Attacking] (2) (You may rest the specified number of DON!! cards in your cost area.) You may trash 1 card from your hand: If you have 1 or less Life cards, add up to 1 card from the top of your deck to the top of your Life cards.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-078",
+    "name": "Issho",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 8,
+    "power": 9000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[DON!! x1] [Your Turn] Give all of your opponent's Characters -3 cost. [On Play] If your opponent has 6 or more cards in their hand, trash 2 cards from your opponent's hand.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-079",
+    "name": "Vergo",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 5,
+    "power": 5000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates",
+      "Navy"
+    ],
+    "effectText": "[DON!! x1] This Character cannot be K.O.'d in battle.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-080",
+    "name": "Kaku",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[On Play] You may place 2 cards with a type including \"CP\" from your trash at the bottom of your deck in any order: K.O. up to 1 of your opponent's Characters with a cost of 3 or less.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-081",
+    "name": "Kalifa",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": 4000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[On Play] Draw 2 cards and trash 2 cards from your hand. Then, give up to 1 of your opponent's Characters -2 cost during this turn.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-082",
+    "name": "Kumadori",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-083",
+    "name": "Corgy",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 1,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "World Government"
+    ],
+    "effectText": "[On Play] Look at 5 cards from the top of your deck and trash up to 2 cards. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-084",
+    "name": "Jerry",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 2,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP6"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-085",
+    "name": "Jabra",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 5,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-086",
+    "name": "Spandam",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[On Play] If your Leader's type include \"CP\", look at 3 cards from the top of your deck; reveal up to 1 card with a type including \"CP\" other than [Spandam] and add it to your hand. Then, trash the rest.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-087",
+    "name": "Nero",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-088",
+    "name": "Fukurou",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "This Character cannot be K.O.'d by effects. [Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-089",
+    "name": "Brannew",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[On Play] Look at 3 cards from the top of your deck; reveal up to 1 [Navy] type card other than [Brannew] and add it to your hand. Then, trash the rest.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-090",
+    "name": "Blueno",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[DON!! x1] [This Character gains [Blocker]. (After your opponent declares an attack, you may rest this card to make it the new target of the attack.) [On K.O.] Play up to 1 Character card with a type including \"CP\" and a cost of 4 or less from your trash rested.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-091",
+    "name": "Helmeppo",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 1,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[On Play] Set the cost of up to 1 of your opponent's Characters with no base effect to 0 during this turn.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-092",
+    "name": "Rob Lucci",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[On Play] You may place 2 cards with a type including \"CP\" from your trash at the bottom of your deck in any order: This Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-093",
+    "name": "Wanze",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 2,
+    "power": 4000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "CP7"
+    ],
+    "effectText": "[On Play] You may trash 1 card from your hand: If your Leader's type includes \"CP\", K.O. up to 1 of your opponent's Characters with a cost of 1 or less.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-094",
+    "name": "Air Door",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[Main] If your Leader's type includes \"CP\", look at 5 cards from the top of your deck; play up to 1 Character card with a type including \"CP\" and a cost of 5 or less. Then, trash the rest.",
+    "triggerText": "Play up to 1 black Character card with a cost of 3 or less from your trash.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-095",
+    "name": "Soap Sheep",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[Main] Give up to 2 of your opponent's Characters -2 cost during this turn.",
+    "triggerText": "Your opponent trashes 1 card from their hand.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-096",
+    "name": "Tempest Kick Sky Slicer",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[Main] K.O. up to 1 of your opponent's Characters with a cost of 0 or your opponent's Stages with a cost of 3 or less.",
+    "triggerText": "Draw 2 cards.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-097",
+    "name": "Six King Pistol",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 0,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[Counter] You may trash 1 card from your hand: Up to 1 of your Leader or Character cards gains +3000 power during this battle.",
+    "triggerText": "Draw 1 card. Then, K.O. up to 1 of your opponent's Characters with a cost of 1 or less.",
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-098",
+    "name": "Enies Lobby",
+    "cardType": "Stage",
+    "color": [
+      "Black"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "World Government"
+    ],
+    "effectText": "[Activate:Main] You may rest this Stage: If your Leader's type includes \"CP\", give up to 1 of your opponent's Characters -2 cost during this turn.",
+    "triggerText": "Play this card.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-099",
+    "name": "Charlotte Katakuri",
+    "cardType": "Leader",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[DON!! x1] [When Attacking] Look at up to 1 card from the top of your or your opponent's Life cards, and place it at the top or bottom of the Life cards. Then, this Leader gains +1000 power during this battle.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-100",
+    "name": "Kingbaum",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates",
+      "Homies"
+    ],
+    "effectText": "",
+    "triggerText": "You may trash 1 card from the top or bottom of your Life cards: Play this card.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-101",
+    "name": "Camie",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 1,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Merfolk"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-102",
+    "name": "Sanji",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "The Vinsmoke Family"
+    ],
+    "effectText": "[DON!! x2] [When Attacking] You may add 1 card from the top or bottom of your Life cards to your hand: Add up to 1 card from the top of your deck to the top of your Life cards.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-103",
+    "name": "Bobbin the Disposer",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-104",
+    "name": "Shirley",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Merfolk"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.) [On Play] Look at up to 1 card from the top of your or your opponent's Life cards, and place it at the top or bottom of the Life cards.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-105",
+    "name": "Charlotte Oven",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[DON!! x1] [When Attacking] You may trash 1 card with a [Trigger] from your hand: This Character gains +3000 power during this battle.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-106",
+    "name": "Charlotte Opera",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 4,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-107",
+    "name": "Charlotte Galette",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-108",
+    "name": "Charlotte Cracker",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[DON!! x1] If you have less Life cards than your opponent, this Character gains [Double Attack] and +1000 power. (This card deals 2 damage.)",
+    "triggerText": "You may trash 1 card from your hand: Play this card.",
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-109",
+    "name": "Charlotte Chiffon",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[On Play] You may trash 1 card from the top or bottom of your Life cards: Add up to 1 card from the top of your deck to the top of your Life cards.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-110",
+    "name": "Charlotte Smoothie",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[When Attacking] You may add 1 card from the top or bottom of your Life cards to your hand: This Character gains +2000 power during this battle.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-111",
+    "name": "Charlotte Praline",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "The Sun Pirates",
+      "Merfolk"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-112",
+    "name": "Charlotte Pudding",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[On Play] Look at 4 cards from the top of your deck; reveal up to 1 [Sanji] or [Big Mom Pirates] type card other than [Charlotte Pudding] and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-113",
+    "name": "Charlotte Perospero",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[On K.O.] Look at 3 cards from the top of your deck; reveal up to 1 [Big Mom Pirates] type card and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": "You may trash 1 card from your hand: Play this card.",
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-114",
+    "name": "Charlotte Linlin",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 10,
+    "power": 12000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[On Play] If your Leader has the [Big Mom Pirates] type, add up to 1 card from the top of your deck to the top of your Life cards. Then, trash up to 1 card from the top of your opponent's Life cards.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-115",
+    "name": "Streusen",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 1,
+    "power": 1000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[On Play] You may trash 1 card with a [Trigger] from your hand: K.O. up to 1 of your opponent's Characters with a cost of 1 or less.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-116",
+    "name": "Shirahoshi",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 5,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Merfolk"
+    ],
+    "effectText": "[On Play] Draw 3 cards and trash 2 cards from your hand.",
+    "triggerText": "Play this card.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-117",
+    "name": "Napoleon",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates",
+      "Homies"
+    ],
+    "effectText": "[Activate:Main] You may rest this Character: Up to 1 of your [Charlotte Linlin] cards gains +1000 power until the start of your next turn.",
+    "triggerText": "Play this card.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-118",
+    "name": "Ikoku Sovereignty",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "The Four Emperors",
+      "Big Mom Pirates"
+    ],
+    "effectText": "[Counter] Up to 1 of your Leader or Character cards gains +5000 power during this battle.",
+    "triggerText": "You may trash 2 cards from your hand: Add up to 1 card from the top of your deck to the top of your Life cards.",
+    "rarity": "UC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-119",
+    "name": "Buzz Cut Mochi",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[Main] If you have less Life cards than your opponent, K.O. up to 1 of your opponent's Characters with a cost of 4 or less.",
+    "triggerText": "Play up to 1 Character card with a cost of 4 or less and a [Trigger] from your hand.",
+    "rarity": "R",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-120",
+    "name": "Tropical Torment",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[Main] If your opponent has 4 or more Life cards, trash up to 1 card from the top of your opponent's Life cards.",
+    "triggerText": "Activate this card's [Main] effect.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-121",
+    "name": "Thunder Bolt",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "The Four Emperors",
+      "Big Mom Pirates"
+    ],
+    "effectText": "[Main] You may trash 1 card from the top of your Life cards: K.O. up to 1 of your opponent's Characters with a cost of 5 or less.",
+    "triggerText": "K.O. up to 1 of your opponent's Characters with a cost of 5 or less.",
+    "rarity": "C",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-122",
+    "name": "Sogeking",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 7,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Sniper Island"
+    ],
+    "effectText": "Also treat this card's name as [Usopp] according to the rules. [On Play] Return up to 1 Character with a cost of 6 or less to the owner's hand. Then, draw 2 cards and trash 2 cards from your hand.",
+    "triggerText": null,
+    "rarity": "SEC",
+    "set": "OP03",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP03-123",
+    "name": "Charlotte Katakuri",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 8,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[On Play] Add up to 1 Character with a cost of 8 or less to the top or bottom of the owner's Life cards face-up.",
+    "triggerText": null,
+    "rarity": "SEC",
+    "set": "OP03",
+    "imageUrl": ""
+  }
+]

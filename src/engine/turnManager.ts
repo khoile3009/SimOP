@@ -1,5 +1,6 @@
 import type { GameState, GameCard, Modifier, PlayerId } from './types'
 import { DON_PER_TURN, DON_FIRST_TURN } from './constants'
+import { deckOutWinner } from './rulesLayer'
 import { createGameCard } from './gameSetup'
 
 function stripModifiers(card: GameCard, keep: (m: Modifier) => boolean): GameCard {
@@ -84,10 +85,10 @@ export function executeDraw(state: GameState): GameState {
     return { ...state, phase: 'DON' }
   }
 
-  // Deck-out: if no cards to draw, player loses
+  // Deck-out: drawing from an empty deck decides the game (usually a loss;
+  // the rules layer can invert it - Nami's win condition)
   if (player.deck.length === 0) {
-    const opponent: PlayerId = playerId === 'player1' ? 'player2' : 'player1'
-    return { ...state, winner: opponent }
+    return { ...state, winner: deckOutWinner(player.leader.cardId, playerId) }
   }
 
   const newDeck = [...player.deck]

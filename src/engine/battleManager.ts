@@ -5,7 +5,7 @@ import { getOpponent, expireModifiers } from './turnManager'
 import { getBattleAttribute } from './rulesLayer'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
-import { koById, queueEffects, removeFromField } from './effects/interpreter'
+import { koById, queueEffects, removeFromField, emitEngineEvent } from './effects/interpreter'
 import { hasFlag } from './effects/statics'
 
 /** Battle-KO protection: blanket, or scoped to the attacker's battle attribute. */
@@ -61,7 +61,14 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
     if (isLeaderTarget) {
       // Leader hit: deal life damage
       const damageCount = hasDoubleAttack ? 2 : 1
-      newState = dealLifeDamage(newState, battle.defenderPlayer, damageCount, hasBanish, events)
+      newState = dealLifeDamage(
+        newState,
+        battle.defenderPlayer,
+        damageCount,
+        hasBanish,
+        events,
+        battle.attackerId,
+      )
     } else if (defenderChar && protectedFromBattleKo(state, defenderChar, attacker)) {
       // Protected (e.g. Semimaru's aura): the battle is won but nothing happens
       events.push({
@@ -131,45 +138,51 @@ export function dealLifeDamage(
   count: number,
   banish: boolean,
   events: GameEvent[],
+  sourceId?: string,
 ): GameState {
-  const player = state.players[playerId]
-  const newLifeCards = [...player.lifeCards]
-  const newHand = [...player.hand]
-  const newTrash = [...player.trash]
+  const dealer = getOpponent(playerId)
+  // "When ... deals damage to your opponent's Life" listeners, once per life card
+  const damageEvent = (s: GameState): GameState =>
+    emitEngineEvent(s, { kind: 'lifeDamageDealt', player: dealer, sourceInstanceId: sourceId })
 
+  let s = state
   for (let i = 0; i < count; i++) {
-    if (newLifeCards.length === 0) {
+    const player = s.players[playerId]
+    if (player.lifeCards.length === 0) {
       // No life left: player loses
-      const winner = getOpponent(playerId)
+      const winner = dealer
       events.push({
         type: 'GAME_WIN',
         playerId: winner,
         description: `${winner} wins! ${playerId} has no life remaining.`,
       })
-      return {
-        ...state,
-        winner,
-        players: {
-          ...state.players,
-          [playerId]: { ...player, lifeCards: newLifeCards, hand: newHand, trash: newTrash },
-        },
-      }
+      return { ...s, winner }
     }
 
-    const lifeCard = newLifeCards.shift()!
+    const [lifeCard, ...lifeCards] = player.lifeCards
 
     if (banish) {
       // Banish: card goes to trash, no trigger
-      newTrash.push(lifeCard)
-      events.push({
-        type: 'LIFE_BANISHED',
-        playerId,
-        description: `Life card banished to trash`,
-      })
+      s = {
+        ...s,
+        players: {
+          ...s.players,
+          [playerId]: { ...player, lifeCards, trash: [...player.trash, lifeCard] },
+        },
+      }
+      events.push({ type: 'LIFE_BANISHED', playerId, description: 'Life card banished to trash' })
+      s = damageEvent(s)
     } else {
       // Normal: card goes to hand WITHOUT being revealed - the owner checks it
       // privately, and only revealing to activate a [Trigger] makes it public
-      newHand.push({ ...lifeCard, revealed: false })
+      s = {
+        ...s,
+        players: {
+          ...s.players,
+          [playerId]: { ...player, lifeCards, hand: [...player.hand, { ...lifeCard, revealed: false }] },
+        },
+      }
+      s = damageEvent(s)
       const cardData = getCardById(lifeCard.cardId)
 
       if (cardData?.triggerText) {
@@ -182,30 +195,15 @@ export function dealLifeDamage(
         // the second hit of [Double Attack]) is parked and resumes after
         const remaining = count - i - 1
         return {
-          ...state,
+          ...s,
           pendingTrigger: { cardInstanceId: lifeCard.instanceId, playerId },
-          pendingDamage: remaining > 0 ? { playerId, count: remaining, banish } : null,
-          players: {
-            ...state.players,
-            [playerId]: { ...player, lifeCards: newLifeCards, hand: newHand, trash: newTrash },
-          },
+          pendingDamage: remaining > 0 ? { playerId, count: remaining, banish, sourceId } : null,
         }
-      } else {
-        events.push({
-          type: 'LIFE_DAMAGE',
-          playerId,
-          description: `Life card moved to hand`,
-        })
       }
+      events.push({ type: 'LIFE_DAMAGE', playerId, description: 'Life card moved to hand' })
     }
   }
 
-  return {
-    ...state,
-    players: {
-      ...state.players,
-      [playerId]: { ...player, lifeCards: newLifeCards, hand: newHand, trash: newTrash },
-    },
-  }
+  return s
 }
 

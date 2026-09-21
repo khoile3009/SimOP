@@ -124,7 +124,7 @@ export function runPlaytest(options: PlaytestOptions): PlaytestReport {
     baseSeed = 1,
     matchups = ['gr', 'rg', 'gg', 'rr'],
     maxActions = 3000,
-    decks = [...buildCoverageDecks('OP01'), ...buildCoverageDecks('OP02')],
+    decks = [...buildCoverageDecks('OP01'), ...buildCoverageDecks('OP02'), ...buildCoverageDecks('OP03')],
   } = options
   const started = Date.now()
   resetEffectUsage()

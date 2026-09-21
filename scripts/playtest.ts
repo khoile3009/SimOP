@@ -9,7 +9,11 @@ import { runPlaytest } from '@/sim/playtest'
 import { buildCoverageDecks } from '@/sim/decks'
 
 const games = Number(process.argv[2] ?? 400)
-const decks = [...buildCoverageDecks('OP01'), ...buildCoverageDecks('OP02')]
+const decks = [
+  ...buildCoverageDecks('OP01'),
+  ...buildCoverageDecks('OP02'),
+  ...buildCoverageDecks('OP03'),
+]
 console.log(
   `Playtest fleet: ${games} games (matchups gr/rg/gg/rr, seeded) across ${decks.length} coverage decks:`,
 )

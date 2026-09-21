@@ -1,6 +1,7 @@
 import type { EffectDef, EffectTiming, StaticDef } from './ast'
 import { OP01_EFFECTS, OP01_STATICS } from '@/data/op01/effects'
 import { OP02_EFFECTS, OP02_STATICS } from '@/data/op02/effects'
+import { OP03_EFFECTS, OP03_STATICS } from '@/data/op03/effects'
 
 /**
  * Rule-processing pseudo-defs, keyed by '$'-prefixed ids that are never real
@@ -21,8 +22,13 @@ const RULES_EFFECTS: Record<string, EffectDef[]> = {
   ],
 }
 
-const registry: Record<string, EffectDef[]> = { ...OP01_EFFECTS, ...OP02_EFFECTS, ...RULES_EFFECTS }
-const statics: Record<string, StaticDef[]> = { ...OP01_STATICS, ...OP02_STATICS }
+const registry: Record<string, EffectDef[]> = {
+  ...OP01_EFFECTS,
+  ...OP02_EFFECTS,
+  ...OP03_EFFECTS,
+  ...RULES_EFFECTS,
+}
+const statics: Record<string, StaticDef[]> = { ...OP01_STATICS, ...OP02_STATICS, ...OP03_STATICS }
 
 export function getEffectDefs(cardId: string, timing?: EffectTiming): EffectDef[] {
   const defs = registry[cardId] ?? []

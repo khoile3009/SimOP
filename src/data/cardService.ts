@@ -1,13 +1,18 @@
 import type { CardData } from '@/engine/types'
 import op01Cards from './op01/cards.json'
 import op02Cards from './op02/cards.json'
+import op03Cards from './op03/cards.json'
 
 let cardCache: Map<string, CardData> | null = null
 
 function ensureCache(): Map<string, CardData> {
   if (!cardCache) {
     cardCache = new Map()
-    for (const card of [...(op01Cards as CardData[]), ...(op02Cards as CardData[])]) {
+    for (const card of [
+      ...(op01Cards as CardData[]),
+      ...(op02Cards as CardData[]),
+      ...(op03Cards as CardData[]),
+    ]) {
       cardCache.set(card.id, card)
     }
   }

@@ -34,6 +34,13 @@ interface ApiRow {
  * names here as sets introduce them - the report flags any string that fails
  * to segment. */
 const SEED_TYPES = [
+  'Black Cat Pirates',
+  'Alvida Pirates',
+  'The Franky Family',
+  'World Government',
+  'The Sun Pirates',
+  'Krieg Pirates',
+  'Big Mom Pirates',
   'Former Baroque Works',
   'Neo Navy',
   'Golden Lion Pirates',
@@ -152,6 +159,16 @@ function splitTypes(joined: string, vocab: string[]): string[] | null {
   return attempt(joined.trim())
 }
 
+function findTriggerSection(text: string): number {
+  let idx = text.indexOf('[Trigger]')
+  while (idx >= 0) {
+    const before = text.slice(0, idx).trimEnd()
+    if (before === '' || /[.)!]$/.test(before)) return idx
+    idx = text.indexOf('[Trigger]', idx + 1)
+  }
+  return -1
+}
+
 function cleanName(raw: string): string {
   return raw
     .replace(/\s*\(Parallel\)\s*/g, '')
@@ -179,9 +196,11 @@ async function main() {
   const rows = (await res.json()) as ApiRow[]
   if (!Array.isArray(rows)) throw new Error(`Unexpected payload: ${JSON.stringify(rows).slice(0, 120)}`)
 
-  // Dedupe parallel arts: prefer the row without "(Parallel)" in the name
+  // Dedupe parallel arts (prefer the non-Parallel row) and drop alt-art
+  // reprints of OTHER sets' cards that the API lists inside this set
   const byId = new Map<string, ApiRow>()
   for (const row of rows) {
+    if (!row.card_set_id.startsWith(setCode + '-')) continue
     const existing = byId.get(row.card_set_id)
     const isParallel = (row.card_name ?? '').includes('(Parallel)')
     if (!existing || ((existing.card_name ?? '').includes('(Parallel)') && !isParallel)) {
@@ -197,11 +216,15 @@ async function main() {
   for (const row of [...byId.values()].sort((a, b) => a.card_set_id.localeCompare(b.card_set_id))) {
     const raw = (row.card_text ?? '').trim()
     const text = raw === 'NULL' ? '' : raw // the API spells "no effect" as literal NULL
-    const trigIdx = text.indexOf('[Trigger]')
+    // A trigger SECTION's [Trigger] sits at the start or after sentence-ending
+    // punctuation; "a [Trigger] from your hand" mid-sentence is a keyword
+    // MENTION, not a section break.
+    const trigIdx = findTriggerSection(text)
     const effectText = (trigIdx >= 0 ? text.slice(0, trigIdx) : text).trim()
     const triggerText = trigIdx >= 0 ? text.slice(trigIdx + '[Trigger]'.length).trim() : null
 
-    const types = splitTypes(row.sub_types ?? '', vocab)?.map((t) => TYPE_ALIASES[t] ?? t) ?? null
+    const rawTypes = row.sub_types === 'NULL' ? '' : (row.sub_types ?? '')
+    const types = splitTypes(rawTypes, vocab)?.map((t) => TYPE_ALIASES[t] ?? t) ?? null
     if (types === null) problems.push(`${row.card_set_id}: cannot segment types "${row.sub_types}"`)
 
     const cardType = row.card_type as CardData['cardType']

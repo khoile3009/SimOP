@@ -80,6 +80,26 @@
       NOT done here: eval retrain (parked with M4 gen-2 per the training-data decision).
       Per-set checklist for OP03+: ingest -> author defs vs the coverage test ->
       fleet 1200+ -> (once training resumes) RETRAIN EVAL -> A/B ladder gate.
+- [x] OP03 (Pillars of Strength) — DONE (Sep 2026), the first true "data drop" set:
+      123 cards, Yellow debuts (Big Mom life engine), zero MISSING entries, ZERO
+      invariant violations on the first fleet run (OP02's first run had 34). New
+      vocabulary was ops-only - no new timings, no architecture: life-stack ops
+      (deckTopToLife / trashLifeTop / lifeTopToHand reuse / fieldToLife / simplified
+      scryLifeTops), mill (millSelf + lifeDamageDealt event with source filters,
+      Nami's engine), deck-out WIN inversion (rules layer deckOutWins - socket 6's
+      headline use), 'attacked' event (Ace leader), powerModPerRef (+1000 per pitched
+      card - first numeric-expression op), abortIfChosen (encodes "choose one" modes,
+      Jango), trashToDeckBottom + typeContains ("CP" family), searchTop restTo trash,
+      giveRestedDon toRef (Haruta), trashAtTurnEnd + noLeaderAttackTurnPlayed flags.
+      Ingest hardening: foreign alt-art reprints dropped, [Trigger]-section vs
+      keyword-mention splitting, literal-NULL types; 2 API-corrupted texts verified
+      against limitless (OP03-013, OP03-042). Coverage decks: cross-set leader
+      borrowing with color matching (OP03's {Impel Down} jailers ride with OP02
+      Magellan - the fleet caught both bugs in this). Certified 3600 games / 33 decks
+      / 3 sets: zero violations; 2 advisories remain (OP02-017/115 DON!!x2 attack
+      effects - bot DON-stacking rarity). 95 tests green.
+      Fidelity debt worth tracking: SIMPLIFIED notes grew to ~28 for OP03, mostly
+      the DON!!-X-from-field class-picker debt and "top or bottom of Life" choices.
 - [ ] M7 Online multiplayer (original P2) — serializable actions make this feasible whenever.
 
 ## Tasks

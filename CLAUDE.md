@@ -49,7 +49,7 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 
 ## Effect System
 
-OP01 and OP02 coverage: FULL (Sep 2026) — every card is automated via effect defs +
+OP01, OP02, and OP03 coverage: FULL (Sep 2026) — every card is automated via effect defs +
 statics in `src/data/<set>/effects.ts`, printed-keyword parsing, or the rules layer;
 each set's `COVERAGE_NOTES` documents the remaining SIMPLIFIED deviations (enforced by
 that set's coverage.test.ts). New sets enter via `npm run ingest -- <API set id>`, then
@@ -92,6 +92,15 @@ query filters), and `afterBattleKo` timing on attackers. **Player turn state** �
 at end of turn. **DON!!-X activation costs** — `EffectDef.cost.returnDon` pays up front
 (rested first) and emits `donReturned`; ops-encoded DON!!-X selects are only for
 auto-timing effects where paying is optional.
+
+OP03 additions: **life-stack ops** (`deckTopToLife`, `trashLifeTop`, `fieldToLife`,
+`scryLifeTops` — Yellow's engine), **mill** (`millSelf` + the `lifeDamageDealt` event
+with `sourceIsSelf` filters — Nami; deck-out can be a WIN via the rules layer's
+`deckOutWins`), the **`attacked` event** (listeners on the attack's target),
+**`powerModPerRef`** (per-count power mods), **`abortIfChosen`** ("choose one" modes:
+a mode-1 select left empty falls through to mode 2), `trashToDeckBottom`, `typeContains`
+(substring type match for the "CP" family), `searchTop`'s `to/restTo: 'trash'`, and
+`giveRestedDon`'s `toRef`.
 
 ## Effect System (Phase A)
 

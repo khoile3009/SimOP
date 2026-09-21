@@ -124,6 +124,8 @@ export interface PendingDamage {
   playerId: PlayerId
   count: number
   banish: boolean
+  /** The attacking card, for "when this card's attack deals damage" listeners */
+  sourceId?: string
 }
 
 export interface EffectFrame {

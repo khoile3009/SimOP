@@ -34,6 +34,10 @@ export type EngineEventKind =
   | 'donAttached'
   | 'donReturned'
   | 'characterPlayed'
+  /** A player's Life took damage; `player` is the DEALER, once per life card */
+  | 'lifeDamageDealt'
+  /** An attack was declared; `player` is the DEFENDER, source is the target card */
+  | 'attacked'
 
 export interface EventQuery {
   kind: EngineEventKind
@@ -43,6 +47,9 @@ export interface EventQuery {
   noBaseEffect?: boolean
   /** characterPlayed only: the card was played from its owner's hand */
   fromHand?: boolean
+  /** lifeDamageDealt: the damage came from THIS card's attack.
+   * attacked: THIS card is the attack's target. */
+  sourceIsSelf?: boolean
 }
 
 /** Predicates over game state, evaluated from the effect controller's seat. */
@@ -57,6 +64,12 @@ export interface Cond {
   anyCharacterCostAtMost?: number
   /** Every DON!! in your cost area is rested (Inuarashi) */
   allSelfDonRested?: boolean
+  /** Substring match over the leader's type list ("Leader's type includes 'CP'") */
+  leaderTypeContains?: string
+  maxDeckSelf?: number
+  lessLifeThanOpp?: boolean
+  minLifeOpp?: number
+  minHandOpp?: number
   maxSelfCharacters?: number
   minSelfCharacters?: number
   minSelfRestedCharacters?: number
@@ -68,6 +81,7 @@ export interface Cond {
   /** DON!! on the OPPONENT's field (purple trigger punishes) */
   minDonFieldOpp?: number
   maxLifeSelf?: number
+  minLifeSelf?: number
   minDeckSelf?: number
   hasCharacterNamed?: string
   lacksCharacterNamed?: string
@@ -87,8 +101,16 @@ export interface SelectFilter {
   powerAtMost?: number
   rested?: boolean
   cardType?: 'Character' | 'Event' | 'Stage'
+  /** Any of these card types ("Event or Stage cards") */
+  cardTypeAny?: Array<'Character' | 'Event' | 'Stage'>
+  /** Effective power at selection time; printed-power floor for costs like Teach's */
+  powerAtLeast?: number
+  /** The card has a [Trigger] ("a Character card with a [Trigger]") */
+  hasTrigger?: boolean
   typeIncludes?: string
   typeIncludesAny?: string[]
+  /** Substring over type names ("a type including 'CP'" matches CP6/CP7/CP9) */
+  typeContains?: string
   colorIncludes?: string
   nameIs?: string
   nameNot?: string
@@ -102,9 +124,12 @@ export interface CardDataFilter {
   costAtMost?: number
   costIs?: number
   typeIncludes?: string
+  typeContains?: string
   colorIncludes?: string
   nameIs?: string
   nameNot?: string
+  /** Matches when the card carries this name even if other filters miss ("[Sanji] or {BMP} type") */
+  orNameIs?: string
 }
 
 export type FlagName =
@@ -123,6 +148,8 @@ export type FlagName =
   | 'noOppEffectRemove' // opponent effects cannot remove this card from the field
   | 'noBlockCostAtMost' // on an attacker: blockers with cost <= value can't block
   | 'bottomDeckAtBattleEnd' // this card goes to the deck bottom when the battle ends
+  | 'noLeaderAttackTurnPlayed' // cannot attack a Leader the turn it was played (Curiel)
+  | 'trashAtTurnEnd' // this card is trashed when the turn ends (Thatch)
 
 export type EffectOp =
   | { op: 'draw'; count: number }
@@ -140,9 +167,26 @@ export type EffectOp =
     }
   /** Skip the rest of this effect when a binding is empty - "You may X: Y" costs */
   | { op: 'abortIfEmpty'; ref: string }
+  /** Skip the rest when a binding is NON-empty - encodes "choose one" second modes */
+  | { op: 'abortIfChosen'; ref: string }
+  /** Trash the top N cards of the controller's deck (mill; never a loss) */
+  | { op: 'millSelf'; count: number }
+  /** Move the top card(s) of the controller's deck onto the TOP of their Life */
+  | { op: 'deckTopToLife'; count: number }
+  /** Trash the top card(s) of a player's Life */
+  | { op: 'trashLifeTop'; owner: 'self' | 'opponent'; count: number }
+  /** Move a bound field character to the TOP of its owner's Life (Katakuri) */
+  | { op: 'fieldToLife'; ref: string }
+  /** Move bound cards from the controller's trash to their deck bottom */
+  | { op: 'trashToDeckBottom'; ref: string }
   /** Skip the rest of this effect when the condition fails - "Then, if ..." */
   | { op: 'requireCond'; cond: Cond }
   | { op: 'powerMod'; ref: string; amount: number; duration: ModifierDuration }
+  /** Power mod scaled by another binding's size (Ace: +1000 per trashed card) */
+  | { op: 'powerModPerRef'; ref: string; countRef: string; amountPer: number; duration: ModifierDuration }
+  /** Katakuri-style life scry, simplified: may move the top card of either
+   * player's Life to the bottom of that stack (the "look" is not modeled) */
+  | { op: 'scryLifeTops'; prompt: string }
   | { op: 'grantKeyword'; ref: string; keyword: string; duration: ModifierDuration }
   | {
       op: 'grantFlag'
@@ -167,8 +211,8 @@ export type EffectOp =
   | { op: 'lifeToHand'; ref: string } // bound via select zone 'life'
   | { op: 'playCards'; ref: string; rested?: boolean } // free play from hand/deck/trash
   | { op: 'playSelf'; rested?: boolean } // play the source card from the trash
-  /** Look at top N; choose up to `upTo` matching to hand or play; rest to bottom */
-  | { op: 'searchTop'; count: number; filter: CardDataFilter; upTo: number; to: 'hand' | 'play' }
+  /** Look at top N; choose up to `upTo` matching to hand/play/trash; rest to bottom (or trash) */
+  | { op: 'searchTop'; count: number; filter: CardDataFilter; upTo: number; to: 'hand' | 'play' | 'trash'; restTo?: 'bottom' | 'trash' }
   /** Look at top N; chosen subset goes to the bottom (order kept), rest stays on top */
   | { op: 'scryBottom'; count: number }
   /** Reveal matching cards from the whole deck; chosen to hand or play; shuffle */
@@ -178,7 +222,8 @@ export type EffectOp =
   /** Reveal top card; if it matches, may play it; otherwise it stays on top */
   | { op: 'revealTopMayPlay'; filter: CardDataFilter; rested?: boolean }
   | { op: 'addDon'; count: number; rested: boolean } // from DON!! deck to cost area
-  | { op: 'giveRestedDon'; upTo: number } // rested cost-area DON onto the source card
+  /** Rested cost-area DON onto the source card, or onto a bound card via toRef */
+  | { op: 'giveRestedDon'; upTo: number; toRef?: string }
   | { op: 'returnDon'; ref: string } // bound cost-area DON back to the DON!! deck
   /** Run this same card's def of another timing (trigger: "Activate this card's [Main]") */
   | { op: 'activateTiming'; timing: 'main' | 'counter' }

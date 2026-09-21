@@ -167,6 +167,11 @@ function validateDeclareAttack(
     if (!hasKeyword(state, attackerChar, 'Rush')) {
       return { valid: false, reason: 'Character cannot attack the turn it was played' }
     }
+    // Rush with a leader carve-out (Curiel)
+    const opp = state.players[getOpponent(playerId)]
+    if (opp.leader.instanceId === targetId && hasFlag(state, attackerChar, 'noLeaderAttackTurnPlayed')) {
+      return { valid: false, reason: 'This Character cannot attack a Leader this turn' }
+    }
   }
 
   if (hasFlag(state, attacker, 'cannotAttack')) {

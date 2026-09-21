@@ -1,5 +1,5 @@
 import type { Deck } from '@/engine/types'
-import { getCardsBySet, getLeaders, getCardById } from '@/data/cardService'
+import { getCardsBySet, getLeaders, getCardById, getAllCards } from '@/data/cardService'
 import { getEffectDefs, getStatics } from '@/engine/effects/registry'
 import { DECK_SIZE, MAX_CARD_COPIES } from '@/engine/constants'
 import { cardHasName } from '@/engine/rulesLayer'
@@ -43,11 +43,16 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
           (!cond.leaderTypeIncludes || l.attribute.includes(cond.leaderTypeIncludes)),
       )
       if (satisfied) continue
-      const provider = leaders.find(
-        (l) =>
-          (!cond.leaderNameIs || cardHasName(l.id, cond.leaderNameIs)) &&
-          (!cond.leaderTypeIncludes || l.attribute.includes(cond.leaderTypeIncludes)),
-      )
+      // A same-set leader first; otherwise borrow one from any set (OP03's
+      // {Impel Down} cards need OP02's Magellan - decks may legally mix sets).
+      // The provider must also share a color with the needing card, or the
+      // card can't ride in its deck.
+      const fits = (l: (typeof leaders)[number]) =>
+        l.cardType === 'Leader' &&
+        card.color.some((c) => l.color.includes(c)) &&
+        (!cond.leaderNameIs || cardHasName(l.id, cond.leaderNameIs)) &&
+        (!cond.leaderTypeIncludes || l.attribute.includes(cond.leaderTypeIncludes))
+      const provider = leaders.find(fits) ?? getAllCards().find(fits)
       if (provider) anchors.set(provider.id, provider)
     }
   }

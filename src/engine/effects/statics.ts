@@ -45,6 +45,16 @@ export function evalCond(
     if (!anyMatch) return false
   }
   if (cond.allSelfDonRested && me.donArea.some((d) => !d.isRested)) return false
+  if (
+    cond.leaderTypeContains &&
+    !cardTypes(me.leader.cardId).some((t) => t.includes(cond.leaderTypeContains!))
+  ) {
+    return false
+  }
+  if (cond.maxDeckSelf !== undefined && me.deck.length > cond.maxDeckSelf) return false
+  if (cond.lessLifeThanOpp && me.lifeCards.length >= opp.lifeCards.length) return false
+  if (cond.minLifeOpp !== undefined && opp.lifeCards.length < cond.minLifeOpp) return false
+  if (cond.minHandOpp !== undefined && opp.hand.length < cond.minHandOpp) return false
   if (cond.maxSelfCharacters !== undefined && me.characters.length > cond.maxSelfCharacters) {
     return false
   }
@@ -75,6 +85,7 @@ export function evalCond(
     return false
   }
   if (cond.maxLifeSelf !== undefined && me.lifeCards.length > cond.maxLifeSelf) return false
+  if (cond.minLifeSelf !== undefined && me.lifeCards.length < cond.minLifeSelf) return false
   if (cond.minDeckSelf !== undefined && me.deck.length < cond.minDeckSelf) return false
   if (
     cond.hasCharacterNamed &&

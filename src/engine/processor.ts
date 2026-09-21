@@ -11,9 +11,10 @@ import {
   pushFrame,
   emitEngineEvent,
   queueEndOfTurnEffects,
+  removeFromField,
 } from './effects/interpreter'
 import { getEffectDefs } from './effects/registry'
-import { getEffectiveCost, discountMatches } from './effects/statics'
+import { getEffectiveCost, discountMatches, hasFlag } from './effects/statics'
 import { legalActions } from './legalActions'
 import { MAX_CHARACTERS } from './constants'
 
@@ -327,14 +328,22 @@ function processDeclareAttack(
     },
   }
 
+  // "When attacked" listeners on the target queue first, so the attacker's
+  // [When Attacking] effects (queued after, stack top) resolve first
+  newState = emitEngineEvent(newState, {
+    kind: 'attacked',
+    player: opponentId,
+    sourceInstanceId: targetId,
+  })
   // [When Attacking] effects fire in the attack step, before blocks (CR 7-1-1-3)
   const attacker =
     newLeader.instanceId === attackerId
       ? newLeader
       : newCharacters.find((c) => c.instanceId === attackerId)
   if (attacker) {
-    newState = runStack(queueEffects(newState, attacker, 'whenAttacking', playerId), events)
+    newState = queueEffects(newState, attacker, 'whenAttacking', playerId)
   }
+  newState = runStack(newState, events)
   return autoAdvanceBattle(checkBattleExit(newState, events), events)
 }
 
@@ -693,7 +702,7 @@ function settleDamage(state: GameState, events: GameEvent[]): GameState {
   ) {
     const pd = s.pendingDamage
     s = { ...s, pendingDamage: null }
-    s = runStack(dealLifeDamage(s, pd.playerId, pd.count, pd.banish, events), events)
+    s = runStack(dealLifeDamage(s, pd.playerId, pd.count, pd.banish, events, pd.sourceId), events)
   }
   return s
 }
@@ -722,9 +731,18 @@ function maybeFinishEndTurn(state: GameState): GameState {
   ) {
     return state
   }
+  // Scheduled end-of-turn trashes (Thatch) happen before turn modifiers sweep
+  let swept = state
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    for (const c of [...swept.players[pid].characters]) {
+      if (hasFlag(swept, c, 'trashAtTurnEnd')) {
+        swept = removeFromField(swept, c.instanceId, 'trash')
+      }
+    }
+  }
   // "During this turn" player restrictions and unused play discounts expire now
   const cleared: GameState = {
-    ...state,
+    ...swept,
     pendingEndTurn: false,
     turnFlags: { player1: [], player2: [] },
     playDiscounts: { player1: [], player2: [] },
