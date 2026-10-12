@@ -4,7 +4,13 @@ import { getCardById } from '@/data/cardService'
 import { getOpponent } from './turnManager'
 import { hasKeyword } from './keywords'
 import { getEffectDefs } from './effects/registry'
-import { evalCond, getFlag, hasFlag, getEffectiveCost, getEffectiveFieldCost } from './effects/statics'
+import {
+  evalCond,
+  getFlag,
+  hasFlag,
+  getEffectiveCost,
+  getEffectiveFieldCost,
+} from './effects/statics'
 import { getEffectivePower } from './powerCalc'
 
 export interface ValidationResult {
@@ -94,6 +100,12 @@ function validatePlayCard(
       return { valid: false, reason: 'Cannot play cost-7+ Characters this turn' }
     }
   }
+  if (state.turnFlags[playerId]?.includes('noPlayCharacters')) {
+    const data = getCardById(card.cardId)
+    if (data?.cardType === 'Character') {
+      return { valid: false, reason: 'Cannot play Characters this turn' }
+    }
+  }
   if (state.turnFlags[playerId]?.includes('noPlayCharCost5Plus')) {
     const data = getCardById(card.cardId)
     if (data?.cardType === 'Character' && data.cost >= 5) {
@@ -161,9 +173,7 @@ function validateDeclareAttack(
   // First turn: no attacks
   if (state.turnNumber <= 2) {
     // Both players' first turns (turn 1 and turn 2)
-    const isFirstTurn =
-      (state.turnNumber === 1) ||
-      (state.turnNumber === 2)
+    const isFirstTurn = state.turnNumber === 1 || state.turnNumber === 2
     if (isFirstTurn) {
       return { valid: false, reason: 'Cannot attack on first turn' }
     }
@@ -209,14 +219,16 @@ function validateDeclareAttack(
   // characters-only rush grant when the target is not a Leader)
   if (attackerChar && attackerChar.turnPlayed === state.turnNumber) {
     const oppLeaderId = state.players[getOpponent(playerId)].leader.instanceId
-    const charRush =
-      hasFlag(state, attackerChar, 'rushCharactersOnly') && targetId !== oppLeaderId
+    const charRush = hasFlag(state, attackerChar, 'rushCharactersOnly') && targetId !== oppLeaderId
     if (!hasKeyword(state, attackerChar, 'Rush') && !charRush) {
       return { valid: false, reason: 'Character cannot attack the turn it was played' }
     }
     // Rush with a leader carve-out (Curiel)
     const opp = state.players[getOpponent(playerId)]
-    if (opp.leader.instanceId === targetId && hasFlag(state, attackerChar, 'noLeaderAttackTurnPlayed')) {
+    if (
+      opp.leader.instanceId === targetId &&
+      hasFlag(state, attackerChar, 'noLeaderAttackTurnPlayed')
+    ) {
       return { valid: false, reason: 'This Character cannot attack a Leader this turn' }
     }
   }
@@ -455,6 +467,12 @@ function validatePlayCounterEvent(
       return { valid: false, reason: 'Cannot play cost-7+ Characters this turn' }
     }
   }
+  if (state.turnFlags[playerId]?.includes('noPlayCharacters')) {
+    const data = getCardById(card.cardId)
+    if (data?.cardType === 'Character') {
+      return { valid: false, reason: 'Cannot play Characters this turn' }
+    }
+  }
   if (state.turnFlags[playerId]?.includes('noPlayCharCost5Plus')) {
     const data = getCardById(card.cardId)
     if (data?.cardType === 'Character' && data.cost >= 5) {
@@ -473,4 +491,3 @@ function validatePlayCounterEvent(
   }
   return { valid: true }
 }
-

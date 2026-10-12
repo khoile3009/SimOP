@@ -2,7 +2,14 @@ import type { GameState, GameCard, GameEvent, PlayerId, EffectFrame, Modifier } 
 import type { CardDataFilter, EffectOp, EffectTiming, EngineEventKind, SelectFilter } from './ast'
 import { getEffectDefs } from './registry'
 import { recordEffectFired } from './telemetry'
-import { evalCond, cardTypes, hasFlag, getEffectiveFieldCost, isNegated, donOnField } from './statics'
+import {
+  evalCond,
+  cardTypes,
+  hasFlag,
+  getEffectiveFieldCost,
+  isNegated,
+  donOnField,
+} from './statics'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '../powerCalc'
 import { getOpponent } from '../turnManager'
@@ -787,6 +794,20 @@ function executeOp(
       })
     }
 
+    case 'revealTopCond': {
+      const p = state.players[controller]
+      const top = p.deck[0]
+      if (!top) return advance(state, true)
+      const s: GameState = {
+        ...state,
+        players: {
+          ...state.players,
+          [controller]: { ...p, deck: [{ ...top, revealed: true }, ...p.deck.slice(1)] },
+        },
+      }
+      return matchCardData(top.cardId, op.filter) ? advance(s) : advance(s, true)
+    }
+
     case 'costGuessCheck': {
       const oppId = getOpponent(controller)
       const opp = state.players[oppId]
@@ -952,7 +973,10 @@ function executeOp(
         if (moved >= op.upTo || source.instanceId === targetId) continue
         const take = Math.min(source.attachedDon, op.upTo - moved)
         if (take === 0) continue
-        s = updateFieldCard(s, source.instanceId, (c) => ({ ...c, attachedDon: c.attachedDon - take }))
+        s = updateFieldCard(s, source.instanceId, (c) => ({
+          ...c,
+          attachedDon: c.attachedDon - take,
+        }))
         moved += take
       }
       if (moved > 0) {
@@ -973,6 +997,9 @@ function executeOp(
           sourceCardId: frame.sourceCardId,
         }
         if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
+        if (op.duration === 'untilTurn') {
+          modifier.untilTurn = state.turnNumber + (op.untilTurnOffset ?? 0)
+        }
         s = updateFieldCard(s, id, (c) => ({ ...c, modifiers: [...c.modifiers, modifier] }))
       }
       return advance(s)
@@ -1014,7 +1041,9 @@ function executeOp(
     }
 
     case 'powerModPerRef': {
-      const units = op.per ? Math.floor(refs(op.countRef).length / op.per) : refs(op.countRef).length
+      const units = op.per
+        ? Math.floor(refs(op.countRef).length / op.per)
+        : refs(op.countRef).length
       const amount = op.amountPer * units
       if (amount === 0) return advance(state)
       const modifier: Modifier = {
@@ -1258,25 +1287,28 @@ function executeOp(
       return advance(s)
     }
     case 'lifeToHand': {
-      if (state.turnFlags[controller]?.includes('noLifeToHand')) return advance(state)
       let s = state
       for (const id of refs(op.ref)) {
-        const p = s.players[controller]
-        const idx = p.lifeCards.findIndex((c) => c.instanceId === id)
-        if (idx < 0) continue
-        const lifeCards = [...p.lifeCards]
-        // Life cards added to hand by an effect stay hidden from the opponent
-        // (only revealing to activate a [Trigger] makes a life card public)
-        const [card] = lifeCards.splice(idx, 1)
-        s = {
-          ...s,
-          players: {
-            ...s.players,
-            [controller]: { ...p, lifeCards, hand: [...p.hand, { ...card, revealed: false }] },
-          },
+        for (const pid of ['player1', 'player2'] as PlayerId[]) {
+          if (s.turnFlags[pid]?.includes('noLifeToHand')) continue
+          const p = s.players[pid]
+          const idx = p.lifeCards.findIndex((c) => c.instanceId === id)
+          if (idx < 0) continue
+          const lifeCards = [...p.lifeCards]
+          // Life cards added to hand by an effect stay hidden from the opponent
+          // (only revealing to activate a [Trigger] makes a life card public)
+          const [card] = lifeCards.splice(idx, 1)
+          s = {
+            ...s,
+            players: {
+              ...s.players,
+              [pid]: { ...p, lifeCards, hand: [...p.hand, { ...card, revealed: false }] },
+            },
+          }
+          s = emitEngineEvent(s, { kind: 'lifeAddedToHand', player: pid })
+          s = emitEngineEvent(s, { kind: 'lifeRemoved', player: pid })
+          break
         }
-        s = emitEngineEvent(s, { kind: 'lifeAddedToHand', player: controller })
-        s = emitEngineEvent(s, { kind: 'lifeRemoved', player: controller })
       }
       return advance(s)
     }
@@ -1772,7 +1804,6 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
 
 // ─── State helpers ───────────────────────────────────────────────────────────
 
-
 /** Pull one card out of the controller's deck onto the top of their Life. */
 function deckCardToLifeTop(state: GameState, controller: PlayerId, instanceId: string): GameState {
   const p = state.players[controller]
@@ -2032,7 +2063,10 @@ function guardTargetMatches(state: GameState, card: GameCard, g: SelectFilter): 
   if (g.typeContains && !cardTypes(card.cardId).some((t) => t.includes(g.typeContains!))) {
     return false
   }
-  if (g.colorIncludes && !(getCardById(card.cardId)?.color ?? []).some((c) => c === g.colorIncludes)) {
+  if (
+    g.colorIncludes &&
+    !(getCardById(card.cardId)?.color ?? []).some((c) => c === g.colorIncludes)
+  ) {
     return false
   }
   if (g.powerAtMost !== undefined && getEffectivePower(state, card) > g.powerAtMost) return false
@@ -2179,6 +2213,9 @@ function playCardFree(
     const cardType = getCardById(raw.cardId)?.cardType
     if (cardType !== 'Character' && cardType !== 'Stage') return state
     if (getCardRules(raw.cardId)?.notPlayableByEffects) return state
+    if (cardType === 'Character' && state.turnFlags[controller]?.includes('noPlayCharacters')) {
+      return state
+    }
     const played: GameCard = {
       ...raw,
       // Lim (OP09-022): this player's Character cards always enter rested

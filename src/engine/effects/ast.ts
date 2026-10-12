@@ -379,7 +379,13 @@ export type EffectOp =
   /** Move bound hand cards to the TOP of the controller's Life (face-down) */
   | { op: 'handToLife'; ref: string }
   /** Reveal the deck top; if it matches, power-mod self; revealed card to the bottom */
-  | { op: 'revealTopCheck'; filter: CardDataFilter; amount: number; duration: ModifierDuration; keyword?: string }
+  | {
+      op: 'revealTopCheck'
+      filter: CardDataFilter
+      amount: number
+      duration: ModifierDuration
+      keyword?: string
+    }
   /** Shuffle a player's whole hand into their deck, then draw (their hand size, or `draw`) */
   | { op: 'shuffleHandIntoDeckDraw'; who?: 'self' | 'opponent'; draw?: number }
   /** Self base power becomes the attacking card's current power (delta modifier) */
@@ -435,7 +441,13 @@ export type EffectOp =
   | { op: 'discardTo'; count: number; who: 'both' | 'self' | 'opponent' }
   /** Skip the rest of this effect when the condition fails - "Then, if ..." */
   | { op: 'requireCond'; cond: Cond }
-  | { op: 'powerMod'; ref: string; amount: number; duration: ModifierDuration; untilTurnOffset?: number }
+  | {
+      op: 'powerMod'
+      ref: string
+      amount: number
+      duration: ModifierDuration
+      untilTurnOffset?: number
+    }
   /** Power mod scaled by another binding's size (Ace: +1000 per trashed card) */
   | {
       op: 'powerModPerRef'
@@ -449,7 +461,13 @@ export type EffectOp =
   /** Katakuri-style life scry, simplified: may move the top card of either
    * player's Life to the bottom of that stack (the "look" is not modeled) */
   | { op: 'scryLifeTops'; prompt: string }
-  | { op: 'grantKeyword'; ref: string; keyword: string; duration: ModifierDuration; untilTurnOffset?: number }
+  | {
+      op: 'grantKeyword'
+      ref: string
+      keyword: string
+      duration: ModifierDuration
+      untilTurnOffset?: number
+    }
   | {
       op: 'grantFlag'
       ref: string
@@ -499,7 +517,13 @@ export type EffectOp =
   /** Move DON already given to your other cards onto the bound card (Dragon) */
   | { op: 'moveAttachedDon'; upTo: number; toRef: string }
   /** Set a bound card's power to a fixed value via a delta modifier (Ain) */
-  | { op: 'setPower'; ref: string; value: number; duration: ModifierDuration }
+  | {
+      op: 'setPower'
+      ref: string
+      value: number
+      duration: ModifierDuration
+      untilTurnOffset?: number
+    }
   /** Move the source card from the trash to its owner's hand (trigger tails) */
   | { op: 'selfToHand' }
   /** Turn the top `count` face-down Life cards face-up; aborts if fewer exist */
@@ -507,21 +531,42 @@ export type EffectOp =
   /** Turn face-up Life cards face-down ('all' never aborts; a count aborts short) */
   | { op: 'lifeFaceDown'; count: number | 'all' }
   /** Trash the deck top; if it matches, the bound card gains power (Blackbeard) */
-  | { op: 'millTopCheck'; filter: CardDataFilter; ref: string; amount: number; duration: ModifierDuration }
+  | {
+      op: 'millTopCheck'
+      filter: CardDataFilter
+      ref: string
+      amount: number
+      duration: ModifierDuration
+    }
   /** Look at the opponent's deck top: it becomes known (revealed) to you (Katakuri) */
   | { op: 'peekOppTop' }
   /** "Choose a cost and reveal the opponent's top card": hits only when the top
    * is already known via peekOppTop; the reveal makes it public either way */
   | { op: 'costGuessCheck' }
+  /** Reveal your own deck top; abort the frame unless it matches (Xebec leader).
+   * The card stays on top, publicly known. */
+  | { op: 'revealTopCond'; filter: CardDataFilter }
   | { op: 'returnDon'; ref: string } // bound cost-area DON back to the DON!! deck
   /** Run this same card's def of another timing (trigger: "Activate this card's [Main]") */
   | { op: 'activateTiming'; timing: 'main' | 'counter' | 'onPlay' | 'onKo' }
   /** Mark bound hand cards as revealed (public knowledge until they move zones) */
   | { op: 'reveal'; ref: string }
   /** Field-cost delta on bound cards (Black's -N cost effects) */
-  | { op: 'costMod'; ref: string; amount: number; duration: ModifierDuration; untilTurnOffset?: number }
+  | {
+      op: 'costMod'
+      ref: string
+      amount: number
+      duration: ModifierDuration
+      untilTurnOffset?: number
+    }
   /** Power delta on the controller's whole field at once (Uta) */
-  | { op: 'powerModAll'; amount: number; duration: ModifierDuration; includeLeader?: boolean; who?: 'self' | 'opponent' }
+  | {
+      op: 'powerModAll'
+      amount: number
+      duration: ModifierDuration
+      includeLeader?: boolean
+      who?: 'self' | 'opponent'
+    }
   /** Draw until the controller's hand holds `count` cards (never discards) */
   | { op: 'drawTo'; count: number }
   /** The controller's TOP life card(s) to hand, no choice (Whitebeard, Squard) */
@@ -531,7 +576,18 @@ export type EffectOp =
   /** The opponent returns DON from their cost area to their DON!! deck (rested first) */
   | { op: 'oppReturnDon'; count: number }
   /** Turn-scoped restriction on the controller (cleared at end of turn) */
-  | { op: 'restrictSelf'; restriction: 'noLifeToHand' | 'noLeaderAttack' | 'donEqualize' | 'noEffectDraw' | 'noPlayCharCost7Plus' | 'noPlayCharCost5Plus' | 'noPlayFromHand' }
+  | {
+      op: 'restrictSelf'
+      restriction:
+        | 'noLifeToHand'
+        | 'noLeaderAttack'
+        | 'donEqualize'
+        | 'noEffectDraw'
+        | 'noPlayCharCost7Plus'
+        | 'noPlayCharCost5Plus'
+        | 'noPlayFromHand'
+        | 'noPlayCharacters'
+    }
   /** One-shot play-cost discount for the controller this turn (Kin'emon) */
   | {
       op: 'grantPlayDiscount'
@@ -577,7 +633,14 @@ export interface StaticDef {
     /** 'myHand' scopes cost modifiers to the controller's hand cards;
      * 'handSelf' is a static the card carries while IN HAND, discounting
      * only itself (OP07 Sanji) */
-    scope: 'self' | 'myLeader' | 'myCharacters' | 'myCharactersOther' | 'oppCharacters' | 'myHand' | 'handSelf'
+    scope:
+      | 'self'
+      | 'myLeader'
+      | 'myCharacters'
+      | 'myCharactersOther'
+      | 'oppCharacters'
+      | 'myHand'
+      | 'handSelf'
     typeIncludes?: string
     typeIncludesAny?: string[]
     nameIs?: string
@@ -590,6 +653,10 @@ export interface StaticDef {
     costIs?: number
     /** Only active (unrested) targets */
     activeOnly?: boolean
+    /** Only targets carrying a [Trigger] (OP17 Linlin) */
+    hasTrigger?: boolean
+    /** Only targets with exactly this printed power */
+    basePowerIs?: number
   }
   power?: number
   /** Scaling auras: value per matching count, added to `power` */

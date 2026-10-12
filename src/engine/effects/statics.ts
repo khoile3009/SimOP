@@ -414,29 +414,89 @@ export function evalCond(
  * against fired every "conditional" effect unconditionally).
  */
 export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
-  'yourTurn', 'opponentsTurn', 'selfRested', 'leaderNameIs', 'leaderTypeIncludes',
-  'anyCharacterCostAtMost', 'allSelfDonRested', 'leaderTypeContains', 'maxDeckSelf',
-  'minTrashSelf', 'maxTrashSelf', 'minActiveDonSelf', 'maxLifePlusHandSelf',
-  'minSelfCharCost', 'lacksSelfCharCost', 'maxTotalLife', 'lessLifeThanOpp',
-  'leaderActive', 'leaderMulticolor', 'selfPowerAtLeast', 'leaderPowerAtMost',
-  'hasCharacterTypeIncludes', 'allSelfCharsTyped', 'maxDonField',
-  'noCharacterNamedAnywhere', 'hasOtherCharacterNamed', 'minLifeOpp', 'maxLifeOpp',
-  'minHandOpp', 'maxSelfCharacters', 'minSelfCharacters', 'minSelfRestedCharacters',
-  'minOppRestedCharacters', 'minHandSelf', 'maxHandSelf', 'otherCharPowerAtLeast',
-  'donFieldZeroOrAtLeast', 'oppMoreDon', 'minDonField', 'minDonFieldOpp',
-  'maxLifeSelf', 'minLifeSelf', 'minDeckSelf', 'hasCharacterNamed',
-  'lacksCharacterNamed', 'oppAtLeastSelfDon', 'oppDonAdvantageAtLeast',
-  'oppBasePowerAtLeast', 'oppCharPowerAtLeast', 'minSelfRestedAny', 'minOppRestedAny',
-  'hasOtherCharacterTyped', 'minSelfRestedDon', 'leaderTypeIncludesAny',
-  'minSelfCharsTypedAny', 'minOppCharacters', 'oppCharCostAtMost', 'selfActive',
-  'selfPlayedThisTurn', 'lacksOtherCharacterNamed', 'trashContainsNames',
-  'hasCharacterNamedAny', 'fewerSelfCharsCostAtLeast', 'handDisadvantageAtLeast',
-  'leaderPowerAtLeast', 'minOppCharsBasePowerAtLeast', 'anyPlayerLifeZero',
-  'minSelfCharsTotalCost', 'charTypedPowerAtLeast', 'anyCharacterCostAtLeast',
-  'charDisadvantageAtLeast', 'atMostLifeOfOpp', 'minSelfRestedCharsTyped',
-  'allSelfCharsTypeContains', 'leaderColorIncludes', 'minTotalLife',
-  'minSelfCharsCostAtLeast', 'leaderAttributeIs', 'minSelfGivenDon',
-  'minTrashEventsSelf', 'maxActiveDonSelf', 'selfCostAtLeast', 'oppCharKoedThisTurn',
+  'yourTurn',
+  'opponentsTurn',
+  'selfRested',
+  'leaderNameIs',
+  'leaderTypeIncludes',
+  'anyCharacterCostAtMost',
+  'allSelfDonRested',
+  'leaderTypeContains',
+  'maxDeckSelf',
+  'minTrashSelf',
+  'maxTrashSelf',
+  'minActiveDonSelf',
+  'maxLifePlusHandSelf',
+  'minSelfCharCost',
+  'lacksSelfCharCost',
+  'maxTotalLife',
+  'lessLifeThanOpp',
+  'leaderActive',
+  'leaderMulticolor',
+  'selfPowerAtLeast',
+  'leaderPowerAtMost',
+  'hasCharacterTypeIncludes',
+  'allSelfCharsTyped',
+  'maxDonField',
+  'noCharacterNamedAnywhere',
+  'hasOtherCharacterNamed',
+  'minLifeOpp',
+  'maxLifeOpp',
+  'minHandOpp',
+  'maxSelfCharacters',
+  'minSelfCharacters',
+  'minSelfRestedCharacters',
+  'minOppRestedCharacters',
+  'minHandSelf',
+  'maxHandSelf',
+  'otherCharPowerAtLeast',
+  'donFieldZeroOrAtLeast',
+  'oppMoreDon',
+  'minDonField',
+  'minDonFieldOpp',
+  'maxLifeSelf',
+  'minLifeSelf',
+  'minDeckSelf',
+  'hasCharacterNamed',
+  'lacksCharacterNamed',
+  'oppAtLeastSelfDon',
+  'oppDonAdvantageAtLeast',
+  'oppBasePowerAtLeast',
+  'oppCharPowerAtLeast',
+  'minSelfRestedAny',
+  'minOppRestedAny',
+  'hasOtherCharacterTyped',
+  'minSelfRestedDon',
+  'leaderTypeIncludesAny',
+  'minSelfCharsTypedAny',
+  'minOppCharacters',
+  'oppCharCostAtMost',
+  'selfActive',
+  'selfPlayedThisTurn',
+  'lacksOtherCharacterNamed',
+  'trashContainsNames',
+  'hasCharacterNamedAny',
+  'fewerSelfCharsCostAtLeast',
+  'handDisadvantageAtLeast',
+  'leaderPowerAtLeast',
+  'minOppCharsBasePowerAtLeast',
+  'anyPlayerLifeZero',
+  'minSelfCharsTotalCost',
+  'charTypedPowerAtLeast',
+  'anyCharacterCostAtLeast',
+  'charDisadvantageAtLeast',
+  'atMostLifeOfOpp',
+  'minSelfRestedCharsTyped',
+  'allSelfCharsTypeContains',
+  'leaderColorIncludes',
+  'minTotalLife',
+  'minSelfCharsCostAtLeast',
+  'leaderAttributeIs',
+  'minSelfGivenDon',
+  'minTrashEventsSelf',
+  'maxActiveDonSelf',
+  'selfCostAtLeast',
+  'oppCharKoedThisTurn',
 ])
 
 interface AuraGrant {
@@ -525,6 +585,13 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
           continue
         if (t.costIs !== undefined && (getCardById(card.cardId)?.cost ?? 0) !== t.costIs) continue
         if (t.activeOnly && card.isRested) continue
+        if (t.hasTrigger && !getCardById(card.cardId)?.triggerText) continue
+        if (
+          t.basePowerIs !== undefined &&
+          (getCardById(card.cardId)?.power ?? 0) !== t.basePowerIs
+        ) {
+          continue
+        }
 
         let power = def.power ?? 0
         if (def.powerPer) {
@@ -660,7 +727,13 @@ export function getEffectiveCost(state: GameState, playerId: PlayerId, card: Gam
 
 export function discountMatches(
   card: GameCard,
-  d: { amount: number; cardType?: string; typeIncludes?: string; minCost?: number; nameIs?: string },
+  d: {
+    amount: number
+    cardType?: string
+    typeIncludes?: string
+    minCost?: number
+    nameIs?: string
+  },
 ): boolean {
   const data = getCardById(card.cardId)
   if (d.cardType && data?.cardType !== d.cardType) return false
