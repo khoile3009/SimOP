@@ -127,13 +127,16 @@
 - [~] Full-fidelity campaign (Oct 2026, IN PROGRESS) — burn down the SIMPLIFIED
       ledger toward a complete engine (started at 312 notes; ~100 are benign
       bot-ordering/auto-accept equivalences that stay documented). Phases:
-      1. DONE-ish: no-machinery slices — baseCostAtMost/baseCostIs filters,
+      1. DONE: no-machinery slices — baseCostAtMost/baseCostIs filters,
          Cond.anyOf (OR conditions), charTypedCostAtLeast/lacks variant,
          CardDataFilter.orMatch (two-class searches), SelectFilter.orNameIs,
          select op selectAll (automatic "all of X" effects). 312 → 290.
-      2. owner:'any' select targets (~45 "opponent side only" notes) +
-         top-or-bottom destination choices (~28 notes incl. face-up life
-         placement fidelity via a faceUp flag on placement ops).
+      2. DONE: owner:'any' select targets (35 cards; 3 notes died as
+         misrecorded — their texts print "your opponent's") 290 → 246, and
+         life-stack fidelity (fieldToLife/handToLife faceUp, fieldToLife
+         bottom, fromRef destination re-picks, lifeEnds payments; 19 cards)
+         246 → 227. Deck-top "top or bottom" ordering leftovers (~15 notes)
+         fold into phase 5.
       3. Class-based DON picker (design approved, artifact linked below) —
          clears the ~36 "DON!!-X pays from cost area only" notes.
       4. Generalized removal-replacement window ("would be removed" guards,
