@@ -49,10 +49,15 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 
 ## Effect System
 
-OP01, OP02, and OP03 coverage: FULL (Sep 2026) — every card is automated via effect defs +
+Coverage: FULL for every main set on optcgapi — OP01–OP13, OP16, OP17 (Oct 2026;
+OP-14/OP-15 are absent from the API). Every card is automated via effect defs +
 statics in `src/data/<set>/effects.ts`, printed-keyword parsing, or the rules layer;
 each set's `COVERAGE_NOTES` documents the remaining SIMPLIFIED deviations (enforced by
-that set's coverage.test.ts). New sets enter in three steps:
+the shared coverage test). Each set is fleet-certified: 1600 games, zero invariant
+violations. Authoring guards: the def linter, the IMPLEMENTED_CONDS check (every cond
+key used in data must be implemented in statics.ts — update the set when adding a
+cond), and the sign-drop rule (optcgapi drops minus signs on debuffs; all
+opponent-bound power/cost mods must be authored negative). New sets enter in three steps:
 1. `npm run ingest -- <API set id>` — fetch + convert cards.json/battleAttributes.json.
 2. `npm run compile-effects -- <SET>` — the clause→ops pattern compiler drafts
    `effects.draft.ts` (~50-65% of cards fully compiled; unmatched clauses become TODO

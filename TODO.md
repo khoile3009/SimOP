@@ -112,6 +112,21 @@
       typos vs the card DB, list overlaps, DON/once-per-turn on Events.
       OP04 flow: ingest → compile → author the ~35-50 TODO cards → coverage test
       → fleet.
+- [x] Full main-set coverage OP04–OP17 — DONE (Oct 2026). One autonomous production
+      run shipped OP04 through OP13, OP16, and OP17 (OP-14/OP-15 do not exist on
+      optcgapi — the API 404s both; re-ingest if they ever appear). Every set is
+      fleet-certified at 1600 games with zero invariant violations. The pool is now
+      ~1,570 cards / 14 sets. "Sets are data drops" held to the end: per-set engine
+      work shrank from ~15 additions (OP05) to 4 small ones (OP17). Durable guards
+      added mid-run after a batch-edit bug silently no-opped 34 conditions:
+      IMPLEMENTED_CONDS lint (every cond key in data must be implemented),
+      SelectFilter/CardDataFilter implementation audits, and a sign-drop sweep
+      (optcgapi drops minus signs on debuff texts — all opponent-bound mods are
+      authored negative and verified by regex). Remaining fidelity debt lives in
+      each set's COVERAGE_NOTES (SIMPLIFIED entries only; zero MISSING anywhere).
+- [ ] M4 gen-2 retrain — UNBLOCKED by full card coverage (the parking condition
+      is met). Decision needed: kick off the gen-2 recipe above (mid-turn
+      afterstates, no random games, deck-potential features) on the 14-set pool.
 - [ ] M7 Online multiplayer (original P2) — serializable actions make this feasible whenever.
 
 ## Tasks
