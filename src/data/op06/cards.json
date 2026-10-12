@@ -399,7 +399,7 @@
   },
   {
     "id": "OP06-020",
-    "name": "Hody Jones (020) (Alternate Art)",
+    "name": "Hody Jones",
     "cardType": "Leader",
     "color": [
       "Green"
@@ -846,8 +846,7 @@
     "counter": 0,
     "life": null,
     "attribute": [
-      "Fish-Man",
-      "Island"
+      "Fish-Man Island"
     ],
     "effectText": "[On Play] Rest all of your opponent's Characters.",
     "triggerText": "Play this card.",
@@ -1640,7 +1639,7 @@
   },
   {
     "id": "OP06-080",
-    "name": "Gecko Moria (080) (Alternate Art)",
+    "name": "Gecko Moria",
     "cardType": "Leader",
     "color": [
       "Black"

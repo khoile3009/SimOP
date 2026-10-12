@@ -11,6 +11,7 @@ import {
   pushFrame,
   emitEngineEvent,
   queueEndOfTurnEffects,
+  queueStartOfTurnEffects,
   removeFromField,
 } from './effects/interpreter'
 import { getEffectDefs } from './effects/registry'
@@ -71,14 +72,17 @@ export function processAction(
       newState = processEndTurn(state, events)
       break
     case 'CHOOSE':
-      newState = maybeFinishEndTurn(
-        settleDamage(
-          autoAdvanceBattle(
-            checkBattleExit(runStack(applyChoice(state, action.instanceIds), events), events),
+      newState = runStack(
+        maybeFinishEndTurn(
+          settleDamage(
+            autoAdvanceBattle(
+              checkBattleExit(runStack(applyChoice(state, action.instanceIds), events), events),
+              events,
+            ),
             events,
           ),
-          events,
         ),
+        events,
       )
       break
     case 'ACTIVATE_EFFECT':
@@ -745,7 +749,8 @@ function processEndTurn(state: GameState, events: GameEvent[]): GameState {
   // [End of Your Turn] auto effects resolve before the turn switches; a choice
   // inside one pauses here, and the CHOOSE handler completes the switch
   const withEffects = runStack(queueEndOfTurnEffects({ ...state, pendingEndTurn: true }), events)
-  return maybeFinishEndTurn(withEffects)
+  // runStack again: the turn switch may have queued [Start of Your Turn] frames
+  return runStack(maybeFinishEndTurn(withEffects), events)
 }
 
 /** Complete a pending turn switch once nothing is left to resolve. */
@@ -791,6 +796,24 @@ function maybeFinishEndTurn(state: GameState): GameState {
   }
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     for (const c of [...swept.players[pid].characters]) {
+      if (hasFlag(swept, c, 'setActiveAtTurnEnd') && c.isRested) {
+        swept = {
+          ...swept,
+          players: {
+            ...swept.players,
+            [pid]: {
+              ...swept.players[pid],
+              characters: swept.players[pid].characters.map((x) =>
+                x.instanceId === c.instanceId ? { ...x, isRested: false } : x,
+              ),
+            },
+          },
+        }
+      }
+      if (hasFlag(swept, c, 'bottomDeckAtTurnEnd')) {
+        swept = removeFromField(swept, c.instanceId, 'deckBottom')
+        continue
+      }
       if (hasFlag(swept, c, 'trashAtTurnEnd')) {
         swept = removeFromField(swept, c.instanceId, 'trash')
       } else if (hasFlag(swept, c, 'bounceAtTurnEnd')) {
@@ -805,5 +828,7 @@ function maybeFinishEndTurn(state: GameState): GameState {
     turnFlags: { player1: [], player2: [] },
     playDiscounts: { player1: [], player2: [] },
   }
-  return autoAdvancePhases(executeEndPhase(cleared))
+  // The next player's [Start of Your Turn] auto effects queue as Main opens
+  const next = autoAdvancePhases(executeEndPhase(cleared))
+  return queueStartOfTurnEffects(next)
 }

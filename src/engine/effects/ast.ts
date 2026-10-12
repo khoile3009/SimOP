@@ -23,6 +23,8 @@ export type EffectTiming =
   | 'guardKo'
   /** [End of Your Turn]: fires for the turn player's cards before the turn switch */
   | 'endOfTurn'
+  /** Start-of-turn auto effects, queued as the Main Phase opens (OP11 Luffy leader) */
+  | 'startOfTurn'
   /** On the attacker, after it wins a battle that K.O.'d a Character (Isuka) */
   | 'afterBattleKo'
 
@@ -193,6 +195,12 @@ export interface Cond {
   atMostLifeOfOpp?: boolean
   /** At least `count` of your RESTED characters carry `type` (green Nami) */
   minSelfRestedCharsTyped?: { type: string; count: number }
+  /** Every character you control has a type CONTAINING this substring (GERMA) */
+  allSelfCharsTypeContains?: string
+  /** Your leader's printed colors include this color (Gear Two) */
+  leaderColorIncludes?: string
+  /** Both players' life counts combined are at least this (Red Hawk) */
+  minTotalLife?: number
   /** The OPPONENT has a character with this effective cost or less (Baskerville) */
   oppCharCostAtMost?: number
 }
@@ -309,6 +317,9 @@ export type FlagName =
   | 'noOnPlay' // on a LEADER: this player's [On Play] effects are negated (Teach)
   | 'noBattleKoByLeader' // cannot be K.O.'d in battle when the attacker is a Leader
   | 'cannotBlock' // this character cannot activate [Blocker]
+  | 'noRest' // cannot be rested by effect ops (Hatchan's lock, GERMA Yonji)
+  | 'bottomDeckAtTurnEnd' // this card goes to the owner's deck bottom when the turn ends
+  | 'setActiveAtTurnEnd' // this card is set active when the turn ends (Topknot Neptunian)
 
 export type EffectOp =
   | { op: 'draw'; count: number; who?: 'self' | 'opponent' }
@@ -466,6 +477,11 @@ export type EffectOp =
   | { op: 'lifeFaceDown'; count: number | 'all' }
   /** Trash the deck top; if it matches, the bound card gains power (Blackbeard) */
   | { op: 'millTopCheck'; filter: CardDataFilter; ref: string; amount: number; duration: ModifierDuration }
+  /** Look at the opponent's deck top: it becomes known (revealed) to you (Katakuri) */
+  | { op: 'peekOppTop' }
+  /** "Choose a cost and reveal the opponent's top card": hits only when the top
+   * is already known via peekOppTop; the reveal makes it public either way */
+  | { op: 'costGuessCheck' }
   | { op: 'returnDon'; ref: string } // bound cost-area DON back to the DON!! deck
   /** Run this same card's def of another timing (trigger: "Activate this card's [Main]") */
   | { op: 'activateTiming'; timing: 'main' | 'counter' | 'onPlay' }

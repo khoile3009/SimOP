@@ -34,6 +34,9 @@ interface ApiRow {
  * names here as sets introduce them - the report flags any string that fails
  * to segment. */
 const SEED_TYPES = [
+  'Fish-Man Island',
+  'Former Big Mom Pirates',
+  'Former Rolling Pirates',
   'Brownbeard Pirates',
   'ODYSSEY',
   'Muggy Kingdom',
@@ -216,6 +219,7 @@ function findTriggerSection(text: string): number {
 function cleanName(raw: string): string {
   return raw
     .replace(/\s*\(Parallel\)\s*/g, '')
+    .replace(/\s*\(Alternate Art\)\s*$/g, '')
     .replace(/\s*\(\d+\)\s*$/g, '')
     .trim()
 }

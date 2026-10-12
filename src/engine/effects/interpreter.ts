@@ -131,6 +131,25 @@ export function queueEndOfTurnEffects(state: GameState): GameState {
   return { ...s, stack: [...s.stack, ...frames.reverse()] }
 }
 
+export function queueStartOfTurnEffects(state: GameState): GameState {
+  const pid = state.currentPlayer
+  const p = state.players[pid]
+  const frames: EffectFrame[] = []
+  let s = state
+  for (const card of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
+    const defs = getEffectDefs(card.cardId)
+    for (let i = 0; i < defs.length; i++) {
+      if (!defMatches(s, pid, card, 'startOfTurn', i)) continue
+      const marked = markOncePerTurn(s, card, defs[i].oncePerTurn, `t${i}`)
+      if (!marked) continue
+      s = marked
+      frames.push(makeFrame(card, pid, 'startOfTurn', i))
+    }
+  }
+  if (frames.length === 0) return s
+  return { ...s, stack: [...s.stack, ...frames.reverse()] }
+}
+
 /** Returns the state with the once-per-turn use marked, or null if already used. */
 function markOncePerTurn(
   state: GameState,
@@ -700,6 +719,37 @@ function executeOp(
       return advance(s)
     }
 
+    case 'peekOppTop': {
+      const opp = state.players[getOpponent(controller)]
+      if (opp.deck.length === 0) return advance(state)
+      const [top, ...rest] = opp.deck
+      return advance({
+        ...state,
+        players: {
+          ...state.players,
+          [getOpponent(controller)]: { ...opp, deck: [{ ...top, revealed: true }, ...rest] },
+        },
+      })
+    }
+
+    case 'costGuessCheck': {
+      const oppId = getOpponent(controller)
+      const opp = state.players[oppId]
+      const top = opp.deck[0]
+      if (!top) return advance(state, true)
+      const known = top.revealed === true
+      // The public reveal happens either way
+      const s: GameState = {
+        ...state,
+        players: {
+          ...state.players,
+          [oppId]: { ...opp, deck: [{ ...top, revealed: true }, ...opp.deck.slice(1)] },
+        },
+      }
+      // Without prior knowledge the guess is treated as a miss (SIMPLIFIED)
+      return known ? advance(s) : advance(s, true)
+    }
+
     case 'koSelfNoReplace': {
       const card = findFieldCard(state, frame.sourceInstanceId)
       if (!card) return advance(state)
@@ -1051,6 +1101,7 @@ function executeOp(
       for (const id of refs(op.ref)) {
         if (rested) {
           const card = findFieldCard(s, id)
+          if (card && hasFlag(s, card, 'noRest')) continue
           const isChar = ['player1', 'player2'].some((pid) =>
             s.players[pid as PlayerId].characters.some((c) => c.instanceId === id),
           )
@@ -1844,6 +1895,15 @@ function replaceWindowOpen(
 /** Does a dying card fall under a guardKo def's protection filter? */
 function guardTargetMatches(state: GameState, card: GameCard, g: SelectFilter): boolean {
   if (g.powerAtLeast !== undefined && getEffectivePower(state, card) < g.powerAtLeast) return false
+  if (
+    g.basePowerAtMost !== undefined &&
+    (getCardById(card.cardId)?.power ?? 0) > g.basePowerAtMost
+  ) {
+    return false
+  }
+  if (g.colorIncludes && !(getCardById(card.cardId)?.color ?? []).some((c) => c === g.colorIncludes)) {
+    return false
+  }
   if (g.powerAtMost !== undefined && getEffectivePower(state, card) > g.powerAtMost) return false
   if (g.rested !== undefined && card.isRested !== g.rested) return false
   if (g.costAtMost !== undefined && getEffectiveFieldCost(state, card) > g.costAtMost) return false
