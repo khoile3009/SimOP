@@ -26,9 +26,19 @@ export interface CardRules {
   deckCostLimitBelow?: number
   /** This card cannot be played from hand/deck/trash by effect ops (OP12 Zoro) */
   notPlayableByEffects?: boolean
+  /** On a LEADER: one DON!! from each DON!! Phase attaches to the leader (Roger) */
+  donPhaseGivesLeaderDon?: number
+  /** On a LEADER: deck may not include EVENTS with printed cost >= this (Imu) */
+  deckEventCostLimitBelow?: number
+  /** On a LEADER: at game start, play one Stage of this type from the deck (Imu) */
+  startsWithStageType?: string
 }
 
 export const CARD_RULES: Record<string, CardRules> = {
+  // OP13-003 Roger leader: a DON!! from each DON!! Phase goes to the leader
+  'OP13-003': { donPhaseGivesLeaderDon: 1 },
+  // OP13-079 Imu: no cost-2+ Events in the deck; opens with a Mary Geoise Stage
+  'OP13-079': { deckEventCostLimitBelow: 2, startsWithStageType: 'Mary Geoise' },
   // OP12-001 Rayleigh leader: no cards of cost 5+ in the deck
   'OP12-001': { deckCostLimitBelow: 5 },
   // OP12-036 Zoro: "This card in your hand cannot be played by effects"

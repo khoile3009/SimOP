@@ -73,6 +73,8 @@ export interface EventQuery {
   fromHand?: boolean
   /** characterPlayed only: the played card's printed cost is at least this */
   minCost?: number
+  /** characterPlayed only: the played card carries a [Trigger] (OP13 Bonney) */
+  withTrigger?: boolean
   /** lifeDamageDealt: the damage came from THIS card's attack.
    * attacked: THIS card is the attack's target. */
   sourceIsSelf?: boolean
@@ -214,6 +216,8 @@ export interface Cond {
   minSelfGivenDon?: number
   /** At least this many Event cards in your trash (OP12 purple Sanji) */
   minTrashEventsSelf?: number
+  /** ACTIVE DON!! in your cost area is at most this (OP13 Luffy leader) */
+  maxActiveDonSelf?: number
   /** The OPPONENT has a character with this effective cost or less (Baskerville) */
   oppCharCostAtMost?: number
 }
@@ -457,7 +461,7 @@ export type EffectOp =
   | { op: 'toHand'; ref: string } // from the controller's trash
   | { op: 'trashCards'; ref: string } // from a hand (whichever hand holds them)
   | { op: 'lifeToHand'; ref: string } // bound via select zone 'life'
-  | { op: 'playCards'; ref: string; rested?: boolean } // free play from hand/deck/trash
+  | { op: 'playCards'; ref: string; rested?: boolean; who?: 'opponent' } // free play from hand/deck/trash
   | { op: 'playSelf'; rested?: boolean } // play the source card from the trash
   /** Look at top N; choose up to `upTo` matching to hand/play/trash; rest to bottom (or trash) */
   | {
@@ -517,7 +521,7 @@ export type EffectOp =
   /** The opponent returns DON from their cost area to their DON!! deck (rested first) */
   | { op: 'oppReturnDon'; count: number }
   /** Turn-scoped restriction on the controller (cleared at end of turn) */
-  | { op: 'restrictSelf'; restriction: 'noLifeToHand' | 'noLeaderAttack' | 'donEqualize' | 'noEffectDraw' | 'noPlayCharCost7Plus' }
+  | { op: 'restrictSelf'; restriction: 'noLifeToHand' | 'noLeaderAttack' | 'donEqualize' | 'noEffectDraw' | 'noPlayCharCost7Plus' | 'noPlayCharCost5Plus' | 'noPlayFromHand' }
   /** One-shot play-cost discount for the controller this turn (Kin'emon) */
   | {
       op: 'grantPlayDiscount'

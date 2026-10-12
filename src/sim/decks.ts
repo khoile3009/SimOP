@@ -25,9 +25,12 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
   )
   // Leaders with a deck-building cost rule (OP12 Rayleigh) refuse cards the
   // rule excludes, both at assignment time and when padding
-  const fitsLeaderRules = (leaderId: string, card: { cost: number }) => {
+  const fitsLeaderRules = (leaderId: string, card: { cost: number; cardType: string }) => {
     const limit = getCardRules(leaderId)?.deckCostLimitBelow
-    return limit === undefined || card.cost < limit
+    if (limit !== undefined && card.cost >= limit) return false
+    const evLimit = getCardRules(leaderId)?.deckEventCostLimitBelow
+    if (evLimit !== undefined && card.cardType === 'Event' && card.cost >= evLimit) return false
+    return true
   }
 
   // Anchor on one leader per color the set actually has, then add any extra

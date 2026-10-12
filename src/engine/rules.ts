@@ -84,11 +84,20 @@ function validatePlayCard(
   const card = player.hand.find((c) => c.instanceId === cardInstanceId)
   if (!card) return { valid: false, reason: 'Card not in hand' }
 
-  // Mihawk's rider: no characters of printed cost 7+ for the rest of the turn
+  // Ramp riders: self-imposed play locks for the rest of the turn
+  if (state.turnFlags[playerId]?.includes('noPlayFromHand')) {
+    return { valid: false, reason: 'Cannot play cards from hand this turn' }
+  }
   if (state.turnFlags[playerId]?.includes('noPlayCharCost7Plus')) {
     const data = getCardById(card.cardId)
     if (data?.cardType === 'Character' && data.cost >= 7) {
       return { valid: false, reason: 'Cannot play cost-7+ Characters this turn' }
+    }
+  }
+  if (state.turnFlags[playerId]?.includes('noPlayCharCost5Plus')) {
+    const data = getCardById(card.cardId)
+    if (data?.cardType === 'Character' && data.cost >= 5) {
+      return { valid: false, reason: 'Cannot play cost-5+ Characters this turn' }
     }
   }
 
@@ -425,11 +434,20 @@ function validatePlayCounterEvent(
   const card = player.hand.find((c) => c.instanceId === cardInstanceId)
   if (!card) return { valid: false, reason: 'Card not in hand' }
 
-  // Mihawk's rider: no characters of printed cost 7+ for the rest of the turn
+  // Ramp riders: self-imposed play locks for the rest of the turn
+  if (state.turnFlags[playerId]?.includes('noPlayFromHand')) {
+    return { valid: false, reason: 'Cannot play cards from hand this turn' }
+  }
   if (state.turnFlags[playerId]?.includes('noPlayCharCost7Plus')) {
     const data = getCardById(card.cardId)
     if (data?.cardType === 'Character' && data.cost >= 7) {
       return { valid: false, reason: 'Cannot play cost-7+ Characters this turn' }
+    }
+  }
+  if (state.turnFlags[playerId]?.includes('noPlayCharCost5Plus')) {
+    const data = getCardById(card.cardId)
+    if (data?.cardType === 'Character' && data.cost >= 5) {
+      return { valid: false, reason: 'Cannot play cost-5+ Characters this turn' }
     }
   }
   const data = getCardById(card.cardId)

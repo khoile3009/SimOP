@@ -1,6 +1,6 @@
 import type { GameState, GameCard, Modifier, PlayerId } from './types'
 import { DON_PER_TURN, DON_FIRST_TURN } from './constants'
-import { deckOutWinner } from './rulesLayer'
+import { deckOutWinner, getCardRules } from './rulesLayer'
 import { hasFlag } from './effects/statics'
 import { createGameCard } from './gameSetup'
 
@@ -129,14 +129,28 @@ export function executeDon(state: GameState): GameState {
 
   const newDonDeck = [...player.donDeck]
   const moved = newDonDeck.splice(0, available)
-  const newDonArea = [...player.donArea, ...moved]
+  // Roger leader (OP13-003): one freshly placed DON!! attaches to the leader -
+  // but only while any DON!! is already on the field
+  const hadDonOnField =
+    player.donArea.length > 0 ||
+    player.leader.attachedDon > 0 ||
+    player.characters.some((c) => c.attachedDon > 0)
+  const attach = hadDonOnField
+    ? Math.min(getCardRules(player.leader.cardId)?.donPhaseGivesLeaderDon ?? 0, moved.length)
+    : 0
+  const newDonArea = [...player.donArea, ...moved.slice(attach)]
 
   return {
     ...state,
     phase: 'MAIN',
     players: {
       ...state.players,
-      [playerId]: { ...player, donDeck: newDonDeck, donArea: newDonArea },
+      [playerId]: {
+        ...player,
+        donDeck: newDonDeck,
+        donArea: newDonArea,
+        leader: { ...player.leader, attachedDon: player.leader.attachedDon + attach },
+      },
     },
   }
 }

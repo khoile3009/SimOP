@@ -389,6 +389,12 @@ export function evalCond(
     const n = me.trash.filter((c) => getCardById(c.cardId)?.cardType === 'Event').length
     if (n < cond.minTrashEventsSelf) return false
   }
+  if (
+    cond.maxActiveDonSelf !== undefined &&
+    me.donArea.filter((d) => !d.isRested).length > cond.maxActiveDonSelf
+  ) {
+    return false
+  }
   return true
 }
 
@@ -421,7 +427,7 @@ export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
   'charDisadvantageAtLeast', 'atMostLifeOfOpp', 'minSelfRestedCharsTyped',
   'allSelfCharsTypeContains', 'leaderColorIncludes', 'minTotalLife',
   'minSelfCharsCostAtLeast', 'leaderAttributeIs', 'minSelfGivenDon',
-  'minTrashEventsSelf',
+  'minTrashEventsSelf', 'maxActiveDonSelf',
 ])
 
 interface AuraGrant {

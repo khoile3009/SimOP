@@ -34,6 +34,9 @@ interface ApiRow {
  * names here as sets introduce them - the report flags any string that fails
  * to segment. */
 const SEED_TYPES = [
+  'CP0',
+  'Five Elders',
+  'Evil Black Drum Kingdom',
   'Fish-Man Island',
   'Former Big Mom Pirates',
   'Former Rolling Pirates',

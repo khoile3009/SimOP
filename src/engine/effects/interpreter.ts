@@ -104,6 +104,7 @@ export function emitEngineEvent(state: GameState, ev: EngineEvent): GameState {
         ) {
           continue
         }
+        if (def.on.withTrigger && (!ev.cardId || !getCardById(ev.cardId)?.triggerText)) continue
         if (def.on.noBaseEffect && (!ev.cardId || getCardById(ev.cardId)?.effectText)) continue
         if (def.on.sourceIsSelf && ev.sourceInstanceId !== card.instanceId) continue
         if (!defMatches(s, pid, card, 'onEvent', i)) continue
@@ -1236,8 +1237,9 @@ function executeOp(
 
     case 'playCards': {
       let s = state
+      const who = op.who === 'opponent' ? getOpponent(controller) : controller
       for (const id of refs(op.ref)) {
-        s = playCardFree(s, controller, id, op.rested ?? false, events)
+        s = playCardFree(s, who, id, op.rested ?? false, events)
       }
       return advance(s)
     }
@@ -1958,6 +1960,9 @@ function guardTargetMatches(state: GameState, card: GameCard, g: SelectFilter): 
     return false
   }
   if (g.attributeIs && getBattleAttribute(card.cardId) !== g.attributeIs) return false
+  if (g.typeContains && !cardTypes(card.cardId).some((t) => t.includes(g.typeContains!))) {
+    return false
+  }
   if (g.colorIncludes && !(getCardById(card.cardId)?.color ?? []).some((c) => c === g.colorIncludes)) {
     return false
   }

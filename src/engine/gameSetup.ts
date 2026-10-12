@@ -1,6 +1,7 @@
 import type { GameState, GameCard, PlayerState, PlayerId, Deck } from './types'
 import { DON_DECK_SIZE, STARTING_HAND_SIZE } from './constants'
 import { getCardById } from '@/data/cardService'
+import { getCardRules } from './rulesLayer'
 import { generateId } from '@/utils/id'
 import { shuffle } from '@/utils/shuffle'
 import { random } from '@/utils/rng'
@@ -155,6 +156,20 @@ export function startGame(state: GameState): GameState {
     const lifeCount = getCardById(p.leader.cardId)?.life ?? 0
     const dealt = dealLife(p.deck, lifeCount)
     players[pid] = { ...p, deck: dealt.deck, lifeCards: dealt.life }
+    // Imu (OP13-079): the game opens with a typed Stage pre-played from the deck
+    const stageType = getCardRules(p.leader.cardId)?.startsWithStageType
+    if (stageType && !players[pid].stage) {
+      const q = players[pid]
+      const idx = q.deck.findIndex((c) =>
+        (getCardById(c.cardId)?.attribute ?? []).includes(stageType) &&
+        getCardById(c.cardId)?.cardType === 'Stage',
+      )
+      if (idx >= 0) {
+        const deck = [...q.deck]
+        const [stage] = deck.splice(idx, 1)
+        players[pid] = { ...q, deck, stage: { ...stage, turnPlayed: 0 } }
+      }
+    }
   }
 
   return {
