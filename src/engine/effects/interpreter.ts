@@ -2,13 +2,16 @@ import type { GameState, GameCard, GameEvent, PlayerId, EffectFrame, Modifier } 
 import type { CardDataFilter, EffectOp, EffectTiming, EngineEventKind, SelectFilter } from './ast'
 import { getEffectDefs } from './registry'
 import { recordEffectFired } from './telemetry'
-import { evalCond, cardTypes, hasFlag, getEffectiveFieldCost } from './statics'
+import { evalCond, cardTypes, hasFlag, getEffectiveFieldCost, isNegated } from './statics'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '../powerCalc'
 import { getOpponent } from '../turnManager'
 import { cardHasName, deckOutWinner, getBattleAttribute } from '../rulesLayer'
 import { createGameCard } from '../gameSetup'
 import { shuffle } from '@/utils/shuffle'
+// Circular at module level with battleManager (which imports koById etc.);
+// safe because both sides only call at run time
+import { dealLifeDamage } from '../battleManager'
 import { MAX_CHARACTERS } from '../constants'
 
 export interface EngineEvent {
@@ -39,6 +42,7 @@ function defMatches(
 ): boolean {
   const def = getEffectDefs(card.cardId)[defIndex]
   if (!def || def.timing !== timing) return false
+  if (isNegated(card)) return false
   if (def.donRequired && card.attachedDon < def.donRequired) return false
   return evalCond(state, controller, card, def.condition)
 }
@@ -375,24 +379,22 @@ function executeOp(
     }
 
     case 'shuffleHandIntoDeckDraw': {
-      const p = state.players[controller]
-      const count = p.hand.length
-      if (count === 0) return advance(state)
-      let s: GameState = {
+      const pid = op.who === 'opponent' ? getOpponent(controller) : controller
+      const p = state.players[pid]
+      const count = op.draw ?? p.hand.length
+      const shuffled = {
         ...state,
         players: {
           ...state.players,
-          [controller]: {
+          [pid]: {
             ...p,
             hand: [],
             deck: shuffle([...p.deck, ...p.hand.map((c) => ({ ...c, revealed: false }))]),
           },
         },
       }
-      s = drawCards(s, controller, count, events)
-      return advance(s)
+      return advance(drawCards(shuffled, pid, count, events))
     }
-
     case 'basePowerToAttacker': {
       const attackerId = state.battle?.attackerId
       const attacker = attackerId ? findFieldCard(state, attackerId) : null
@@ -412,6 +414,52 @@ function executeOp(
           modifiers: [...c.modifiers, modifier],
         })),
       )
+    }
+
+    case 'basePowerToOppLeader': {
+      const self = findFieldCard(state, frame.sourceInstanceId)
+      if (!self) return advance(state)
+      const oppLeader = state.players[getOpponent(controller)].leader
+      const selfBase = getCardById(self.cardId)?.power ?? 0
+      const delta = getEffectivePower(state, oppLeader) - selfBase
+      const modifier: Modifier = {
+        kind: 'power',
+        value: delta,
+        duration: op.duration,
+        sourceCardId: frame.sourceCardId,
+      }
+      if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
+      return advance(
+        updateFieldCard(state, self.instanceId, (c) => ({
+          ...c,
+          modifiers: [...c.modifiers, modifier],
+        })),
+      )
+    }
+
+    case 'restAll': {
+      const pid = op.owner === 'self' ? controller : getOpponent(controller)
+      const p = state.players[pid]
+      return advance({
+        ...state,
+        players: {
+          ...state.players,
+          [pid]: { ...p, characters: p.characters.map((c) => ({ ...c, isRested: true })) },
+        },
+      })
+    }
+
+    case 'dealDamage': {
+      const s = dealLifeDamage(state, getOpponent(controller), op.count, false, events)
+      return advance(s)
+    }
+
+    case 'requireRefPowerAtMost': {
+      for (const id of refs(op.ref)) {
+        const card = findFieldCard(state, id)
+        if (card && getEffectivePower(state, card) > op.max) return advance(state, true)
+      }
+      return advance(state)
     }
 
     case 'grantFlagAll': {
@@ -798,7 +846,14 @@ function executeOp(
 
     case 'bottomDeck': {
       let s = state
-      for (const id of refs(op.ref)) s = moveHandToDeckBottom(s, controller, id)
+      for (const id of refs(op.ref)) {
+        for (const pid of ['player1', 'player2'] as PlayerId[]) {
+          if (s.players[pid].hand.some((c) => c.instanceId === id)) {
+            s = moveHandToDeckBottom(s, pid, id)
+            break
+          }
+        }
+      }
       return advance(s)
     }
 
@@ -1293,6 +1348,7 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
   if (filter.orNameIs && cardHasName(cardId, filter.orNameIs)) return true
   if (filter.nameIsAny && !filter.nameIsAny.some((n) => cardHasName(cardId, n))) return false
   if (filter.powerAtLeast !== undefined && (data.power ?? 0) < filter.powerAtLeast) return false
+  if (filter.powerAtMost !== undefined && (data.power ?? 0) > filter.powerAtMost) return false
   if (filter.cardType && data.cardType !== filter.cardType) return false
   if (filter.costAtMost !== undefined && data.cost > filter.costAtMost) return false
   if (filter.costIs !== undefined && data.cost !== filter.costIs) return false

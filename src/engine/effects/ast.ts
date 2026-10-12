@@ -131,7 +131,19 @@ export interface Cond {
   donFieldZeroOrAtLeast?: number
   /** The opponent has more DON!! on their field than you */
   oppMoreDon?: boolean
+  /** The opponent has at least as many DON!! on their field as you (GERMA) */
+  oppAtLeastSelfDon?: boolean
+  /** The opponent has at least this many MORE DON!! than you (Cosette) */
+  oppDonAdvantageAtLeast?: number
   maxLifeOpp?: number
+  /** The opponent has a Leader or Character with at least this PRINTED power */
+  oppBasePowerAtLeast?: number
+  /** The opponent has a Character with at least this effective power */
+  oppCharPowerAtLeast?: number
+  /** Your rested cards across leader, characters, stage and DON!! */
+  minSelfRestedAny?: number
+  /** A character you control OTHER than the source has this type (Raki) */
+  hasOtherCharacterTyped?: string
 }
 
 /** Instance selection filter, for `select` (live zones). */
@@ -191,6 +203,7 @@ export interface SelectFilter {
 export interface CardDataFilter {
   cardType?: 'Character' | 'Event' | 'Stage'
   costAtMost?: number
+  powerAtMost?: number
   typeIncludesAny?: string[]
   costIs?: number
   powerAtLeast?: number
@@ -226,6 +239,7 @@ export type FlagName =
   | 'noRefresh' // does not become active in its owner's next Refresh Phase
   | 'bottomDecksBattledFoe' // value = max cost: the character this card battles goes to the deck bottom
   | 'rushCharactersOnly' // may attack CHARACTERS (not leaders) the turn it was played
+  | 'negated' // the card's own effects (printed keywords, statics, defs) are off
 
 export type EffectOp =
   | { op: 'draw'; count: number }
@@ -261,10 +275,18 @@ export type EffectOp =
   | { op: 'handToLife'; ref: string }
   /** Reveal the deck top; if it matches, power-mod self; revealed card to the bottom */
   | { op: 'revealTopCheck'; filter: CardDataFilter; amount: number; duration: ModifierDuration }
-  /** Shuffle the controller's whole hand into the deck, then draw that many */
-  | { op: 'shuffleHandIntoDeckDraw' }
+  /** Shuffle a player's whole hand into their deck, then draw (their hand size, or `draw`) */
+  | { op: 'shuffleHandIntoDeckDraw'; who?: 'self' | 'opponent'; draw?: number }
   /** Self base power becomes the attacking card's current power (delta modifier) */
   | { op: 'basePowerToAttacker'; duration: ModifierDuration }
+  /** Self base power becomes the opponent's leader's current power (Shuraiya) */
+  | { op: 'basePowerToOppLeader'; duration: ModifierDuration }
+  /** Rest every character a player controls (The Ark Noah) */
+  | { op: 'restAll'; owner: 'self' | 'opponent' }
+  /** Deal damage to the opponent's Life (triggers are SIMPLIFIED away) */
+  | { op: 'dealDamage'; count: number }
+  /** Skip the rest unless every bound card's effective power is at most `max` */
+  | { op: 'requireRefPowerAtMost'; ref: string; max: number }
   /** Grant a flag to the controller's whole field at once */
   | {
       op: 'grantFlagAll'
@@ -353,7 +375,7 @@ export type EffectOp =
   | { op: 'giveRestedDon'; upTo: number; toRef?: string }
   | { op: 'returnDon'; ref: string } // bound cost-area DON back to the DON!! deck
   /** Run this same card's def of another timing (trigger: "Activate this card's [Main]") */
-  | { op: 'activateTiming'; timing: 'main' | 'counter' }
+  | { op: 'activateTiming'; timing: 'main' | 'counter' | 'onPlay' }
   /** Mark bound hand cards as revealed (public knowledge until they move zones) */
   | { op: 'reveal'; ref: string }
   /** Field-cost delta on bound cards (Black's -N cost effects) */
@@ -367,7 +389,7 @@ export type EffectOp =
   /** The opponent returns DON from their cost area to their DON!! deck (rested first) */
   | { op: 'oppReturnDon'; count: number }
   /** Turn-scoped restriction on the controller (cleared at end of turn) */
-  | { op: 'restrictSelf'; restriction: 'noLifeToHand' }
+  | { op: 'restrictSelf'; restriction: 'noLifeToHand' | 'noLeaderAttack' }
   /** One-shot play-cost discount for the controller this turn (Kin'emon) */
   | {
       op: 'grantPlayDiscount'
@@ -422,7 +444,7 @@ export interface StaticDef {
   }
   power?: number
   /** Scaling auras: value per matching count, added to `power` */
-  powerPer?: { handCards?: boolean; trashEventsPer2?: boolean; amount: number }
+  powerPer?: { handCards?: boolean; trashEventsPer2?: boolean; trashPer5?: boolean; amount: number }
   keyword?: string
   flag?: FlagName
   flagValue?: number

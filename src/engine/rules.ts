@@ -154,6 +154,14 @@ function validateDeclareAttack(
 
   const player = state.players[playerId]
 
+  // 'noLeaderAttack' (Koushirou): no attack may target a Leader this turn
+  if (
+    state.turnFlags[playerId]?.includes('noLeaderAttack') &&
+    state.players[getOpponent(playerId)].leader.instanceId === targetId
+  ) {
+    return { valid: false, reason: 'Cannot attack a Leader this turn' }
+  }
+
   // Find attacker
   const isLeaderAttacker = player.leader.instanceId === attackerId
   const attackerChar = player.characters.find((c) => c.instanceId === attackerId)

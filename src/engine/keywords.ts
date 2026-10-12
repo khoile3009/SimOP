@@ -1,6 +1,6 @@
 import type { CardData, GameCard, GameState } from './types'
 import { getCardById } from '@/data/cardService'
-import { auraGrants } from './effects/statics'
+import { auraGrants, isNegated } from './effects/statics'
 
 export type Keyword = 'Rush' | 'Blocker' | 'Double Attack' | 'Banish'
 
@@ -36,7 +36,8 @@ export function getPrintedKeywords(cardId: string): Set<Keyword> {
 
 /** Printed keywords plus any granted by modifiers or active auras. */
 export function hasKeyword(state: GameState, card: GameCard, keyword: Keyword): boolean {
-  if (getPrintedKeywords(card.cardId).has(keyword)) return true
+  // Negation turns off the card's own text; grants from other sources survive
+  if (!isNegated(card) && getPrintedKeywords(card.cardId).has(keyword)) return true
   if (card.modifiers.some((m) => m.kind === 'keyword' && m.keyword === keyword)) return true
   return auraGrants(state, card).keywords.includes(keyword)
 }

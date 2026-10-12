@@ -34,6 +34,21 @@ interface ApiRow {
  * names here as sets introduce them - the report flags any string that fails
  * to segment. */
 const SEED_TYPES = [
+  'GERMA 66',
+  'Kingdom of GERMA',
+  'Asuka Island',
+  'Crown Island',
+  'Eldoraggo Crew',
+  'Gasparde Pirates',
+  'Mecha Island',
+  'Mugiwara Chase',
+  'Omatsuri Island',
+  'Shipbuilding Town',
+  'Trump Pirates',
+  'Flying Pirates',
+  'Former Arlong Pirates',
+  'Former Rumbar Pirates',
+  'Gyro Pirates',
   'Kingdom of Prodence',
   'Celestial Dragons',
   'Mary Geoise',

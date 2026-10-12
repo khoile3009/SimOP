@@ -90,13 +90,13 @@ export function evalCond(
   if (cond.leaderMulticolor && (getCardById(me.leader.cardId)?.color.length ?? 0) < 2) return false
   if (
     cond.selfPowerAtLeast !== undefined &&
-    (!source || getEffectivePower(state, source) < cond.selfPowerAtLeast)
+    (!source || condPower(state, source) < cond.selfPowerAtLeast)
   ) {
     return false
   }
   if (
     cond.leaderPowerAtMost !== undefined &&
-    getEffectivePower(state, me.leader) > cond.leaderPowerAtMost
+    condPower(state, me.leader) > cond.leaderPowerAtMost
   ) {
     return false
   }
@@ -214,6 +214,13 @@ interface AuraGrant {
  * through getEffectivePower; nested reads settle on base + DON + modifiers,
  * mirroring the costEvalDepth guard below.
  */
+/** Negation is carried by a 'negated' flag MODIFIER only (never an aura), so
+ * reads stay recursion-free: a negated card grants no statics, loses printed
+ * keywords, and its effect defs stop matching. */
+export function isNegated(card: GameCard): boolean {
+  return card.modifiers.some((m) => m.kind === 'flag' && m.flag === 'negated')
+}
+
 let powerCondDepth = 0
 function condPower(state: GameState, card: GameCard): number {
   if (powerCondDepth > 0) {
@@ -238,6 +245,7 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
     for (const source of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
+      if (isNegated(source)) continue
       for (const def of getStatics(source.cardId)) {
         if (def.donRequired && source.attachedDon < def.donRequired) continue
         if (!evalCond(state, pid, source, def.condition)) continue
@@ -278,6 +286,9 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
         if (def.powerPer) {
           const owner = state.players[pid]
           if (def.powerPer.handCards) power += def.powerPer.amount * owner.hand.length
+          if (def.powerPer.trashPer5) {
+            power += def.powerPer.amount * Math.floor(owner.trash.length / 5)
+          }
           if (def.powerPer.trashEventsPer2) {
             const events = owner.trash.filter(
               (c) => getCardById(c.cardId)?.cardType === 'Event',
