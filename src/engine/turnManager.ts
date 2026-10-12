@@ -21,6 +21,7 @@ export function expireModifiers(state: GameState, expired: (m: Modifier) => bool
       leader: stripModifiers(p.leader, keep),
       characters: p.characters.map((c) => stripModifiers(c, keep)),
       stage: p.stage ? stripModifiers(p.stage, keep) : null,
+      donArea: p.donArea.map((d) => stripModifiers(d, keep)),
     }
   }
   return { ...state, players }
@@ -75,7 +76,13 @@ export function executeRefresh(state: GameState): GameState {
           isRested: hasFlag(expired, c, 'noRefresh') ? c.isRested : false,
           attachedDon: 0,
         })),
-        donArea: [...player.donArea, ...returned].map((d) => ({ ...d, isRested: false })),
+        // A 'noRefresh' flag modifier keeps a DON!! rested through this Refresh
+        // (Bonney, Foxy); DON never carry auras, so modifiers alone decide
+        donArea: [...player.donArea, ...returned].map((d) =>
+          d.modifiers.some((m) => m.kind === 'flag' && m.flag === 'noRefresh')
+            ? d
+            : { ...d, isRested: false },
+        ),
         stage: player.stage ? { ...player.stage, isRested: false } : null,
       },
     },

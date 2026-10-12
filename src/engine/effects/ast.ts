@@ -33,6 +33,10 @@ export type EffectTiming =
  */
 export type EngineEventKind =
   | 'eventActivated'
+  /** A character was rested by an effect op; `player` is the op's controller */
+  | 'restedByEffect'
+  /** A character left the field through an effect op; `player` is the controller */
+  | 'charRemovedByEffect'
   | 'characterKoed'
   | 'donAttached'
   | 'donReturned'
@@ -144,6 +148,15 @@ export interface Cond {
   minSelfRestedAny?: number
   /** A character you control OTHER than the source has this type (Raki) */
   hasOtherCharacterTyped?: string
+  /** Rested DON!! in your cost area (Caribou) */
+  minSelfRestedDon?: number
+  /** Your leader has ANY of these types */
+  leaderTypeIncludesAny?: string[]
+  /** At least `count` of your characters carry any of `types` (Kuja, Foxy) */
+  minSelfCharsTypedAny?: { types: string[]; count: number }
+  minOppCharacters?: number
+  /** The OPPONENT has a character with this effective cost or less (Baskerville) */
+  oppCharCostAtMost?: number
 }
 
 /** Instance selection filter, for `select` (live zones). */
@@ -240,9 +253,10 @@ export type FlagName =
   | 'bottomDecksBattledFoe' // value = max cost: the character this card battles goes to the deck bottom
   | 'rushCharactersOnly' // may attack CHARACTERS (not leaders) the turn it was played
   | 'negated' // the card's own effects (printed keywords, statics, defs) are off
+  | 'noOppEffectKo' // cannot be K.O.'d by OPPONENT effects (own effects still can)
 
 export type EffectOp =
-  | { op: 'draw'; count: number }
+  | { op: 'draw'; count: number; who?: 'self' | 'opponent' }
   | {
       op: 'select'
       bind: string
@@ -317,7 +331,7 @@ export type EffectOp =
   | { op: 'discardTo'; count: number; who: 'both' | 'self' | 'opponent' }
   /** Skip the rest of this effect when the condition fails - "Then, if ..." */
   | { op: 'requireCond'; cond: Cond }
-  | { op: 'powerMod'; ref: string; amount: number; duration: ModifierDuration }
+  | { op: 'powerMod'; ref: string; amount: number; duration: ModifierDuration; untilTurnOffset?: number }
   /** Power mod scaled by another binding's size (Ace: +1000 per trashed card) */
   | {
       op: 'powerModPerRef'
@@ -325,6 +339,8 @@ export type EffectOp =
       countRef: string
       amountPer: number
       duration: ModifierDuration
+      /** Scale by floor(count / per) instead of the raw count */
+      per?: number
     }
   /** Katakuri-style life scry, simplified: may move the top card of either
    * player's Life to the bottom of that stack (the "look" is not modeled) */
@@ -373,6 +389,12 @@ export type EffectOp =
   | { op: 'addDon'; count: number; rested: boolean } // from DON!! deck to cost area
   /** Rested cost-area DON onto the source card, or onto a bound card via toRef */
   | { op: 'giveRestedDon'; upTo: number; toRef?: string }
+  /** Move DON already given to your other cards onto the bound card (Dragon) */
+  | { op: 'moveAttachedDon'; upTo: number; toRef: string }
+  /** Set a bound card's power to a fixed value via a delta modifier (Ain) */
+  | { op: 'setPower'; ref: string; value: number; duration: ModifierDuration }
+  /** Move the source card from the trash to its owner's hand (trigger tails) */
+  | { op: 'selfToHand' }
   | { op: 'returnDon'; ref: string } // bound cost-area DON back to the DON!! deck
   /** Run this same card's def of another timing (trigger: "Activate this card's [Main]") */
   | { op: 'activateTiming'; timing: 'main' | 'counter' | 'onPlay' }
@@ -405,6 +427,9 @@ export type EffectOp =
 
 export interface EffectDef {
   timing: EffectTiming
+  /** For timing 'replaceKo': 'oppEffect' narrows the window to K.O.s/removals
+   * caused by an opponent's effect (Hawkins, blue Moria); default any K.O. */
+  replaceWhen?: 'any' | 'oppEffect'
   /** For timing 'onEvent': which engine event this def listens for */
   on?: EventQuery
   /** [DON!! xN]: needs at least N DON attached to the source card */
@@ -428,8 +453,10 @@ export interface StaticDef {
   donRequired?: number
   condition?: Cond
   target: {
-    /** 'myHand' scopes cost modifiers to the controller's hand cards */
-    scope: 'self' | 'myLeader' | 'myCharacters' | 'myCharactersOther' | 'oppCharacters' | 'myHand'
+    /** 'myHand' scopes cost modifiers to the controller's hand cards;
+     * 'handSelf' is a static the card carries while IN HAND, discounting
+     * only itself (OP07 Sanji) */
+    scope: 'self' | 'myLeader' | 'myCharacters' | 'myCharactersOther' | 'oppCharacters' | 'myHand' | 'handSelf'
     typeIncludes?: string
     nameIs?: string
     nameNot?: string

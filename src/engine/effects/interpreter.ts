@@ -231,7 +231,9 @@ function executeOp(
 
   switch (op.op) {
     case 'draw':
-      return advance(drawCards(state, controller, op.count, events))
+      return advance(
+        drawCards(state, op.who === 'opponent' ? getOpponent(controller) : controller, op.count, events),
+      )
 
     case 'select': {
       if (op.bind in frame.bindings) return advance(state)
@@ -624,6 +626,7 @@ function executeOp(
     case 'powerMod':
     case 'grantKeyword':
     case 'grantFlag': {
+      // (untilTurn durations pick up their expiry turn below)
       const modifier: Modifier =
         op.op === 'powerMod'
           ? {
@@ -648,7 +651,7 @@ function executeOp(
                 sourceCardId: frame.sourceCardId,
               }
       if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
-      if (op.op === 'grantFlag' && op.duration === 'untilTurn') {
+      if (op.op !== 'grantKeyword' && op.duration === 'untilTurn') {
         modifier.untilTurn = state.turnNumber + (op.untilTurnOffset ?? 0)
       }
       let s = state
@@ -660,8 +663,68 @@ function executeOp(
 
     case 'ko': {
       let s = state
+      const before = refs(op.ref).filter((id) => findFieldCard(s, id)).length
       for (const id of refs(op.ref)) s = koById(s, id, events, { controller })
+      const after = refs(op.ref).filter((id) => findFieldCard(s, id)).length
+      if (after < before) {
+        s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
+      }
       return advance(s)
+    }
+
+    case 'moveAttachedDon': {
+      const targetId = refs(op.toRef)[0]
+      const target = targetId ? findFieldCard(state, targetId) : null
+      if (!target) return advance(state)
+      let s = state
+      let moved = 0
+      const owner = s.players[controller]
+      for (const source of [owner.leader, ...owner.characters]) {
+        if (moved >= op.upTo || source.instanceId === targetId) continue
+        const take = Math.min(source.attachedDon, op.upTo - moved)
+        if (take === 0) continue
+        s = updateFieldCard(s, source.instanceId, (c) => ({ ...c, attachedDon: c.attachedDon - take }))
+        moved += take
+      }
+      if (moved > 0) {
+        s = updateFieldCard(s, targetId, (c) => ({ ...c, attachedDon: c.attachedDon + moved }))
+      }
+      return advance(s)
+    }
+
+    case 'setPower': {
+      let s = state
+      for (const id of refs(op.ref)) {
+        const card = findFieldCard(s, id)
+        if (!card) continue
+        const modifier: Modifier = {
+          kind: 'power',
+          value: op.value - getEffectivePower(s, card),
+          duration: op.duration,
+          sourceCardId: frame.sourceCardId,
+        }
+        if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
+        s = updateFieldCard(s, id, (c) => ({ ...c, modifiers: [...c.modifiers, modifier] }))
+      }
+      return advance(s)
+    }
+
+    case 'selfToHand': {
+      for (const pid of ['player1', 'player2'] as PlayerId[]) {
+        const p = state.players[pid]
+        const idx = p.trash.findIndex((c) => c.instanceId === frame.sourceInstanceId)
+        if (idx < 0) continue
+        const trash = [...p.trash]
+        const [card] = trash.splice(idx, 1)
+        return advance({
+          ...state,
+          players: {
+            ...state.players,
+            [pid]: { ...p, trash, hand: [...p.hand, { ...card, revealed: true }] },
+          },
+        })
+      }
+      return advance(state)
     }
 
     case 'costMod': {
@@ -679,7 +742,8 @@ function executeOp(
     }
 
     case 'powerModPerRef': {
-      const amount = op.amountPer * refs(op.countRef).length
+      const units = op.per ? Math.floor(refs(op.countRef).length / op.per) : refs(op.countRef).length
+      const amount = op.amountPer * units
       if (amount === 0) return advance(state)
       const modifier: Modifier = {
         kind: 'power',
@@ -830,7 +894,11 @@ function executeOp(
     case 'trashFromField': {
       // Not a K.O. (CR 3-7-6-1-1, 10-2-1-3): no [On K.O.] effects fire
       let s = state
+      const before = charCount(s)
       for (const id of refs(op.ref)) s = removeFromField(s, id, 'trash')
+      if (charCount(s) < before) {
+        s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
+      }
       return advance(s)
     }
 
@@ -838,9 +906,20 @@ function executeOp(
     case 'setActive': {
       const rested = op.op === 'rest'
       let s = state
+      let restedAChar = false
       for (const id of refs(op.ref)) {
+        if (rested) {
+          const card = findFieldCard(s, id)
+          const isChar = ['player1', 'player2'].some((pid) =>
+            s.players[pid as PlayerId].characters.some((c) => c.instanceId === id),
+          )
+          if (card && isChar && !card.isRested) restedAChar = true
+        }
         s = updateFieldCard(s, id, (c) => ({ ...c, isRested: rested }))
       }
+      // "a Character is rested by your effect" listeners (Bartolomeo); cost
+      // rests are not distinguished from effect rests (SIMPLIFIED)
+      if (restedAChar) s = emitEngineEvent(s, { kind: 'restedByEffect', player: controller })
       return advance(s)
     }
 
@@ -859,18 +938,26 @@ function executeOp(
 
     case 'bottomDeckFromField': {
       let s = state
+      const before = charCount(s)
       for (const id of refs(op.ref)) {
         if (removalBlocked(s, id, controller, events)) continue
         s = removeFromField(s, id, 'deckBottom')
+      }
+      if (charCount(s) < before) {
+        s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
       }
       return advance(s)
     }
 
     case 'returnToHand': {
       let s = state
+      const before = charCount(s)
       for (const id of refs(op.ref)) {
         if (removalBlocked(s, id, controller, events)) continue
         s = removeFromField(s, id, 'hand')
+      }
+      if (charCount(s) < before) {
+        s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
       }
       return advance(s)
     }
@@ -1367,6 +1454,12 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
 
 // ─── State helpers ───────────────────────────────────────────────────────────
 
+
+/** Total characters on both fields - used to detect effect removals. */
+function charCount(state: GameState): number {
+  return state.players.player1.characters.length + state.players.player2.characters.length
+}
+
 export function findFieldCard(state: GameState, instanceId: string): GameCard | null {
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
@@ -1507,7 +1600,7 @@ export function koById(
       hasFlag(state, card, 'noEffectKo') ||
       (opts.controller !== undefined &&
         opts.controller !== owner &&
-        hasFlag(state, card, 'noOppEffectRemove'))
+        (hasFlag(state, card, 'noOppEffectRemove') || hasFlag(state, card, 'noOppEffectKo')))
     if (protectedFromEffects) {
       events.push({
         type: 'KO_PREVENTED',
@@ -1524,6 +1617,12 @@ export function koById(
   const defs = getEffectDefs(card.cardId)
   for (let i = 0; i < defs.length; i++) {
     if (!defMatches(state, owner, card, 'replaceKo', i)) continue
+    if (
+      defs[i].replaceWhen === 'oppEffect' &&
+      (opts.byBattle || opts.controller === undefined || opts.controller === owner)
+    ) {
+      continue
+    }
     const marked = markOncePerTurn(state, card, defs[i].oncePerTurn, `t${i}`)
     if (!marked) continue
     events.push({

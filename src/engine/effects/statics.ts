@@ -251,7 +251,7 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
         if (!evalCond(state, pid, source, def.condition)) continue
 
         const t = def.target
-        if (t.scope === 'myHand') continue // cost modifiers: see getEffectiveCost
+        if (t.scope === 'myHand' || t.scope === 'handSelf') continue // cost: see getEffectiveCost
         // Character-scoped auras never hit stages (or leaders, below)
         const targetIsStage = state.players[card.ownerId].stage?.instanceId === card.instanceId
         if (targetIsStage && t.scope !== 'self') continue
@@ -386,6 +386,12 @@ export function getEffectiveCost(state: GameState, playerId: PlayerId, card: Gam
       if (t.costAtMost !== undefined && (data?.cost ?? 0) > t.costAtMost) continue
       cost += def.costMod
     }
+  }
+  // 'handSelf' statics ride on the hand card itself (OP07 Sanji's own -3)
+  for (const def of getStatics(card.cardId)) {
+    if (!def.costMod || def.target.scope !== 'handSelf') continue
+    if (!evalCond(state, playerId, card, def.condition)) continue
+    cost += def.costMod
   }
   for (const d of state.playDiscounts?.[playerId] ?? []) {
     if (discountMatches(card, d)) cost -= d.amount
