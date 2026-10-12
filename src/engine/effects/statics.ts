@@ -4,7 +4,7 @@ import { getStatics } from './registry'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '../powerCalc'
 import { getOpponent } from '../turnManager'
-import { cardHasName } from '../rulesLayer'
+import { cardHasName, getBattleAttribute } from '../rulesLayer'
 
 export function cardTypes(cardId: string): string[] {
   // CardData.attribute holds the type list ({Straw Hat Crew} etc.) in this dataset
@@ -198,8 +198,226 @@ export function evalCond(
   ) {
     return false
   }
+  if (
+    cond.oppAtLeastSelfDon &&
+    donOnField(state, getOpponent(controller)) < donOnField(state, controller)
+  ) {
+    return false
+  }
+  if (
+    cond.oppDonAdvantageAtLeast !== undefined &&
+    donOnField(state, getOpponent(controller)) - donOnField(state, controller) <
+      cond.oppDonAdvantageAtLeast
+  ) {
+    return false
+  }
+  if (cond.oppBasePowerAtLeast !== undefined) {
+    const found = [opp.leader, ...opp.characters].some(
+      (c) => (getCardById(c.cardId)?.power ?? 0) >= cond.oppBasePowerAtLeast!,
+    )
+    if (!found) return false
+  }
+  if (cond.oppCharPowerAtLeast !== undefined) {
+    const found = opp.characters.some((c) => condPower(state, c) >= cond.oppCharPowerAtLeast!)
+    if (!found) return false
+  }
+  if (cond.minSelfRestedAny !== undefined) {
+    const rested =
+      (me.leader.isRested ? 1 : 0) +
+      me.characters.filter((c) => c.isRested).length +
+      (me.stage?.isRested ? 1 : 0) +
+      me.donArea.filter((d) => d.isRested).length
+    if (rested < cond.minSelfRestedAny) return false
+  }
+  if (cond.minOppRestedAny !== undefined) {
+    const rested =
+      (opp.leader.isRested ? 1 : 0) +
+      opp.characters.filter((c) => c.isRested).length +
+      (opp.stage?.isRested ? 1 : 0) +
+      opp.donArea.filter((d) => d.isRested).length
+    if (rested < cond.minOppRestedAny) return false
+  }
+  if (cond.hasOtherCharacterTyped !== undefined) {
+    const found = me.characters.some(
+      (c) =>
+        c.instanceId !== source?.instanceId &&
+        cardTypes(c.cardId).includes(cond.hasOtherCharacterTyped!),
+    )
+    if (!found) return false
+  }
+  if (
+    cond.minSelfRestedDon !== undefined &&
+    me.donArea.filter((d) => d.isRested).length < cond.minSelfRestedDon
+  ) {
+    return false
+  }
+  if (
+    cond.leaderTypeIncludesAny &&
+    !cond.leaderTypeIncludesAny.some((t) => cardTypes(me.leader.cardId).includes(t))
+  ) {
+    return false
+  }
+  if (cond.minSelfCharsTypedAny !== undefined) {
+    const n = me.characters.filter((c) =>
+      cond.minSelfCharsTypedAny!.types.some((t) => cardTypes(c.cardId).includes(t)),
+    ).length
+    if (n < cond.minSelfCharsTypedAny.count) return false
+  }
+  if (cond.minOppCharacters !== undefined && opp.characters.length < cond.minOppCharacters) {
+    return false
+  }
+  if (
+    cond.oppCharCostAtMost !== undefined &&
+    !opp.characters.some((c) => getEffectiveFieldCost(state, c) <= cond.oppCharCostAtMost!)
+  ) {
+    return false
+  }
+  if (cond.selfActive && source?.isRested) return false
+  if (cond.selfPlayedThisTurn && source?.turnPlayed !== state.turnNumber) return false
+  if (cond.lacksOtherCharacterNamed !== undefined) {
+    const found = me.characters.some(
+      (c) =>
+        c.instanceId !== source?.instanceId &&
+        cardHasName(c.cardId, cond.lacksOtherCharacterNamed!),
+    )
+    if (found) return false
+  }
+  if (cond.trashContainsNames !== undefined) {
+    for (const name of cond.trashContainsNames) {
+      if (!me.trash.some((c) => cardHasName(c.cardId, name))) return false
+    }
+  }
+  if (
+    cond.hasCharacterNamedAny &&
+    !cond.hasCharacterNamedAny.some((n) => me.characters.some((c) => cardHasName(c.cardId, n)))
+  ) {
+    return false
+  }
+  if (cond.fewerSelfCharsCostAtLeast !== undefined) {
+    const n = me.characters.filter(
+      (c) => getEffectiveFieldCost(state, c) >= cond.fewerSelfCharsCostAtLeast!.cost,
+    ).length
+    if (n >= cond.fewerSelfCharsCostAtLeast.count) return false
+  }
+  if (
+    cond.handDisadvantageAtLeast !== undefined &&
+    opp.hand.length - me.hand.length < cond.handDisadvantageAtLeast
+  ) {
+    return false
+  }
+  if (
+    cond.leaderPowerAtLeast !== undefined &&
+    condPower(state, me.leader) < cond.leaderPowerAtLeast
+  ) {
+    return false
+  }
+  if (cond.minOppCharsBasePowerAtLeast !== undefined) {
+    const n = opp.characters.filter(
+      (c) => (getCardById(c.cardId)?.power ?? 0) >= cond.minOppCharsBasePowerAtLeast!.power,
+    ).length
+    if (n < cond.minOppCharsBasePowerAtLeast.count) return false
+  }
+  if (cond.anyPlayerLifeZero && me.lifeCards.length > 0 && opp.lifeCards.length > 0) {
+    return false
+  }
+  if (cond.minSelfCharsTotalCost !== undefined) {
+    const total = me.characters.reduce((n, c) => n + getEffectiveFieldCost(state, c), 0)
+    if (total < cond.minSelfCharsTotalCost) return false
+  }
+  if (cond.charTypedPowerAtLeast !== undefined) {
+    const found = me.characters.some(
+      (c) =>
+        cardTypes(c.cardId).includes(cond.charTypedPowerAtLeast!.type) &&
+        condPower(state, c) >= cond.charTypedPowerAtLeast!.power,
+    )
+    if (!found) return false
+  }
+  if (cond.anyCharacterCostAtLeast !== undefined) {
+    const found = [...me.characters, ...opp.characters].some(
+      (c) => getEffectiveFieldCost(state, c) >= cond.anyCharacterCostAtLeast!,
+    )
+    if (!found) return false
+  }
+  if (
+    cond.charDisadvantageAtLeast !== undefined &&
+    opp.characters.length - me.characters.length < cond.charDisadvantageAtLeast
+  ) {
+    return false
+  }
+  if (cond.atMostLifeOfOpp && me.lifeCards.length > opp.lifeCards.length) return false
+  if (cond.minSelfRestedCharsTyped !== undefined) {
+    const n = me.characters.filter(
+      (c) => c.isRested && cardTypes(c.cardId).includes(cond.minSelfRestedCharsTyped!.type),
+    ).length
+    if (n < cond.minSelfRestedCharsTyped.count) return false
+  }
+  if (cond.allSelfCharsTypeContains !== undefined) {
+    const bad = me.characters.some(
+      (c) => !cardTypes(c.cardId).some((t) => t.includes(cond.allSelfCharsTypeContains!)),
+    )
+    if (bad) return false
+  }
+  if (
+    cond.leaderColorIncludes !== undefined &&
+    !((getCardById(me.leader.cardId)?.color ?? []) as string[]).includes(cond.leaderColorIncludes)
+  ) {
+    return false
+  }
+  if (
+    cond.minTotalLife !== undefined &&
+    me.lifeCards.length + opp.lifeCards.length < cond.minTotalLife
+  ) {
+    return false
+  }
+  if (cond.minSelfCharsCostAtLeast !== undefined) {
+    const n = me.characters.filter(
+      (c) => getEffectiveFieldCost(state, c) >= cond.minSelfCharsCostAtLeast!.cost,
+    ).length
+    if (n < cond.minSelfCharsCostAtLeast.count) return false
+  }
+  if (
+    cond.leaderAttributeIs !== undefined &&
+    getBattleAttribute(me.leader.cardId) !== cond.leaderAttributeIs
+  ) {
+    return false
+  }
+  if (cond.minSelfGivenDon !== undefined) {
+    const given = me.leader.attachedDon + me.characters.reduce((n, c) => n + c.attachedDon, 0)
+    if (given < cond.minSelfGivenDon) return false
+  }
   return true
 }
+
+/**
+ * Every Cond field evalCond actually gates on. The def linter checks the data
+ * against this list so a condition added to the AST but not implemented here
+ * can never silently stop gating (the OP06-OP11 regression this guards
+ * against fired every "conditional" effect unconditionally).
+ */
+export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
+  'yourTurn', 'opponentsTurn', 'selfRested', 'leaderNameIs', 'leaderTypeIncludes',
+  'anyCharacterCostAtMost', 'allSelfDonRested', 'leaderTypeContains', 'maxDeckSelf',
+  'minTrashSelf', 'maxTrashSelf', 'minActiveDonSelf', 'maxLifePlusHandSelf',
+  'minSelfCharCost', 'lacksSelfCharCost', 'maxTotalLife', 'lessLifeThanOpp',
+  'leaderActive', 'leaderMulticolor', 'selfPowerAtLeast', 'leaderPowerAtMost',
+  'hasCharacterTypeIncludes', 'allSelfCharsTyped', 'maxDonField',
+  'noCharacterNamedAnywhere', 'hasOtherCharacterNamed', 'minLifeOpp', 'maxLifeOpp',
+  'minHandOpp', 'maxSelfCharacters', 'minSelfCharacters', 'minSelfRestedCharacters',
+  'minOppRestedCharacters', 'minHandSelf', 'maxHandSelf', 'otherCharPowerAtLeast',
+  'donFieldZeroOrAtLeast', 'oppMoreDon', 'minDonField', 'minDonFieldOpp',
+  'maxLifeSelf', 'minLifeSelf', 'minDeckSelf', 'hasCharacterNamed',
+  'lacksCharacterNamed', 'oppAtLeastSelfDon', 'oppDonAdvantageAtLeast',
+  'oppBasePowerAtLeast', 'oppCharPowerAtLeast', 'minSelfRestedAny', 'minOppRestedAny',
+  'hasOtherCharacterTyped', 'minSelfRestedDon', 'leaderTypeIncludesAny',
+  'minSelfCharsTypedAny', 'minOppCharacters', 'oppCharCostAtMost', 'selfActive',
+  'selfPlayedThisTurn', 'lacksOtherCharacterNamed', 'trashContainsNames',
+  'hasCharacterNamedAny', 'fewerSelfCharsCostAtLeast', 'handDisadvantageAtLeast',
+  'leaderPowerAtLeast', 'minOppCharsBasePowerAtLeast', 'anyPlayerLifeZero',
+  'minSelfCharsTotalCost', 'charTypedPowerAtLeast', 'anyCharacterCostAtLeast',
+  'charDisadvantageAtLeast', 'atMostLifeOfOpp', 'minSelfRestedCharsTyped',
+  'allSelfCharsTypeContains', 'leaderColorIncludes', 'minTotalLife',
+  'minSelfCharsCostAtLeast', 'leaderAttributeIs', 'minSelfGivenDon',
+])
 
 interface AuraGrant {
   power: number
@@ -294,6 +512,12 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
           if (def.powerPer.handCards) power += def.powerPer.amount * owner.hand.length
           if (def.powerPer.trashPer5) {
             power += def.powerPer.amount * Math.floor(owner.trash.length / 5)
+          }
+          if (def.powerPer.trashEventsPerN) {
+            const events = owner.trash.filter(
+              (c) => getCardById(c.cardId)?.cardType === 'Event',
+            ).length
+            power += def.powerPer.amount * Math.floor(events / def.powerPer.trashEventsPerN)
           }
           if (def.powerPer.trashPerN) {
             power += def.powerPer.amount * Math.floor(owner.trash.length / def.powerPer.trashPerN)

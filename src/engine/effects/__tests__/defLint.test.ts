@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { CardData } from '@/engine/types'
 import type { Cond, SelectFilter } from '../ast'
 import { SET_MODULES } from '@/data/sets'
+import { IMPLEMENTED_CONDS } from '../statics'
 import { getAllCards, getCardById } from '@/data/cardService'
 import { cardHasName } from '@/engine/rulesLayer'
 
@@ -172,6 +173,36 @@ describe('effect definition linter', () => {
         if (id in effects || id in statics) {
           errors.push(`${set}: ${id} is KEYWORD_ONLY but also has defs/statics`)
         }
+      }
+    }
+    expect(errors).toEqual([])
+  })
+
+  it('every condition field used in data is actually implemented by evalCond', () => {
+    // Guards the OP06-OP11 regression where Cond fields existed in the AST but
+    // evalCond never read them - the "conditions" silently always passed
+    const errors: string[] = []
+    const checkCond = (where: string, cond: Record<string, unknown> | undefined) => {
+      if (!cond) return
+      for (const key of Object.keys(cond)) {
+        if (!IMPLEMENTED_CONDS.has(key)) errors.push(`${where}: cond "${key}" not implemented`)
+      }
+    }
+    for (const { effects, statics } of SETS) {
+      for (const [id, defs] of Object.entries(effects)) {
+        defs.forEach((def, di) => {
+          checkCond(`${id} def[${di}]`, def.condition as Record<string, unknown> | undefined)
+          def.ops.forEach((op, oi) => {
+            if (op.op === 'requireCond') {
+              checkCond(`${id} def[${di}] op[${oi}]`, op.cond as Record<string, unknown>)
+            }
+          })
+        })
+      }
+      for (const [id, sts] of Object.entries(statics)) {
+        sts.forEach((st, si) =>
+          checkCond(`${id} static[${si}]`, st.condition as Record<string, unknown> | undefined),
+        )
       }
     }
     expect(errors).toEqual([])
