@@ -394,7 +394,11 @@ function executeOp(
           ...s,
           players: {
             ...s.players,
-            [controller]: { ...p, hand, lifeCards: [{ ...card, revealed: false }, ...p.lifeCards] },
+            [controller]: {
+              ...p,
+              hand,
+              lifeCards: [{ ...card, revealed: op.faceUp === true }, ...p.lifeCards],
+            },
           },
         }
       }

@@ -1899,7 +1899,18 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'trigger',
       condition: { minLifeSelf: 1 },
-      ops: [{ op: 'trashLifeTop', owner: 'self', count: 1 }, { op: 'playSelf' }],
+      ops: [
+        {
+          op: 'select',
+          bind: 'lp',
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
+          min: 1,
+          max: 1,
+          prompt: 'Trash a Life card (top or bottom)',
+        },
+        { op: 'lifeToTrash', ref: 'lp' },
+        { op: 'playSelf' },
+      ],
     },
   ],
 
@@ -1910,7 +1921,15 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
       donRequired: 2,
       condition: { minLifeSelf: 1 },
       ops: [
-        { op: 'lifeTopToHand', count: 1 },
+        {
+          op: 'select',
+          bind: 'lp',
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
+          min: 1,
+          max: 1,
+          prompt: 'Take a Life card (top or bottom) to hand',
+        },
+        { op: 'lifeToHand', ref: 'lp' },
         { op: 'deckTopToLife', count: 1 },
       ],
     },
@@ -1976,7 +1995,15 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'onPlay',
       condition: { minLifeSelf: 1 },
       ops: [
-        { op: 'trashLifeTop', owner: 'self', count: 1 },
+        {
+          op: 'select',
+          bind: 'lp',
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
+          min: 1,
+          max: 1,
+          prompt: 'Trash a Life card (top or bottom)',
+        },
+        { op: 'lifeToTrash', ref: 'lp' },
         { op: 'deckTopToLife', count: 1 },
       ],
     },
@@ -1988,7 +2015,15 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       condition: { minLifeSelf: 1 },
       ops: [
-        { op: 'lifeTopToHand', count: 1 },
+        {
+          op: 'select',
+          bind: 'lp',
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
+          min: 1,
+          max: 1,
+          prompt: 'Take a Life card (top or bottom) to hand',
+        },
+        { op: 'lifeToHand', ref: 'lp' },
         { op: 'powerMod', ref: 'self', amount: 2000, duration: 'battle' },
       ],
     },
@@ -2258,7 +2293,16 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: "Add up to 1 Character with cost 8 or less to the top of the owner's Life",
         },
-        { op: 'fieldToLife', ref: 't' },
+        {
+          op: 'select',
+          bind: 'tb',
+          filter: { owner: 'any', zone: 'characters', fromRef: 't' },
+          min: 0,
+          max: 1,
+          prompt: 'Place at the BOTTOM of the Life stack? (decline = top)',
+        },
+        { op: 'fieldToLife', ref: 'tb', bottom: true, faceUp: true },
+        { op: 'fieldToLife', ref: 't', faceUp: true },
       ],
     },
   ],
@@ -2345,15 +2389,10 @@ export const COVERAGE_NOTES_OP03: Record<string, string> = {
     'SIMPLIFIED: the life scry is "may move either top card to the bottom, unseen" - the look itself is not modeled',
   'OP03-104':
     'SIMPLIFIED: the life scry is "may move either top card to the bottom, unseen" - the look itself is not modeled',
-  'OP03-100':
-    'SIMPLIFIED: the life-trash cost takes the top card ("top or bottom" not offered); "you may" auto-accepts',
-  'OP03-102':
-    'SIMPLIFIED: life-to-hand takes the top card ("top or bottom" not offered); "you may" auto-accepts',
-  'OP03-109':
-    'SIMPLIFIED: the life-trash cost takes the top card ("top or bottom" not offered); "you may" auto-accepts',
-  'OP03-110':
-    'SIMPLIFIED: life-to-hand takes the top card ("top or bottom" not offered); "you may" auto-accepts',
-  'OP03-123': 'SIMPLIFIED: always to the TOP of the life stack; face-up not modeled',
+  'OP03-100': 'SIMPLIFIED: the "you may" trigger cost auto-accepts',
+  'OP03-102': 'SIMPLIFIED: the "you may" cost auto-accepts',
+  'OP03-109': 'SIMPLIFIED: the "you may" cost auto-accepts',
+  'OP03-110': 'SIMPLIFIED: the "you may" cost auto-accepts',
   'OP03-040':
     'SIMPLIFIED: the mill ("you may trash 1") auto-accepts - it is the deck\'s whole plan',
   'OP03-041': 'SIMPLIFIED: the mill auto-accepts',

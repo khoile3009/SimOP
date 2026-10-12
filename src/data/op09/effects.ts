@@ -1800,7 +1800,16 @@ export const OP09_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: 'Place onto their Life',
         },
-        { op: 'fieldToLife', ref: 'pay' },
+        {
+          op: 'select',
+          bind: 'payb',
+          filter: { owner: 'any', zone: 'characters', fromRef: 'pay' },
+          min: 0,
+          max: 1,
+          prompt: 'Place at the BOTTOM of the Life stack? (decline = top)',
+        },
+        { op: 'fieldToLife', ref: 'payb', bottom: true, faceUp: true },
+        { op: 'fieldToLife', ref: 'pay', faceUp: true },
         {
           op: 'select',
           bind: 'b1',
@@ -2174,7 +2183,5 @@ export const COVERAGE_NOTES_OP09: Record<string, string> = {
   'OP09-084': 'SIMPLIFIED: the mode choice offers Double Attack or Blocker (Banish is dropped)',
   'OP09-093':
     "SIMPLIFIED: the leader negation lasts this turn; the character negation and attack lock last through the opponent's next turn",
-  'OP09-101':
-    "SIMPLIFIED: the Character is placed on TOP of the opponent's Life; face-up not modeled",
   'OP09-118': 'SIMPLIFIED: the win checks life totals when the Blocker is activated',
 }

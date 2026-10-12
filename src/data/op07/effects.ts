@@ -1913,7 +1913,15 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'onPlay',
       condition: { minLifeSelf: 1 },
       ops: [
-        { op: 'lifeTopToHand', count: 1 },
+        {
+          op: 'select',
+          bind: 'lp',
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
+          min: 1,
+          max: 1,
+          prompt: 'Take a Life card (top or bottom) to hand',
+        },
+        { op: 'lifeToHand', ref: 'lp' },
         {
           op: 'select',
           bind: 'b1',
@@ -1948,7 +1956,15 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
       oncePerTurn: true,
       condition: { minLifeSelf: 1 },
       ops: [
-        { op: 'lifeTopToHand', count: 1 },
+        {
+          op: 'select',
+          bind: 'lp',
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
+          min: 1,
+          max: 1,
+          prompt: 'Take a Life card (top or bottom) to hand',
+        },
+        { op: 'lifeToHand', ref: 'lp' },
         {
           op: 'select',
           bind: 'b1',
@@ -2255,6 +2271,4 @@ export const COVERAGE_NOTES_OP07: Record<string, string> = {
     'SIMPLIFIED: with fewer than 4 Thriller Bark Pirates cards in the trash the cost clamps down',
   'OP07-090': 'SIMPLIFIED: the opponent hand reveal is not modeled',
   'OP07-097': 'SIMPLIFIED: play-or-life is offered as two selects; face-up life state not modeled',
-  'OP07-110': 'SIMPLIFIED: the life payment takes the top card (text allows top or bottom)',
-  'OP07-112': 'SIMPLIFIED: the life payment takes the top card (text allows top or bottom)',
 }

@@ -1234,7 +1234,16 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: 'Add to their Life',
         },
-        { op: 'fieldToLife', ref: 'b1' },
+        {
+          op: 'select',
+          bind: 'b1b',
+          filter: { owner: 'any', zone: 'characters', fromRef: 'b1' },
+          min: 0,
+          max: 1,
+          prompt: 'Place at the BOTTOM of the Life stack? (decline = top)',
+        },
+        { op: 'fieldToLife', ref: 'b1b', bottom: true, faceUp: true },
+        { op: 'fieldToLife', ref: 'b1', faceUp: true },
       ],
     },
   ],
@@ -2202,7 +2211,7 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'L',
-          filter: { owner: 'self', zone: 'life' },
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
           min: 0,
           max: 1,
           prompt: 'Add top Life to hand?',
@@ -2217,7 +2226,7 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: 'Add to top of Life',
         },
-        { op: 'handToLife', ref: 'h' },
+        { op: 'handToLife', ref: 'h', faceUp: true },
       ],
     },
   ],
@@ -2400,12 +2409,9 @@ export const COVERAGE_NOTES_OP08: Record<string, string> = {
     "SIMPLIFIED: listens for your own effect removals only, regardless of the removed card's type",
   'OP08-057':
     'SIMPLIFIED: modes are offered cost-down first; declining it rolls into the draw mode',
-  'OP08-069':
-    "SIMPLIFIED: the Character is placed on TOP of the opponent's Life; face-up not modeled",
   'OP08-074': 'SIMPLIFIED: the end-of-turn DON!! return takes cost-area DON only, rested first',
   'OP08-098': "SIMPLIFIED: the played card's cost cap reads DON!! at resolution time",
   'OP08-101': 'SIMPLIFIED: the life refill happens immediately instead of at the end of the turn',
-  'OP08-116': 'SIMPLIFIED: face-up state of the added life card is not modeled',
   'OP08-118': 'SIMPLIFIED: the two debuff picks may select the same Character only once each',
   'OP08-119':
     'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',

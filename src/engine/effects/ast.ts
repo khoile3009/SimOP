@@ -398,7 +398,7 @@ export type EffectOp =
   /** Return the oldest N trash cards to the deck and shuffle (Elizabello's cost) */
   | { op: 'trashIntoDeckShuffle'; count: number }
   /** Move bound hand cards to the TOP of the controller's Life (face-down) */
-  | { op: 'handToLife'; ref: string }
+  | { op: 'handToLife'; ref: string; faceUp?: boolean }
   /** Reveal the deck top; if it matches, power-mod self; revealed card to the bottom */
   | {
       op: 'revealTopCheck'

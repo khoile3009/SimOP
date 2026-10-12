@@ -2090,7 +2090,15 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'onPlay',
       condition: { minLifeSelf: 1 },
       ops: [
-        { op: 'lifeTopToHand', count: 1 },
+        {
+          op: 'select',
+          bind: 'lp',
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
+          min: 1,
+          max: 1,
+          prompt: 'Take a Life card (top or bottom) to hand',
+        },
+        { op: 'lifeToHand', ref: 'lp' },
         {
           op: 'select',
           bind: 'b1',
@@ -2104,7 +2112,7 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: 'Add to top of Life',
         },
-        { op: 'handToLife', ref: 'b1' },
+        { op: 'handToLife', ref: 'b1', faceUp: true },
       ],
     },
   ],
@@ -2128,7 +2136,15 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'onPlay',
       condition: { minLifeSelf: 1 },
       ops: [
-        { op: 'lifeTopToHand', count: 1 },
+        {
+          op: 'select',
+          bind: 'lp',
+          filter: { owner: 'self', zone: 'life', lifeEnds: true },
+          min: 1,
+          max: 1,
+          prompt: 'Take a Life card (top or bottom) to hand',
+        },
+        { op: 'lifeToHand', ref: 'lp' },
         {
           op: 'select',
           bind: 'b1',
@@ -2143,7 +2159,7 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: 'Add to top of Life',
         },
-        { op: 'handToLife', ref: 'b1' },
+        { op: 'handToLife', ref: 'b1', faceUp: true },
       ],
     },
   ],
@@ -2497,11 +2513,7 @@ export const COVERAGE_NOTES_OP10: Record<string, string> = {
   'OP10-049': 'SIMPLIFIED: the guard covers opponent-effect K.O.s only (text covers any removal)',
   'OP10-058':
     'SIMPLIFIED: the two plays are separate picks; the rested rider applies to the second (cost 4 or less) pick',
-  'OP10-103': 'SIMPLIFIED: the life payment takes the top card (text allows top or bottom)',
-  'OP10-107':
-    'SIMPLIFIED: the life payment takes the top card (text allows top or bottom); face-up not modeled',
   'OP10-108':
     'SIMPLIFIED: the Blocker condition checks the Supernovas type only (not the yellow color)',
   'OP10-112': 'SIMPLIFIED: the rest-self cost is matched by cost (8+) rather than identity',
-  'OP10-119': 'SIMPLIFIED: the added life card enters face-down like all life cards here',
 }

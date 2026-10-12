@@ -1919,6 +1919,15 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: 'Add to their Life',
         },
+        {
+          op: 'select',
+          bind: 'b1b',
+          filter: { owner: 'any', zone: 'characters', fromRef: 'b1' },
+          min: 0,
+          max: 1,
+          prompt: 'Place at the BOTTOM of the Life stack? (decline = top)',
+        },
+        { op: 'fieldToLife', ref: 'b1b', bottom: true },
         { op: 'fieldToLife', ref: 'b1' },
       ],
     },
@@ -2126,7 +2135,6 @@ export const COVERAGE_NOTES_OP12: Record<string, string> = {
     'SIMPLIFIED: the two life-removal listeners share the effect via the draw restriction, not a shared mark',
   'OP12-102':
     'SIMPLIFIED: the aura ignores the base-cost-2 qualifier on "no other Shirahoshi"; the guard covers opponent-effect K.O.s only',
-  'OP12-117': 'SIMPLIFIED: the life placement goes on TOP of the stack',
   'OP12-090': 'SIMPLIFIED: the top-deck trash payment is mandatory on attack',
   'OP12-119':
     "SIMPLIFIED: the self cost boost reads as a +2 modifier until the opponent's next End Phase",

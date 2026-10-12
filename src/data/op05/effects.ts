@@ -1759,7 +1759,16 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: 'Mode 3: place onto Life',
         },
-        { op: 'fieldToLife', ref: 'b3' },
+        {
+          op: 'select',
+          bind: 'b3b',
+          filter: { owner: 'any', zone: 'characters', fromRef: 'b3' },
+          min: 0,
+          max: 1,
+          prompt: 'Place at the BOTTOM of the Life stack? (decline = top)',
+        },
+        { op: 'fieldToLife', ref: 'b3b', bottom: true, faceUp: true },
+        { op: 'fieldToLife', ref: 'b3', faceUp: true },
       ],
     },
     {
@@ -2029,7 +2038,16 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
           max: 1,
           prompt: 'Place onto Life',
         },
-        { op: 'fieldToLife', ref: 'b1' },
+        {
+          op: 'select',
+          bind: 'b1b',
+          filter: { owner: 'any', zone: 'characters', fromRef: 'b1' },
+          min: 0,
+          max: 1,
+          prompt: 'Place at the BOTTOM of the Life stack? (decline = top)',
+        },
+        { op: 'fieldToLife', ref: 'b1b', bottom: true, faceUp: true },
+        { op: 'fieldToLife', ref: 'b1', faceUp: true },
       ],
     },
   ],
@@ -2266,11 +2284,9 @@ export const COVERAGE_NOTES_OP05: Record<string, string> = {
   'OP05-079': 'SIMPLIFIED: the opponent picks the 3 cards; bottom order is not chosen',
   'OP05-080':
     'SIMPLIFIED: the 20-card payment is mandatory when available and returns the oldest 20 trash cards',
-  'OP05-096':
-    'SIMPLIFIED: mode 3 places on TOP of Life; face-up state not modeled; trigger offers K.O. first then bounce',
+  'OP05-096': 'SIMPLIFIED: the trigger offers the K.O. first, then the bounce',
   'OP05-100':
     'SIMPLIFIED: replacement covers K.O. only (not bounces or bottom-decking); life payment is the top card',
-  'OP05-111': "SIMPLIFIED: places on TOP of the opponent's Life; face-up state not modeled",
   'OP05-119':
     'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
 }
