@@ -35,6 +35,8 @@ export interface CardRules {
 }
 
 export const CARD_RULES: Record<string, CardRules> = {
+  // OP16-042 Prisoner of Impel Down: any number of copies allowed
+  'OP16-042': { deckCopyLimit: 'any' },
   // OP13-003 Roger leader: a DON!! from each DON!! Phase goes to the leader
   'OP13-003': { donPhaseGivesLeaderDon: 1 },
   // OP13-079 Imu: no cost-2+ Events in the deck; opens with a Mary Geoise Stage

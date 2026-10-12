@@ -218,6 +218,10 @@ export interface Cond {
   minTrashEventsSelf?: number
   /** ACTIVE DON!! in your cost area is at most this (OP13 Luffy leader) */
   maxActiveDonSelf?: number
+  /** The source card's own effective cost is at least this (OP16 Momonosuke) */
+  selfCostAtLeast?: number
+  /** One of the opponent's characters was K.O.'d this turn (OP16 Yamato) */
+  oppCharKoedThisTurn?: boolean
   /** The OPPONENT has a character with this effective cost or less (Baskerville) */
   oppCharCostAtMost?: number
 }
@@ -382,6 +386,12 @@ export type EffectOp =
   | { op: 'basePowerToAttacker'; duration: ModifierDuration }
   /** Self base power becomes the opponent's leader's current power (Shuraiya) */
   | { op: 'basePowerToOppLeader'; duration: ModifierDuration }
+  /** Self base power becomes a bound card's current power (Catarina Devon) */
+  | { op: 'basePowerToRef'; ref: string; duration: ModifierDuration }
+  /** Redirect the current attack to a bound card of the defender's (OP16 Teach) */
+  | { op: 'redirectAttack'; ref: string }
+  /** Move bound TRASH cards to the top of the controller's Life, face-up (Shiryu) */
+  | { op: 'trashToLife'; ref: string }
   /** Rest every character a player controls (The Ark Noah) */
   | { op: 'restAll'; owner: 'self' | 'opponent' }
   /** Deal damage to the opponent's Life (triggers are SIMPLIFIED away) */
@@ -469,7 +479,7 @@ export type EffectOp =
       count: number
       filter: CardDataFilter
       upTo: number
-      to: 'hand' | 'play' | 'trash'
+      to: 'hand' | 'play' | 'trash' | 'life'
       restTo?: 'bottom' | 'trash'
       playRested?: boolean
     }
@@ -505,7 +515,7 @@ export type EffectOp =
   | { op: 'costGuessCheck' }
   | { op: 'returnDon'; ref: string } // bound cost-area DON back to the DON!! deck
   /** Run this same card's def of another timing (trigger: "Activate this card's [Main]") */
-  | { op: 'activateTiming'; timing: 'main' | 'counter' | 'onPlay' }
+  | { op: 'activateTiming'; timing: 'main' | 'counter' | 'onPlay' | 'onKo' }
   /** Mark bound hand cards as revealed (public knowledge until they move zones) */
   | { op: 'reveal'; ref: string }
   /** Field-cost delta on bound cards (Black's -N cost effects) */
@@ -583,7 +593,16 @@ export interface StaticDef {
   }
   power?: number
   /** Scaling auras: value per matching count, added to `power` */
-  powerPer?: { handCards?: boolean; trashEventsPer2?: boolean; trashEventsPerN?: number; trashPer5?: boolean; trashPerN?: number; amount: number }
+  powerPer?: {
+    handCards?: boolean
+    trashEventsPer2?: boolean
+    trashEventsPerN?: number
+    trashPer5?: boolean
+    trashPerN?: number
+    /** +amount per distinct card name among your characters (OP16 Luffy) */
+    perUniqueCharNames?: boolean
+    amount: number
+  }
   keyword?: string
   flag?: FlagName
   flagValue?: number

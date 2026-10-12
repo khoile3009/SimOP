@@ -2,9 +2,9 @@ import type { CardData, GameCard, GameState } from './types'
 import { getCardById } from '@/data/cardService'
 import { auraGrants, isNegated } from './effects/statics'
 
-export type Keyword = 'Rush' | 'Blocker' | 'Double Attack' | 'Banish'
+export type Keyword = 'Rush' | 'Blocker' | 'Double Attack' | 'Banish' | 'Unblockable'
 
-const KEYWORDS: Keyword[] = ['Rush', 'Blocker', 'Double Attack', 'Banish']
+const KEYWORDS: Keyword[] = ['Rush', 'Blocker', 'Double Attack', 'Banish', 'Unblockable']
 
 /**
  * A card POSSESSES a keyword only when the bracketed token opens an ability clause:

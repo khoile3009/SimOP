@@ -270,6 +270,17 @@ function validateActivateBlocker(
   if (hasFlag(state, blocker, 'cannotBlock')) {
     return { valid: false, reason: 'This Character cannot activate Blocker' }
   }
+  {
+    // [Unblockable] attackers cannot be blocked at all
+    const atkP = state.players[getOpponent(playerId)]
+    const attacker =
+      atkP.leader.instanceId === state.battle!.attackerId
+        ? atkP.leader
+        : atkP.characters.find((c) => c.instanceId === state.battle!.attackerId)
+    if (attacker && hasKeyword(state, attacker, 'Unblockable')) {
+      return { valid: false, reason: 'The attacker cannot be blocked' }
+    }
+  }
   if (!hasKeyword(state, blocker, 'Blocker')) {
     return { valid: false, reason: 'Character does not have Blocker' }
   }

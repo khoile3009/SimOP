@@ -395,6 +395,15 @@ export function evalCond(
   ) {
     return false
   }
+  if (
+    cond.selfCostAtLeast !== undefined &&
+    (!source || getEffectiveFieldCost(state, source) < cond.selfCostAtLeast)
+  ) {
+    return false
+  }
+  if (cond.oppCharKoedThisTurn && !state.turnFlags[controller]?.includes('oppCharKoed')) {
+    return false
+  }
   return true
 }
 
@@ -427,7 +436,7 @@ export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
   'charDisadvantageAtLeast', 'atMostLifeOfOpp', 'minSelfRestedCharsTyped',
   'allSelfCharsTypeContains', 'leaderColorIncludes', 'minTotalLife',
   'minSelfCharsCostAtLeast', 'leaderAttributeIs', 'minSelfGivenDon',
-  'minTrashEventsSelf', 'maxActiveDonSelf',
+  'minTrashEventsSelf', 'maxActiveDonSelf', 'selfCostAtLeast', 'oppCharKoedThisTurn',
 ])
 
 interface AuraGrant {
@@ -529,6 +538,12 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
               (c) => getCardById(c.cardId)?.cardType === 'Event',
             ).length
             power += def.powerPer.amount * Math.floor(events / def.powerPer.trashEventsPerN)
+          }
+          if (def.powerPer.perUniqueCharNames) {
+            const names = new Set(
+              owner.characters.map((c) => getCardById(c.cardId)?.name ?? c.cardId),
+            )
+            power += def.powerPer.amount * names.size
           }
           if (def.powerPer.trashPerN) {
             power += def.powerPer.amount * Math.floor(owner.trash.length / def.powerPer.trashPerN)

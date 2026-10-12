@@ -489,6 +489,52 @@ function executeOp(
       )
     }
 
+    case 'basePowerToRef': {
+      const self = findFieldCard(state, frame.sourceInstanceId)
+      const targetId = refs(op.ref)[0]
+      const target = targetId ? findFieldCard(state, targetId) : null
+      if (!self || !target) return advance(state)
+      const selfBase = getCardById(self.cardId)?.power ?? 0
+      const modifier: Modifier = {
+        kind: 'power',
+        value: getEffectivePower(state, target) - selfBase,
+        duration: op.duration,
+        sourceCardId: frame.sourceCardId,
+      }
+      if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
+      return advance(
+        updateFieldCard(state, self.instanceId, (c) => ({
+          ...c,
+          modifiers: [...c.modifiers, modifier],
+        })),
+      )
+    }
+
+    case 'redirectAttack': {
+      const targetId = refs(op.ref)[0]
+      if (!state.battle || !targetId || !findFieldCard(state, targetId)) return advance(state)
+      return advance({ ...state, battle: { ...state.battle, currentTargetId: targetId } })
+    }
+
+    case 'trashToLife': {
+      let s = state
+      for (const id of refs(op.ref)) {
+        const p = s.players[controller]
+        const idx = p.trash.findIndex((c) => c.instanceId === id)
+        if (idx < 0) continue
+        const trash = [...p.trash]
+        const [card] = trash.splice(idx, 1)
+        s = {
+          ...s,
+          players: {
+            ...s.players,
+            [controller]: { ...p, trash, lifeCards: [{ ...card, revealed: true }, ...p.lifeCards] },
+          },
+        }
+      }
+      return advance(s)
+    }
+
     case 'basePowerToOppLeader': {
       const self = findFieldCard(state, frame.sourceInstanceId)
       if (!self) return advance(state)
@@ -1312,6 +1358,7 @@ function executeOp(
       for (const id of chosen) {
         if (op.to === 'play') s = playCardFree(s, controller, id, op.playRested ?? false, events)
         else if (op.to === 'trash') s = deckToTrash(s, controller, id)
+        else if (op.to === 'life') s = deckCardToLifeTop(s, controller, id)
         else s = deckToHand(s, controller, id)
       }
       const rest = top.filter((c) => !chosen.has(c.instanceId)).map((c) => c.instanceId)
@@ -1726,6 +1773,22 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
 // ─── State helpers ───────────────────────────────────────────────────────────
 
 
+/** Pull one card out of the controller's deck onto the top of their Life. */
+function deckCardToLifeTop(state: GameState, controller: PlayerId, instanceId: string): GameState {
+  const p = state.players[controller]
+  const idx = p.deck.findIndex((c) => c.instanceId === instanceId)
+  if (idx < 0) return state
+  const deck = [...p.deck]
+  const [card] = deck.splice(idx, 1)
+  return {
+    ...state,
+    players: {
+      ...state.players,
+      [controller]: { ...p, deck, lifeCards: [{ ...card, revealed: false }, ...p.lifeCards] },
+    },
+  }
+}
+
 /** Total characters on both fields - used to detect effect removals. */
 function charCount(state: GameState): number {
   return state.players.player1.characters.length + state.players.player2.characters.length
@@ -1930,9 +1993,15 @@ export function koById(
     playerId: owner,
     description: `${getCardById(card.cardId)?.name ?? 'Character'} was KO'd`,
   })
+  // "an opponent's Character was K.O.'d this turn" markers (OP16 Yamato)
+  const koFlagOwner = getOpponent(owner)
+  const flags = s.turnFlags[koFlagOwner] ?? []
+  const flagged = flags.includes('oppCharKoed')
+    ? s
+    : { ...s, turnFlags: { ...s.turnFlags, [koFlagOwner]: [...flags, 'oppCharKoed'] } }
   // [On K.O.] activates on the field but resolves from the trash (CR 10-2-17);
   // listeners land on top of the stack so the turn player's resolve first
-  const withOnKo = queueEffects(s, card, 'onKo', owner)
+  const withOnKo = queueEffects(flagged, card, 'onKo', owner)
   return emitEngineEvent(withOnKo, { kind: 'characterKoed', player: owner })
 }
 

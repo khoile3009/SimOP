@@ -21,7 +21,7 @@ const SETS = SET_MODULES.map((s) => ({
   keywordOnly: s.keywordOnly,
 }))
 
-const KNOWN_KEYWORDS = new Set(['Rush', 'Blocker', 'Double Attack', 'Banish'])
+const KNOWN_KEYWORDS = new Set(['Rush', 'Blocker', 'Double Attack', 'Banish', 'Unblockable'])
 const ALL_TYPES = new Set(getAllCards().flatMap((c: CardData) => c.attribute))
 const nameExists = (name: string) => getAllCards().some((c) => cardHasName(c.id, name))
 const typeExists = (t: string) => ALL_TYPES.has(t)
