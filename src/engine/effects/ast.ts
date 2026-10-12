@@ -53,6 +53,8 @@ export type EngineEventKind =
   | 'triggerActivated'
   /** A player's life count reached 0 (Enel) */
   | 'lifeZero'
+  /** A card left a player's Life area (damage or effects); `player` is the life's owner */
+  | 'lifeRemoved'
 
 export interface EventQuery {
   kind: EngineEventKind
@@ -155,6 +157,16 @@ export interface Cond {
   /** At least `count` of your characters carry any of `types` (Kuja, Foxy) */
   minSelfCharsTypedAny?: { types: string[]; count: number }
   minOppCharacters?: number
+  /** The opponent's rested cards across leader, characters, stage and DON!! */
+  minOppRestedAny?: number
+  /** The source card is active (unrested) - Pekoms */
+  selfActive?: boolean
+  /** The source character entered the field this turn (black Kaido) */
+  selfPlayedThisTurn?: boolean
+  /** No OTHER character you control carries this name (Black Maria) */
+  lacksOtherCharacterNamed?: string
+  /** Your trash holds at least one card of EACH name (Chessmarimo) */
+  trashContainsNames?: string[]
   /** The OPPONENT has a character with this effective cost or less (Baskerville) */
   oppCharCostAtMost?: number
 }
@@ -180,6 +192,12 @@ export interface SelectFilter {
   costAtMostTotalLife?: boolean
   /** Cost at most the OPPONENT's life count (OP05 yellow) */
   costAtMostOppLife?: boolean
+  /** Cost at most YOUR life count (Opera) */
+  costAtMostSelfLife?: boolean
+  /** Cost at most the DON!! on YOUR field (Kalgara) */
+  costAtMostSelfDon?: boolean
+  /** Cost at most the DON!! on the OPPONENT's field (Katakuri chain) */
+  costAtMostOppDon?: boolean
   /** PRINTED power cap ("5000 base power or less") */
   basePowerAtMost?: number
   /** The card's text box is blank ("with no base effect") */
@@ -216,6 +234,7 @@ export interface SelectFilter {
 export interface CardDataFilter {
   cardType?: 'Character' | 'Event' | 'Stage'
   costAtMost?: number
+  costAtLeast?: number
   powerAtMost?: number
   typeIncludesAny?: string[]
   costIs?: number
@@ -288,7 +307,7 @@ export type EffectOp =
   /** Move bound hand cards to the TOP of the controller's Life (face-down) */
   | { op: 'handToLife'; ref: string }
   /** Reveal the deck top; if it matches, power-mod self; revealed card to the bottom */
-  | { op: 'revealTopCheck'; filter: CardDataFilter; amount: number; duration: ModifierDuration }
+  | { op: 'revealTopCheck'; filter: CardDataFilter; amount: number; duration: ModifierDuration; keyword?: string }
   /** Shuffle a player's whole hand into their deck, then draw (their hand size, or `draw`) */
   | { op: 'shuffleHandIntoDeckDraw'; who?: 'self' | 'opponent'; draw?: number }
   /** Self base power becomes the attacking card's current power (delta modifier) */
@@ -308,6 +327,7 @@ export type EffectOp =
       value?: number
       duration: ModifierDuration
       includeLeader?: boolean
+      untilTurnOffset?: number
     }
   /** Final K.O. of the source, bypassing its own replacement window (declined optional replacements) */
   | { op: 'koSelfNoReplace' }
@@ -377,6 +397,7 @@ export type EffectOp =
       upTo: number
       to: 'hand' | 'play' | 'trash'
       restTo?: 'bottom' | 'trash'
+      playRested?: boolean
     }
   /** Look at top N; chosen subset goes to the bottom (order kept), rest stays on top */
   | { op: 'scryBottom'; count: number }
@@ -395,13 +416,19 @@ export type EffectOp =
   | { op: 'setPower'; ref: string; value: number; duration: ModifierDuration }
   /** Move the source card from the trash to its owner's hand (trigger tails) */
   | { op: 'selfToHand' }
+  /** Turn the top `count` face-down Life cards face-up; aborts if fewer exist */
+  | { op: 'lifeFaceUp'; count: number }
+  /** Turn face-up Life cards face-down ('all' never aborts; a count aborts short) */
+  | { op: 'lifeFaceDown'; count: number | 'all' }
+  /** Trash the deck top; if it matches, the bound card gains power (Blackbeard) */
+  | { op: 'millTopCheck'; filter: CardDataFilter; ref: string; amount: number; duration: ModifierDuration }
   | { op: 'returnDon'; ref: string } // bound cost-area DON back to the DON!! deck
   /** Run this same card's def of another timing (trigger: "Activate this card's [Main]") */
   | { op: 'activateTiming'; timing: 'main' | 'counter' | 'onPlay' }
   /** Mark bound hand cards as revealed (public knowledge until they move zones) */
   | { op: 'reveal'; ref: string }
   /** Field-cost delta on bound cards (Black's -N cost effects) */
-  | { op: 'costMod'; ref: string; amount: number; duration: ModifierDuration }
+  | { op: 'costMod'; ref: string; amount: number; duration: ModifierDuration; untilTurnOffset?: number }
   /** Power delta on the controller's whole field at once (Uta) */
   | { op: 'powerModAll'; amount: number; duration: ModifierDuration; includeLeader?: boolean }
   /** Draw until the controller's hand holds `count` cards (never discards) */
@@ -411,7 +438,7 @@ export type EffectOp =
   /** The opponent returns DON from their cost area to their DON!! deck (rested first) */
   | { op: 'oppReturnDon'; count: number }
   /** Turn-scoped restriction on the controller (cleared at end of turn) */
-  | { op: 'restrictSelf'; restriction: 'noLifeToHand' | 'noLeaderAttack' }
+  | { op: 'restrictSelf'; restriction: 'noLifeToHand' | 'noLeaderAttack' | 'donEqualize' }
   /** One-shot play-cost discount for the controller this turn (Kin'emon) */
   | {
       op: 'grantPlayDiscount'

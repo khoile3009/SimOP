@@ -24,6 +24,8 @@ export interface CardRules {
 }
 
 export const CARD_RULES: Record<string, CardRules> = {
+  // OP08-072 Biscuit Warrior: "you may have any number of this card in your deck"
+  'OP08-072': { deckCopyLimit: 'any' },
   'OP01-075': { deckCopyLimit: 'any' },
   // Both official romanizations, so cross-set name references resolve
   'OP01-121': { extraNames: ['Kozuki Oden', 'Kouzuki Oden'] },

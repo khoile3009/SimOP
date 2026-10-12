@@ -755,6 +755,33 @@ function maybeFinishEndTurn(state: GameState): GameState {
   // Scheduled end-of-turn moves (Thatch's self-trash, the Duck Troops' bounce)
   // happen before turn modifiers sweep
   let swept = state
+  // 'donEqualize' (Black Maria): return cost-area DON, rested first, until the
+  // player no longer has more DON on field than the opponent
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    if (!swept.turnFlags[pid]?.includes('donEqualize')) continue
+    const opp = pid === 'player1' ? 'player2' : 'player1'
+    const mine = () =>
+      swept.players[pid].donArea.length +
+      swept.players[pid].leader.attachedDon +
+      swept.players[pid].characters.reduce((n, c) => n + c.attachedDon, 0)
+    const theirs =
+      swept.players[opp].donArea.length +
+      swept.players[opp].leader.attachedDon +
+      swept.players[opp].characters.reduce((n, c) => n + c.attachedDon, 0)
+    while (mine() > theirs && swept.players[pid].donArea.length > 0) {
+      const p = swept.players[pid]
+      const donArea = [...p.donArea]
+      const restedIdx = donArea.findIndex((d) => d.isRested)
+      const [returned] = donArea.splice(restedIdx >= 0 ? restedIdx : donArea.length - 1, 1)
+      swept = {
+        ...swept,
+        players: {
+          ...swept.players,
+          [pid]: { ...p, donArea, donDeck: [...p.donDeck, { ...returned, isRested: false }] },
+        },
+      }
+    }
+  }
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     for (const c of [...swept.players[pid].characters]) {
       if (hasFlag(swept, c, 'trashAtTurnEnd')) {

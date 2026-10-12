@@ -215,6 +215,7 @@ export function dealLifeDamage(
       }
       events.push({ type: 'LIFE_BANISHED', playerId, description: 'Life card banished to trash' })
       s = damageEvent(s)
+      s = emitEngineEvent(s, { kind: 'lifeRemoved', player: playerId })
       const zeroed = lifeZeroCheck(s)
       if (zeroed) return zeroed
     } else {
@@ -233,6 +234,7 @@ export function dealLifeDamage(
       }
       s = damageEvent(s)
       s = emitEngineEvent(s, { kind: 'lifeAddedToHand', player: playerId })
+      s = emitEngineEvent(s, { kind: 'lifeRemoved', player: playerId })
       const zeroed = lifeZeroCheck(s)
       if (zeroed) {
         const cardData0 = getCardById(lifeCard.cardId)
