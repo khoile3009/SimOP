@@ -51,6 +51,8 @@ export type EngineEventKind =
   | 'lifeAddedToHand'
   /** A [Trigger] was activated */
   | 'triggerActivated'
+  /** A [Blocker] was activated; `player` is the blocker's owner */
+  | 'blockerActivated'
   /** A player's life count reached 0 (Enel) */
   | 'lifeZero'
   /** A card left a player's Life area (damage or effects); `player` is the life's owner */
@@ -167,6 +169,18 @@ export interface Cond {
   lacksOtherCharacterNamed?: string
   /** Your trash holds at least one card of EACH name (Chessmarimo) */
   trashContainsNames?: string[]
+  /** A character you control carries ANY of these names (Cabaji) */
+  hasCharacterNamedAny?: string[]
+  /** TRUE when you control FEWER than `count` characters of cost >= `cost` (Buggy 10) */
+  fewerSelfCharsCostAtLeast?: { cost: number; count: number }
+  /** The opponent's hand exceeds yours by at least this many (Teach) */
+  handDisadvantageAtLeast?: number
+  /** Your leader's current effective power is at least this (Wire) */
+  leaderPowerAtLeast?: number
+  /** The opponent has at least `count` characters of printed power >= `power` */
+  minOppCharsBasePowerAtLeast?: { power: number; count: number }
+  /** Either player's life count is 0 (Roger) */
+  anyPlayerLifeZero?: boolean
   /** The OPPONENT has a character with this effective cost or less (Baskerville) */
   oppCharCostAtMost?: number
 }
@@ -212,6 +226,8 @@ export interface SelectFilter {
   powerAtLeast?: number
   /** The card has a [Trigger] ("a Character card with a [Trigger]") */
   hasTrigger?: boolean
+  /** The card currently has this keyword (printed or granted) */
+  hasKeywordIs?: string
   /** Battle attribute ("your <Slash> attribute Characters") */
   attributeIs?: string
   costAtLeast?: number
@@ -247,6 +263,10 @@ export interface CardDataFilter {
   nameNot?: string
   /** Matches when the card carries this name even if other filters miss ("[Sanji] or {BMP} type") */
   orNameIs?: string
+  /** Matches when the card carries this type even if other filters miss (Izo) */
+  orTypeIncludes?: string
+  /** The card has a [Trigger] */
+  hasTrigger?: boolean
 }
 
 export type FlagName =
@@ -273,6 +293,9 @@ export type FlagName =
   | 'rushCharactersOnly' // may attack CHARACTERS (not leaders) the turn it was played
   | 'negated' // the card's own effects (printed keywords, statics, defs) are off
   | 'noOppEffectKo' // cannot be K.O.'d by OPPONENT effects (own effects still can)
+  | 'noOnPlay' // on a LEADER: this player's [On Play] effects are negated (Teach)
+  | 'noBattleKoByLeader' // cannot be K.O.'d in battle when the attacker is a Leader
+  | 'cannotBlock' // this character cannot activate [Blocker]
 
 export type EffectOp =
   | { op: 'draw'; count: number; who?: 'self' | 'opponent' }
@@ -320,6 +343,12 @@ export type EffectOp =
   | { op: 'dealDamage'; count: number }
   /** Skip the rest unless every bound card's effective power is at most `max` */
   | { op: 'requireRefPowerAtMost'; ref: string; max: number }
+  /** Skip the rest unless every bound card's effective cost is at most `max` */
+  | { op: 'requireRefCostAtMost'; ref: string; max: number }
+  /** Mill as many cards as another binding's size (Murder at the Steam Bath) */
+  | { op: 'millPerRef'; countRef: string }
+  /** The controller wins the game outright (Roger) */
+  | { op: 'winGame' }
   /** Grant a flag to the controller's whole field at once */
   | {
       op: 'grantFlagAll'
@@ -365,7 +394,7 @@ export type EffectOp =
   /** Katakuri-style life scry, simplified: may move the top card of either
    * player's Life to the bottom of that stack (the "look" is not modeled) */
   | { op: 'scryLifeTops'; prompt: string }
-  | { op: 'grantKeyword'; ref: string; keyword: string; duration: ModifierDuration }
+  | { op: 'grantKeyword'; ref: string; keyword: string; duration: ModifierDuration; untilTurnOffset?: number }
   | {
       op: 'grantFlag'
       ref: string
@@ -454,9 +483,9 @@ export type EffectOp =
 
 export interface EffectDef {
   timing: EffectTiming
-  /** For timing 'replaceKo': 'oppEffect' narrows the window to K.O.s/removals
-   * caused by an opponent's effect (Hawkins, blue Moria); default any K.O. */
-  replaceWhen?: 'any' | 'oppEffect'
+  /** For timings 'replaceKo'/'guardKo': 'oppEffect' narrows the window to
+   * opponent-effect K.O.s, 'effect' to any non-battle K.O.; default any K.O. */
+  replaceWhen?: 'any' | 'oppEffect' | 'effect'
   /** For timing 'onEvent': which engine event this def listens for */
   on?: EventQuery
   /** [DON!! xN]: needs at least N DON attached to the source card */
@@ -498,7 +527,7 @@ export interface StaticDef {
   }
   power?: number
   /** Scaling auras: value per matching count, added to `power` */
-  powerPer?: { handCards?: boolean; trashEventsPer2?: boolean; trashPer5?: boolean; amount: number }
+  powerPer?: { handCards?: boolean; trashEventsPer2?: boolean; trashPer5?: boolean; trashPerN?: number; amount: number }
   keyword?: string
   flag?: FlagName
   flagValue?: number

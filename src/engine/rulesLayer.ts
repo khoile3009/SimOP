@@ -21,9 +21,12 @@ export interface CardRules {
   extraNames?: string[]
   /** On a LEADER: decking out is a WIN instead of a loss (OP03-040 Nami) */
   deckOutWins?: boolean
+  playsCharactersRested?: boolean
 }
 
 export const CARD_RULES: Record<string, CardRules> = {
+  // OP09-022 Lim: "Your Character cards are played rested"
+  'OP09-022': { playsCharactersRested: true },
   // OP08-072 Biscuit Warrior: "you may have any number of this card in your deck"
   'OP08-072': { deckCopyLimit: 'any' },
   'OP01-075': { deckCopyLimit: 'any' },
@@ -36,6 +39,10 @@ export const CARD_RULES: Record<string, CardRules> = {
 
 /** Who wins when `playerId` must draw from an empty deck (CR loss, unless the
  * rules layer inverts it - Nami's win-condition replacement). */
+export function getCardRules(cardId: string): CardRules | undefined {
+  return CARD_RULES[cardId]
+}
+
 export function deckOutWinner(leaderCardId: string, playerId: 'player1' | 'player2') {
   const inverted = CARD_RULES[leaderCardId]?.deckOutWins === true
   const opponent = playerId === 'player1' ? 'player2' : 'player1'

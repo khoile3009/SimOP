@@ -16,6 +16,7 @@ import {
 import { getEffectDefs } from './effects/registry'
 import { getEffectiveCost, discountMatches, hasFlag } from './effects/statics'
 import { legalActions } from './legalActions'
+import { getCardRules } from './rulesLayer'
 import { MAX_CHARACTERS } from './constants'
 
 export function processAction(
@@ -183,7 +184,11 @@ function processPlayCard(
   newHand.splice(cardIndex, 1)
 
   // Place card on field
-  const playedCard = { ...card, turnPlayed: state.turnNumber }
+  // Lim (OP09-022): this player's Character cards enter play rested
+  const restedRule =
+    cardData.cardType === 'Character' &&
+    (getCardRules(player.leader.cardId)?.playsCharactersRested ?? false)
+  const playedCard = { ...card, turnPlayed: state.turnNumber, isRested: restedRule || card.isRested }
   let newCharacters = player.characters
   let newStage = player.stage
   let newTrash = player.trash
@@ -235,7 +240,8 @@ function processPlayCard(
     // Listeners queue first so the event's own frames land on top and resolve first
     newState = emitEngineEvent(newState, { kind: 'eventActivated', player: playerId })
     newState = queueEffects(newState, playedCard, 'main', playerId)
-  } else {
+  } else if (!hasFlag(newState, newState.players[playerId].leader, 'noOnPlay')) {
+    // 'noOnPlay' on a leader negates that player's [On Play] effects (Teach)
     newState = queueEffects(newState, playedCard, 'onPlay', playerId)
   }
   return runStack(newState, events)
@@ -444,6 +450,7 @@ function processActivateBlocker(
   }
 
   // [On Block] effects fire when the blocker is activated (CR 7-1-2-2)
+  newState = emitEngineEvent(newState, { kind: 'blockerActivated', player: playerId })
   const blocker = newState.players[playerId].characters.find((c) => c.instanceId === blockerId)
   if (blocker) {
     newState = runStack(queueEffects(newState, blocker, 'onBlock', playerId), events)

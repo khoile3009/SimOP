@@ -289,6 +289,9 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
           if (def.powerPer.trashPer5) {
             power += def.powerPer.amount * Math.floor(owner.trash.length / 5)
           }
+          if (def.powerPer.trashPerN) {
+            power += def.powerPer.amount * Math.floor(owner.trash.length / def.powerPer.trashPerN)
+          }
           if (def.powerPer.trashEventsPer2) {
             const events = owner.trash.filter(
               (c) => getCardById(c.cardId)?.cardType === 'Event',

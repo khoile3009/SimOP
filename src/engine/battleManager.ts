@@ -11,6 +11,10 @@ import { hasFlag, getFlag } from './effects/statics'
 /** Battle-KO protection: blanket, or scoped to the attacker's battle attribute. */
 function protectedFromBattleKo(state: GameState, defender: GameCard, attacker: GameCard): boolean {
   if (hasFlag(state, defender, 'noBattleKo')) return true
+  const attackerIsLeader = (['player1', 'player2'] as PlayerId[]).some(
+    (pid) => state.players[pid].leader.instanceId === attacker.instanceId,
+  )
+  if (attackerIsLeader && hasFlag(state, defender, 'noBattleKoByLeader')) return true
   const attr = getBattleAttribute(attacker.cardId)
   return attr !== null && hasFlag(state, defender, `noBattleKoBy${attr}` as FlagName)
 }

@@ -6,7 +6,8 @@ import { evalCond, cardTypes, hasFlag, getEffectiveFieldCost, isNegated, donOnFi
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '../powerCalc'
 import { getOpponent } from '../turnManager'
-import { cardHasName, deckOutWinner, getBattleAttribute } from '../rulesLayer'
+import { hasKeyword } from '../keywords'
+import { cardHasName, deckOutWinner, getBattleAttribute, getCardRules } from '../rulesLayer'
 import { createGameCard } from '../gameSetup'
 import { shuffle } from '@/utils/shuffle'
 // Circular at module level with battleManager (which imports koById etc.);
@@ -473,6 +474,34 @@ function executeOp(
       return advance(state)
     }
 
+    case 'requireRefCostAtMost': {
+      for (const id of refs(op.ref)) {
+        const card = findFieldCard(state, id)
+        if (card && getEffectiveFieldCost(state, card) > op.max) return advance(state, true)
+      }
+      return advance(state)
+    }
+
+    case 'millPerRef': {
+      const count = refs(op.countRef).length
+      if (count === 0) return advance(state)
+      const p = state.players[controller]
+      const take = Math.min(count, p.deck.length)
+      if (take === 0) return advance(state)
+      const deck = [...p.deck]
+      const milled = deck.splice(0, take)
+      return advance({
+        ...state,
+        players: {
+          ...state.players,
+          [controller]: { ...p, deck, trash: [...p.trash, ...milled] },
+        },
+      })
+    }
+
+    case 'winGame':
+      return advance({ ...state, winner: controller })
+
     case 'grantFlagAll': {
       const modifier: Modifier = {
         kind: 'flag',
@@ -726,7 +755,7 @@ function executeOp(
                 sourceCardId: frame.sourceCardId,
               }
       if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
-      if (op.op !== 'grantKeyword' && op.duration === 'untilTurn') {
+      if (op.duration === 'untilTurn') {
         modifier.untilTurn = state.turnNumber + (op.untilTurnOffset ?? 0)
       }
       let s = state
@@ -1486,6 +1515,12 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
       if (filter.excludeSelf && c.instanceId === frame.sourceInstanceId) return false
       if (filter.attributeIs && getBattleAttribute(c.cardId) !== filter.attributeIs) return false
       if (filter.hasTrigger && !data?.triggerText) return false
+      if (
+        filter.hasKeywordIs &&
+        !hasKeyword(state, c, filter.hasKeywordIs as Parameters<typeof hasKeyword>[2])
+      ) {
+        return false
+      }
       if (filter.powerAtLeast !== undefined && getEffectivePower(state, c) < filter.powerAtLeast) {
         return false
       }
@@ -1521,6 +1556,7 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
   const data = getCardById(cardId)
   if (!data) return false
   if (filter.orNameIs && cardHasName(cardId, filter.orNameIs)) return true
+  if (filter.orTypeIncludes && data.attribute.includes(filter.orTypeIncludes)) return true
   if (filter.nameIsAny && !filter.nameIsAny.some((n) => cardHasName(cardId, n))) return false
   if (filter.powerAtLeast !== undefined && (data.power ?? 0) < filter.powerAtLeast) return false
   if (filter.powerAtMost !== undefined && (data.power ?? 0) > filter.powerAtMost) return false
@@ -1538,6 +1574,7 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
   if (filter.colorIncludes && !data.color.some((c) => c === filter.colorIncludes)) return false
   if (filter.nameIs && !cardHasName(cardId, filter.nameIs)) return false
   if (filter.nameNot && cardHasName(cardId, filter.nameNot)) return false
+  if (filter.hasTrigger && !data.triggerText) return false
   return true
 }
 
@@ -1706,12 +1743,7 @@ export function koById(
   const defs = getEffectDefs(card.cardId)
   for (let i = 0; i < defs.length; i++) {
     if (!defMatches(state, owner, card, 'replaceKo', i)) continue
-    if (
-      defs[i].replaceWhen === 'oppEffect' &&
-      (opts.byBattle || opts.controller === undefined || opts.controller === owner)
-    ) {
-      continue
-    }
+    if (!replaceWindowOpen(defs[i].replaceWhen, opts, owner)) continue
     const marked = markOncePerTurn(state, card, defs[i].oncePerTurn, `t${i}`)
     if (!marked) continue
     events.push({
@@ -1732,6 +1764,7 @@ export function koById(
     for (let i = 0; i < gDefs.length; i++) {
       const gd = gDefs[i]
       if (gd.timing !== 'guardKo' || !gd.guard) continue
+      if (!replaceWindowOpen(gd.replaceWhen, opts, owner)) continue
       if (!defMatches(state, owner, guard, 'guardKo', i)) continue
       if (!guardTargetMatches(state, card, gd.guard)) continue
       const marked = markOncePerTurn(state, guard, gd.oncePerTurn, `t${i}`)
@@ -1756,6 +1789,19 @@ export function koById(
   // listeners land on top of the stack so the turn player's resolve first
   const withOnKo = queueEffects(s, card, 'onKo', owner)
   return emitEngineEvent(withOnKo, { kind: 'characterKoed', player: owner })
+}
+
+/** Whether a replacement window applies given how the K.O. arrived. */
+function replaceWindowOpen(
+  when: 'any' | 'oppEffect' | 'effect' | undefined,
+  opts: { byBattle?: boolean; controller?: PlayerId },
+  owner: PlayerId,
+): boolean {
+  if (when === 'oppEffect') {
+    return !opts.byBattle && opts.controller !== undefined && opts.controller !== owner
+  }
+  if (when === 'effect') return !opts.byBattle
+  return true
 }
 
 /** Does a dying card fall under a guardKo def's protection filter? */
@@ -1906,7 +1952,11 @@ function playCardFree(
     if (cardType !== 'Character' && cardType !== 'Stage') return state
     const played: GameCard = {
       ...raw,
-      isRested: rested,
+      // Lim (OP09-022): this player's Character cards always enter rested
+      isRested:
+        rested ||
+        (cardType === 'Character' &&
+          (getCardRules(p.leader.cardId)?.playsCharactersRested ?? false)),
       turnPlayed: state.turnNumber,
       modifiers: [],
       attachedDon: 0,
@@ -1944,7 +1994,10 @@ function playCardFree(
       cardId: played.cardId,
       fromHand: zone === 'hand',
     })
-    s = queueEffects(s, played, 'onPlay', controller)
+    // 'noOnPlay' on this player's leader negates their [On Play] effects (Teach)
+    if (!hasFlag(s, s.players[controller].leader, 'noOnPlay')) {
+      s = queueEffects(s, played, 'onPlay', controller)
+    }
     return s
   }
   return state

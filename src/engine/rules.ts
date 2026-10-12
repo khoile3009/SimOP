@@ -232,6 +232,9 @@ function validateActivateBlocker(
     return { valid: false, reason: 'Cannot block with the current target' }
   }
 
+  if (hasFlag(state, blocker, 'cannotBlock')) {
+    return { valid: false, reason: 'This Character cannot activate Blocker' }
+  }
   if (!hasKeyword(state, blocker, 'Blocker')) {
     return { valid: false, reason: 'Character does not have Blocker' }
   }
