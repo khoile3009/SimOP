@@ -82,6 +82,12 @@ export interface EventQuery {
 
 /** Predicates over game state, evaluated from the effect controller's seat. */
 export interface Cond {
+  /** Passes when ANY branch passes ("If your Leader is [A] or has the {B} type") */
+  anyOf?: Cond[]
+  /** You have a Character of this type at this effective cost or more; contains = substring type match */
+  charTypedCostAtLeast?: { type: string; cost: number; contains?: boolean }
+  /** Negation of charTypedCostAtLeast ("if you have no {X} Characters with a cost of 8 or more") */
+  lacksCharTypedCostAtLeast?: { type: string; cost: number; contains?: boolean }
   yourTurn?: boolean
   opponentsTurn?: boolean
   /** The source card itself is rested (e.g. Kid's taunt) */
@@ -256,6 +262,10 @@ export interface SelectFilter {
   costAtMostOppDon?: boolean
   /** PRINTED power cap ("5000 base power or less") */
   basePowerAtMost?: number
+  /** PRINTED cost cap ("with a base cost of 4 or less") - ignores cost modifiers */
+  baseCostAtMost?: number
+  /** Exact PRINTED cost ("with a base cost of 1") - ignores cost modifiers */
+  baseCostIs?: number
   /** The card's text box is blank ("with no base effect") */
   noBaseEffect?: boolean
   /** Effective power (base + DON + modifiers + auras) at selection time */
@@ -284,6 +294,8 @@ export interface SelectFilter {
   colorIncludes?: string
   nameIs?: string
   nameNot?: string
+  /** Matches when the card carries this name even if the type filters miss ("[Rosinante] and {Heart Pirates} types") */
+  orNameIs?: string
   /** Option must share no color with the card bound under this name (Law leader) */
   differentColorThanRef?: string
 }
@@ -305,6 +317,8 @@ export interface CardDataFilter {
   nameNot?: string
   /** Matches when the card carries this name even if other filters miss ("[Sanji] or {BMP} type") */
   orNameIs?: string
+  /** Alternate arm: matches when this whole filter matches ("red Event or cost-3+ Character") */
+  orMatch?: CardDataFilter
   /** Matches when the card carries this type even if other filters miss (Izo) */
   orTypeIncludes?: string
   /** The card has a [Trigger] */
@@ -358,6 +372,8 @@ export type EffectOp =
       exact?: boolean
       /** Who makes the choice; defaults to the effect controller */
       chooser?: 'controller' | 'opponent'
+      /** Bind every matching card with no prompt ("all of your opponent's Characters") */
+      selectAll?: boolean
       prompt: string
     }
   /** Skip the rest of this effect when a binding is empty - "You may X: Y" costs */

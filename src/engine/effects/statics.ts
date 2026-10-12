@@ -27,6 +27,29 @@ export function evalCond(
   cond?: Cond,
 ): boolean {
   if (!cond) return true
+  if (cond.anyOf !== undefined) {
+    if (!cond.anyOf.some((c) => evalCond(state, controller, source, c))) return false
+  }
+  if (cond.charTypedCostAtLeast !== undefined) {
+    const q = cond.charTypedCostAtLeast
+    const found = state.players[controller].characters.some(
+      (c) =>
+        (q.contains
+          ? cardTypes(c.cardId).some((t) => t.includes(q.type))
+          : cardTypes(c.cardId).includes(q.type)) && getEffectiveFieldCost(state, c) >= q.cost,
+    )
+    if (!found) return false
+  }
+  if (cond.lacksCharTypedCostAtLeast !== undefined) {
+    const q = cond.lacksCharTypedCostAtLeast
+    const found = state.players[controller].characters.some(
+      (c) =>
+        (q.contains
+          ? cardTypes(c.cardId).some((t) => t.includes(q.type))
+          : cardTypes(c.cardId).includes(q.type)) && getEffectiveFieldCost(state, c) >= q.cost,
+    )
+    if (found) return false
+  }
   const me = state.players[controller]
   const opp = state.players[getOpponent(controller)]
 
@@ -484,6 +507,9 @@ export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
   'minSelfCharsTotalCost',
   'charTypedPowerAtLeast',
   'anyCharacterCostAtLeast',
+  'anyOf',
+  'charTypedCostAtLeast',
+  'lacksCharTypedCostAtLeast',
   'charDisadvantageAtLeast',
   'atMostLifeOfOpp',
   'minSelfRestedCharsTyped',

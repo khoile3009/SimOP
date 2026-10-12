@@ -277,6 +277,10 @@ function executeOp(
       if (options.length === 0 || op.max === 0) {
         return advance({ ...state, stack: withBinding(state.stack, op.bind, []) })
       }
+      // "all of your/their ..." effects: no choice exists, bind every match
+      if (op.selectAll) {
+        return advance({ ...state, stack: withBinding(state.stack, op.bind, options) })
+      }
       const chooser = op.chooser === 'opponent' ? getOpponent(controller) : controller
       return {
         ...state,
@@ -1689,6 +1693,8 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
   return pool
     .filter((c) => {
       if (excluded.has(c.instanceId)) return false
+      // Alternate name arm: accepts regardless of the data predicates below
+      if (filter.orNameIs && cardHasName(c.cardId, filter.orNameIs)) return true
       const data = getCardById(c.cardId)
       if (filter.rested !== undefined && c.isRested !== filter.rested) return false
       if (
@@ -1723,6 +1729,13 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
       if (filter.costAtLeast !== undefined) {
         const cost = onField ? getEffectiveFieldCost(state, c) : (data?.cost ?? 0)
         if (cost < filter.costAtLeast) return false
+      }
+      // "base cost" on card text: printed cost, ignoring modifiers and auras
+      if (filter.baseCostAtMost !== undefined && (data?.cost ?? 0) > filter.baseCostAtMost) {
+        return false
+      }
+      if (filter.baseCostIs !== undefined && (data?.cost ?? 0) !== filter.baseCostIs) {
+        return false
       }
       if (
         filter.typeOrTrigger &&
@@ -1780,6 +1793,7 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
   if (!data) return false
   if (filter.orNameIs && cardHasName(cardId, filter.orNameIs)) return true
   if (filter.orTypeIncludes && data.attribute.includes(filter.orTypeIncludes)) return true
+  if (filter.orMatch && matchCardData(cardId, filter.orMatch)) return true
   if (filter.nameIsAny && !filter.nameIsAny.some((n) => cardHasName(cardId, n))) return false
   if (filter.powerAtLeast !== undefined && (data.power ?? 0) < filter.powerAtLeast) return false
   if (filter.powerAtMost !== undefined && (data.power ?? 0) > filter.powerAtMost) return false
@@ -2072,6 +2086,9 @@ function guardTargetMatches(state: GameState, card: GameCard, g: SelectFilter): 
   if (g.powerAtMost !== undefined && getEffectivePower(state, card) > g.powerAtMost) return false
   if (g.rested !== undefined && card.isRested !== g.rested) return false
   if (g.costAtMost !== undefined && getEffectiveFieldCost(state, card) > g.costAtMost) return false
+  if (g.baseCostAtMost !== undefined && (getCardById(card.cardId)?.cost ?? 0) > g.baseCostAtMost) {
+    return false
+  }
   if (g.typeIncludes && !cardTypes(card.cardId).includes(g.typeIncludes)) return false
   if (g.nameIs && !cardHasName(card.cardId, g.nameIs)) return false
   return true

@@ -124,6 +124,23 @@
       (optcgapi drops minus signs on debuff texts — all opponent-bound mods are
       authored negative and verified by regex). Remaining fidelity debt lives in
       each set's COVERAGE_NOTES (SIMPLIFIED entries only; zero MISSING anywhere).
+- [~] Full-fidelity campaign (Oct 2026, IN PROGRESS) — burn down the SIMPLIFIED
+      ledger toward a complete engine (started at 312 notes; ~100 are benign
+      bot-ordering/auto-accept equivalences that stay documented). Phases:
+      1. DONE-ish: no-machinery slices — baseCostAtMost/baseCostIs filters,
+         Cond.anyOf (OR conditions), charTypedCostAtLeast/lacks variant,
+         CardDataFilter.orMatch (two-class searches), SelectFilter.orNameIs,
+         select op selectAll (automatic "all of X" effects). 312 → 290.
+      2. owner:'any' select targets (~45 "opponent side only" notes) +
+         top-or-bottom destination choices (~28 notes incl. face-up life
+         placement fidelity via a faceUp flag on placement ops).
+      3. Class-based DON picker (design approved, artifact linked below) —
+         clears the ~36 "DON!!-X pays from cost area only" notes.
+      4. Generalized removal-replacement window ("would be removed" guards,
+         ~14 notes) + event payload enrichment (typed-removal checks, ~14).
+      5. Multi-select constraints (totalCostAtMost/totalPowerAtMost/
+         distinctNames, ~9 notes); counter-value auras (OP16-118, OP17-063).
+      Each phase gates on: typecheck, 138+ tests, defLint, 1600-game fleet.
 - [ ] M4 gen-2 retrain — UNBLOCKED by full card coverage (the parking condition
       is met). Decision needed: kick off the gen-2 recipe above (mid-turn
       afterstates, no random games, deck-potential features) on the 14-set pool.

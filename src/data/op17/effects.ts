@@ -38,7 +38,9 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
   'OP17-003': [
     {
       timing: 'onPlay',
-      condition: { leaderNameIs: 'Edward.Newgate' },
+      condition: {
+        anyOf: [{ leaderNameIs: 'Edward.Newgate' }, { leaderTypeIncludes: 'Land of Wano' }],
+      },
       ops: [
         {
           op: 'select',
@@ -49,21 +51,6 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
           prompt: 'Give -6000 power',
         },
         { op: 'powerMod', ref: 'b1', amount: -6000, duration: 'turn' },
-      ],
-    },
-    {
-      timing: 'onPlay',
-      condition: { leaderTypeIncludes: 'Land of Wano' },
-      ops: [
-        {
-          op: 'select',
-          bind: 'b2',
-          filter: { owner: 'opponent', zone: 'characters', rested: true },
-          min: 0,
-          max: 1,
-          prompt: 'Give -6000 power',
-        },
-        { op: 'powerMod', ref: 'b2', amount: -6000, duration: 'turn' },
       ],
     },
   ],
@@ -112,7 +99,9 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
   'OP17-007': [
     {
       timing: 'onPlay',
-      condition: { leaderNameIs: 'Edward.Newgate' },
+      condition: {
+        anyOf: [{ leaderNameIs: 'Edward.Newgate' }, { leaderTypeIncludes: 'Land of Wano' }],
+      },
       ops: [
         {
           op: 'select',
@@ -122,6 +111,7 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
             zone: 'hand',
             cardType: 'Character',
             typeIncludes: 'Land of Wano',
+            typeContains: 'Whitebeard Pirates',
             basePowerAtMost: 6000,
           },
           min: 0,
@@ -129,27 +119,6 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
           prompt: 'Play from hand',
         },
         { op: 'playCards', ref: 'b1' },
-      ],
-    },
-    {
-      timing: 'onPlay',
-      condition: { leaderTypeIncludes: 'Land of Wano' },
-      ops: [
-        {
-          op: 'select',
-          bind: 'b2',
-          filter: {
-            owner: 'self',
-            zone: 'hand',
-            cardType: 'Character',
-            typeIncludes: 'Land of Wano',
-            basePowerAtMost: 6000,
-          },
-          min: 0,
-          max: 1,
-          prompt: 'Play from hand',
-        },
-        { op: 'playCards', ref: 'b2' },
       ],
     },
   ],
@@ -2364,7 +2333,8 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
           filter: { owner: 'opponent', zone: 'characters' },
           min: 0,
           max: 5,
-          prompt: 'Give -1 cost (select all)',
+          selectAll: true,
+          prompt: 'Give -1 cost',
         },
         { op: 'costMod', ref: 'b1', amount: -1, duration: 'turn' },
       ],
@@ -3034,11 +3004,7 @@ export const KEYWORD_ONLY_OP17: string[] = []
 
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP17: Record<string, string> = {
-  'OP17-003':
-    'SIMPLIFIED: the twin leader conditions are two defs; a Newgate Land of Wano leader would fire both',
   'OP17-005': 'SIMPLIFIED: the monocolored-leader qualifier on the power set is not checked',
-  'OP17-007':
-    'SIMPLIFIED: twin leader conditions are two defs; the Whitebeard type qualifier on the played card is dropped',
   'OP17-015': 'SIMPLIFIED: the guard covers opponent-effect removals; the revival can chain',
   'OP17-018': 'SIMPLIFIED: the counter checks a Whitebeard character at 8000+, not two',
   'OP17-020':
@@ -3061,7 +3027,6 @@ export const COVERAGE_NOTES_OP17: Record<string, string> = {
   'OP17-085': 'SIMPLIFIED: the character play lock lands after Brogy; hand first, then trash',
   'OP17-092': 'SIMPLIFIED: the character play lock lands after Dorry; hand first, then trash',
   'OP17-095': 'SIMPLIFIED: the guard covers opponent-effect K.O.s only',
-  'OP17-097': 'SIMPLIFIED: "all" is a select-all prompt rather than automatic',
   'OP17-099':
     "SIMPLIFIED: the opponent chooses by trashing 1 or declining, which triggers Linlin's trash-and-ramp",
   'OP17-112': 'SIMPLIFIED: the power set reads as a +4000 aura on 4000-base Trigger characters',

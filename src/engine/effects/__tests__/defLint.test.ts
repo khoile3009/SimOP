@@ -93,7 +93,8 @@ describe('effect definition linter', () => {
           if (optionalCost || def.ops.every((o) => o.op !== 'select' || o.min === 0)) {
             // A declineable first cost (or no mandatory selection at all) means
             // bots can activate forever for free - the Byrnndi World spam bug
-            if (optionalCost) errors.push(`${id} def[${di}]: activateMain with only an optional cost`)
+            if (optionalCost)
+              errors.push(`${id} def[${di}]: activateMain with only an optional cost`)
           }
         })
       }
@@ -132,15 +133,21 @@ describe('effect definition linter', () => {
           lintCond(`${id} def[${di}]`, def.condition, errors)
           def.ops.forEach((op, oi) => {
             const where = `${id} def[${di}] op[${oi}]`
-            if ('filter' in op && op.op === 'select') lintFilter(where, op.filter as SelectFilter, errors)
+            if ('filter' in op && op.op === 'select')
+              lintFilter(where, op.filter as SelectFilter, errors)
             if (op.op === 'requireCond') lintCond(where, op.cond, errors)
             if ((op.op === 'searchTop' || op.op === 'searchDeck') && op.filter) {
               const f = op.filter
-              if (f.typeIncludes && !typeExists(f.typeIncludes)) errors.push(`${where}: unknown type "${f.typeIncludes}"`)
-              if (f.typeContains && !typeSubstringExists(f.typeContains)) errors.push(`${where}: no type contains "${f.typeContains}"`)
-              if (f.nameIs && !nameExists(f.nameIs)) errors.push(`${where}: unknown name "${f.nameIs}"`)
-              if (f.nameNot && !nameExists(f.nameNot)) errors.push(`${where}: unknown name "${f.nameNot}"`)
-              if ('orNameIs' in f && f.orNameIs && !nameExists(f.orNameIs)) errors.push(`${where}: unknown name "${f.orNameIs}"`)
+              if (f.typeIncludes && !typeExists(f.typeIncludes))
+                errors.push(`${where}: unknown type "${f.typeIncludes}"`)
+              if (f.typeContains && !typeSubstringExists(f.typeContains))
+                errors.push(`${where}: no type contains "${f.typeContains}"`)
+              if (f.nameIs && !nameExists(f.nameIs))
+                errors.push(`${where}: unknown name "${f.nameIs}"`)
+              if (f.nameNot && !nameExists(f.nameNot))
+                errors.push(`${where}: unknown name "${f.nameNot}"`)
+              if ('orNameIs' in f && f.orNameIs && !nameExists(f.orNameIs))
+                errors.push(`${where}: unknown name "${f.orNameIs}"`)
             }
             if (op.op === 'searchDeckByName' && !nameExists(op.name)) {
               errors.push(`${where}: unknown name "${op.name}"`)
@@ -155,8 +162,10 @@ describe('effect definition linter', () => {
           if (st.target.typeIncludes && !typeExists(st.target.typeIncludes)) {
             errors.push(`${where}: unknown type "${st.target.typeIncludes}"`)
           }
-          if (st.target.nameIs && !nameExists(st.target.nameIs)) errors.push(`${where}: unknown name "${st.target.nameIs}"`)
-          if (st.target.nameNot && !nameExists(st.target.nameNot)) errors.push(`${where}: unknown name "${st.target.nameNot}"`)
+          if (st.target.nameIs && !nameExists(st.target.nameIs))
+            errors.push(`${where}: unknown name "${st.target.nameIs}"`)
+          if (st.target.nameNot && !nameExists(st.target.nameNot))
+            errors.push(`${where}: unknown name "${st.target.nameNot}"`)
         })
       }
     }
@@ -186,6 +195,11 @@ describe('effect definition linter', () => {
       if (!cond) return
       for (const key of Object.keys(cond)) {
         if (!IMPLEMENTED_CONDS.has(key)) errors.push(`${where}: cond "${key}" not implemented`)
+      }
+      if (Array.isArray(cond.anyOf)) {
+        cond.anyOf.forEach((sub, si) =>
+          checkCond(`${where} anyOf[${si}]`, sub as Record<string, unknown>),
+        )
       }
     }
     for (const { effects, statics } of SETS) {
