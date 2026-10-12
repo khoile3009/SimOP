@@ -22,9 +22,17 @@ export interface CardRules {
   /** On a LEADER: decking out is a WIN instead of a loss (OP03-040 Nami) */
   deckOutWins?: boolean
   playsCharactersRested?: boolean
+  /** On a LEADER: deck may not include cards with printed cost >= this (Rayleigh) */
+  deckCostLimitBelow?: number
+  /** This card cannot be played from hand/deck/trash by effect ops (OP12 Zoro) */
+  notPlayableByEffects?: boolean
 }
 
 export const CARD_RULES: Record<string, CardRules> = {
+  // OP12-001 Rayleigh leader: no cards of cost 5+ in the deck
+  'OP12-001': { deckCostLimitBelow: 5 },
+  // OP12-036 Zoro: "This card in your hand cannot be played by effects"
+  'OP12-036': { notPlayableByEffects: true },
   // OP09-022 Lim: "Your Character cards are played rested"
   'OP09-022': { playsCharactersRested: true },
   // OP08-072 Biscuit Warrior: "you may have any number of this card in your deck"

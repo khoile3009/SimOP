@@ -163,6 +163,42 @@ export function endOfBattleCleanup(
       }
     }
   }
+  // Zoro leader: an attacker flagged 'activeAfterCharBattle' untaps after
+  // battling a CHARACTER (not a leader); the flag is spent either way
+  if (targetId) {
+    for (const pid of ['player1', 'player2'] as PlayerId[]) {
+      const p = s.players[pid]
+      const wasCharTarget = (['player1', 'player2'] as PlayerId[]).every(
+        (q) => s.players[q].leader.instanceId !== targetId,
+      )
+      const attacker =
+        p.leader.instanceId === attackerId
+          ? p.leader
+          : p.characters.find((c) => c.instanceId === attackerId)
+      if (attacker && wasCharTarget && hasFlag(s, attacker, 'activeAfterCharBattle')) {
+        const strip = (c: GameCard): GameCard => ({
+          ...c,
+          isRested: false,
+          modifiers: c.modifiers.filter((m) => !(m.kind === 'flag' && m.flag === 'activeAfterCharBattle')),
+        })
+        s = {
+          ...s,
+          players: {
+            ...s.players,
+            [pid]:
+              p.leader.instanceId === attackerId
+                ? { ...p, leader: strip(p.leader) }
+                : {
+                    ...p,
+                    characters: p.characters.map((c) =>
+                      c.instanceId === attackerId ? strip(c) : c,
+                    ),
+                  },
+          },
+        }
+      }
+    }
+  }
   s = expireModifiers(s, (m) => m.duration === 'battle')
   return { ...s, battle: null }
 }

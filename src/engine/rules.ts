@@ -84,6 +84,14 @@ function validatePlayCard(
   const card = player.hand.find((c) => c.instanceId === cardInstanceId)
   if (!card) return { valid: false, reason: 'Card not in hand' }
 
+  // Mihawk's rider: no characters of printed cost 7+ for the rest of the turn
+  if (state.turnFlags[playerId]?.includes('noPlayCharCost7Plus')) {
+    const data = getCardById(card.cardId)
+    if (data?.cardType === 'Character' && data.cost >= 7) {
+      return { valid: false, reason: 'Cannot play cost-7+ Characters this turn' }
+    }
+  }
+
   const cardData = getCardById(card.cardId)
   if (!cardData) return { valid: false, reason: 'Card data not found' }
   if (cardData.cardType === 'Leader') return { valid: false, reason: 'Cannot play Leader cards' }
@@ -153,6 +161,24 @@ function validateDeclareAttack(
   }
 
   const player = state.players[playerId]
+
+  // Zoro leader rider: cannot attack characters at or below the flagged cost
+  {
+    const atk = state.players[playerId]
+    const attackerCard =
+      atk.leader.instanceId === attackerId
+        ? atk.leader
+        : atk.characters.find((c) => c.instanceId === attackerId)
+    const targetChar = state.players[getOpponent(playerId)].characters.find(
+      (c) => c.instanceId === targetId,
+    )
+    if (attackerCard && targetChar) {
+      const f = getFlag(state, attackerCard, 'noAttackCharsCostAtMost')
+      if (f.present && getEffectiveFieldCost(state, targetChar) <= f.value) {
+        return { valid: false, reason: 'Cannot attack low-cost Characters this turn' }
+      }
+    }
+  }
 
   // 'noLeaderAttack' (Koushirou): no attack may target a Leader this turn
   if (
@@ -398,6 +424,14 @@ function validatePlayCounterEvent(
   const player = state.players[playerId]
   const card = player.hand.find((c) => c.instanceId === cardInstanceId)
   if (!card) return { valid: false, reason: 'Card not in hand' }
+
+  // Mihawk's rider: no characters of printed cost 7+ for the rest of the turn
+  if (state.turnFlags[playerId]?.includes('noPlayCharCost7Plus')) {
+    const data = getCardById(card.cardId)
+    if (data?.cardType === 'Character' && data.cost >= 7) {
+      return { valid: false, reason: 'Cannot play cost-7+ Characters this turn' }
+    }
+  }
   const data = getCardById(card.cardId)
   if (data?.cardType !== 'Event') return { valid: false, reason: 'Not an Event' }
   if (getEffectDefs(card.cardId, 'counter').length === 0) {

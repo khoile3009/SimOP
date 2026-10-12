@@ -113,6 +113,7 @@ export interface PlayDiscount {
   cardType?: CardType
   typeIncludes?: string
   minCost?: number
+  nameIs?: string
 }
 
 export interface TriggerState {

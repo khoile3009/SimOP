@@ -1,0 +1,2460 @@
+[
+  {
+    "id": "OP12-001",
+    "name": "Silvers Rayleigh",
+    "cardType": "Leader",
+    "color": [
+      "Red"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "Former Roger Pirates"
+    ],
+    "effectText": "Under the rules of this game, you cannot include cards with a cost of 5 or more in your deck.\n[Activate: Main] [Once Per Turn] You may reveal 2 Events from your hand: Up to 1 of your Characters with 4000 base power or less gains +2000 power during this turn.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-002",
+    "name": "Edward.Newgate",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-003",
+    "name": "Crocus",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Former Roger Pirates"
+    ],
+    "effectText": "[On K.O.] You may reveal 2 Events from your hand: Play up to 1 red Character card with 3000 power or less from your hand.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-004",
+    "name": "Kouzuki Oden",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "Kouzuki Clan",
+      "Roger Pirates"
+    ],
+    "effectText": "[Activate: Main] [Once Per Turn] You may reveal 2 Events from your hand: This Character gains +2000 power during this turn.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-005",
+    "name": "Shiki",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 8,
+    "power": 10000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "FILM",
+      "Golden Lion Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-006",
+    "name": "Shakuyaku",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Amazon Lily"
+    ],
+    "effectText": "[On Play] Look at 5 cards from the top of your deck; reveal up to 1 [Monkey.D.Luffy] or 1 red Event and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-007",
+    "name": "Shanks",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Roger Pirates"
+    ],
+    "effectText": "[On Play] Up to 1 of your Characters with a type including \"Roger Pirates\" other than [Shanks] gains [Rush] during this turn.\n(This card can attack on the turn in which it is played.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-008",
+    "name": "Shanks",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "The Four Emperors",
+      "Red-Haired Pirates"
+    ],
+    "effectText": "[Blocker]\n[On Your Opponent's Attack] [Once Per Turn] You may trash 1 card from your hand: Give up to 1 of your opponent's Leader or Character cards 2000 power during this turn.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-009",
+    "name": "Jinbe",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "The Sun Pirates"
+    ],
+    "effectText": "[On Play] You may reveal 2 Events from your hand: This Character gains [Rush] during this turn. Then, this Character gains +1000 power until the end of your opponent's next End Phase.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-010",
+    "name": "Douglas Bullet",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "FILM",
+      "The Pirates Fest",
+      "Former Roger Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-011",
+    "name": "Duval",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 5,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "The Flying Fish Riders"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-012",
+    "name": "Buggy",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Roger Pirates"
+    ],
+    "effectText": "[On Play] Up to 1 of your Characters with a type including \"Roger Pirates\" other than [Buggy] gains [Blocker] until the end of your opponent's next End Phase.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-013",
+    "name": "Hatchan",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "Former Arlong Pirates"
+    ],
+    "effectText": "[Activate: Main] You may rest this Character and reveal 2 Events from your hand: Give up to 2 rested DON!! cards to your Leader or 1 of your Characters.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-014",
+    "name": "Boa Hancock",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Kuja Pirates",
+      "The Seven Warlords of the Sea"
+    ],
+    "effectText": "[On Play] Look at 5 cards from the top of your deck; reveal up to 1 [Monkey.D.Luffy] or red Event and add it to your hand. Then, place the rest at the bottom of your deck in any order.\n[Activate: Main] You may trash this Character: Give up to 2 rested DON!! cards to your Leader or 1 of your Characters.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-015",
+    "name": "Monkey.D.Luffy",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 4,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Supernovas"
+    ],
+    "effectText": "If you have a total of 2 or more given DON!! cards, this Character gains +2000 power.\n[On Play] You may reveal 2 Events from your hand: Play up to 1 red Character card with 3000 power or less from your hand. Then, give up to 1 rested DON!! card to your Leader or 1 of your Characters.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-016",
+    "name": "To Never Doubt--That Is Power!",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 0,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [],
+    "effectText": "[Main] You may give 2 active DON!! cards to 1 of your [Silvers Rayleigh]: Your opponent cannot activate [Blocker] when the card given these DON!! cards attacks during this turn.\n[Counter] Up to 1 of your Characters or [Silvers Rayleigh] gains +2000 power during this battle.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-017",
+    "name": "Color of Observation Haki",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 0,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [],
+    "effectText": "[Main] You may give 1 active DON!! card to 1 of your [Silvers Rayleigh]: Look at 4 cards from the top of your deck; reveal up to 1 red Event or up to 1 Character card with a cost of 3 or more and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-018",
+    "name": "Color of the Supreme King Haki",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 0,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [],
+    "effectText": "[Counter] Up to 1 of your Characters or [Silvers Rayleigh] gains +2000 power during this battle. Then, you may rest 1 of your DON!! cards. If you do, give your opponent's Leader and all of their Characters 1000 power during this turn.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-019",
+    "name": "Color of Arms Haki",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 0,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [],
+    "effectText": "[Main] You may give 1 active DON!! card to 1 of your [Silvers Rayleigh]: Up to 1 of your Leader or Character cards gains +1000 power during this turn.\n[Counter] Up to 1 of your Characters or [Silvers Rayleigh] gains +2000 power during this battle.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-020",
+    "name": "Roronoa Zoro",
+    "cardType": "Leader",
+    "color": [
+      "Green"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "Straw Hat Crew",
+      "Supernovas"
+    ],
+    "effectText": "[DON!! x3] [Activate: Main] [Once Per Turn] If this Leader battles your opponent's Character during this turn, set this Leader as active. Then, this Leader cannot attack your opponent's Characters with a base cost of 7 or less during this turn.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-021",
+    "name": "Ipponmatsu",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 3,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "If your Leader has the (Slash) attribute and you have 6 or more rested DON!! cards, this Character cannot be rested by your opponent's effects.[Blocker]",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-022",
+    "name": "Inuarashi",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "Minks",
+      "The Akazaya Nine"
+    ],
+    "effectText": "[Activate: Main] You may rest this Character: Up to 1 of your opponent's rested Characters with a cost of 5 or less will not become active in your opponent's next Refresh Phase.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-023",
+    "name": "Kawamatsu",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "Land of Wano",
+      "The Akazaya Nine"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-024",
+    "name": "Gyukimaru",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal",
+      "Land of Wano"
+    ],
+    "effectText": "If this Character is active, this Character cannot be K.O.'d by your opponent's effects.\n[When Attacking] If you have a total of 3 or more given DON!! cards, rest up to 1 of your opponent's Characters with a base cost of 6 or less.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-025",
+    "name": "Kin'emon",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 6,
+    "power": 8000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "The Akazaya Nine"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-026",
+    "name": "Kuina",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 1000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue",
+      "Frost Moon Village"
+    ],
+    "effectText": "[Activate: Main] You may rest this Character: Rest up to 1 of your opponent's Characters with a base cost of 4 or less. Then, give up to 3 rested DON!! cards to your [Roronoa Zoro] Leader.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-027",
+    "name": "Koushirou",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 2,
+    "power": 1000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue",
+      "Frost Moon Village"
+    ],
+    "effectText": "If your (Slash) attribute Character with a cost of 5 or less other than this Character would be K.O.'d by your opponent's effect, you may rest this Character instead.\n[Blocker]",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-028",
+    "name": "Kouzuki Hiyori",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "Kouzuki Clan"
+    ],
+    "effectText": "[Activate: Main] You may rest 1 of your DON!! cards and this Character: If your Leader is [Roronoa Zoro], look at 5 cards from the top of your deck; reveal up to 1 (Slash) attribute card or green Event and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-029",
+    "name": "Shimotsuki Kouzaburou",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 3,
+    "power": 2000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "East Blue",
+      "Frost Moon Village"
+    ],
+    "effectText": "[On Play] Rest up to 1 of your opponent's Characters with a cost of 2 or less. Then, K.O. up to 1 of your opponent's rested Characters with a base cost of 1 or less.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-030",
+    "name": "Dracule Mihawk",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 8,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "The Seven Warlords of the Sea",
+      "Muggy Kingdom"
+    ],
+    "effectText": "[Blocker]\n[On Play] Set up to 4 of your DON!! cards as active. Then, you cannot play Character cards with a base cost of 7 or more during this turn.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-031",
+    "name": "Tashigi",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 5,
+    "power": 7000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Navy",
+      "East Blue"
+    ],
+    "effectText": "[On Play] Rest up to 1 of your opponent's Characters with a base cost of 6 or less. Then, give up to 3 rested DON!! cards to your [Roronoa Zoro] Leader.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-032",
+    "name": "Nekomamushi",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "Minks",
+      "The Akazaya Nine"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-033",
+    "name": "Helmeppo",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Navy",
+      "East Blue"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)\n[On Block] Rest up to 1 of your opponent's Characters with a cost of 5 or less.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-034",
+    "name": "Perona",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Thriller Bark Pirates",
+      "Muggy Kingdom"
+    ],
+    "effectText": "[On Play] If your Leader has the (Slash) attribute, look at 5 cards from the top of your deck; reveal up to 1 (Slash) attribute card or green Event and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-035",
+    "name": "Morgan",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy",
+      "East Blue"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-036",
+    "name": "Roronoa Zoro",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Supernovas"
+    ],
+    "effectText": "This card in your hand cannot be played by effects.\nIf your Leader has the (Slash) attribute, this Character cannot be K.O.'d in battle by (Slash) attribute cards and gains +1000 power.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-037",
+    "name": "Demon Aura Nine Sword Style Asura Blades Drawn Dead Man's Game",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Main] You may rest 3 of your DON!! cards: Rest up to a total of 2 of your opponent's Characters or DON!! cards.\n[Counter] Your Leader gains +3000 power during this battle.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-038",
+    "name": "Two-Sword Style Rashomon",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Main] You may rest 2 of your DON!! cards: K.O. up to 2 of your opponent's rested Characters with a base cost of 4 or less.\n[Counter] Your Leader gains +3000 power during this battle.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-039",
+    "name": "Luffy Is the Man Who Will Become the King of Pirates!!!",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Main] Set your [Roronoa Zoro] Leader as active.",
+    "triggerText": "Up to 1 of your Leader or Character cards gains +1000 power during this turn.",
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-040",
+    "name": "Kuzan",
+    "cardType": "Leader",
+    "color": [
+      "Blue"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 5,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "When a card is trashed from your hand by your \"Navy\" type card's effect, draw cards equal to the number of cards trashed.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-041",
+    "name": "Sanji",
+    "cardType": "Leader",
+    "color": [
+      "Blue",
+      "Purple"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 4,
+    "attribute": [
+      "Straw Hat Crew",
+      "The Vinsmoke Family"
+    ],
+    "effectText": "[Activate: Main] [Once Per Turn] DON!! 1: Activate up to 1 \"Straw Hat Crew\" type Event with a base cost of 3 or less from your hand.\n[When Attacking] If the number of DON!! cards on your field is equal to or less than the number on your opponent's field, add up to 1 DON!! card from your DON!! deck and rest it.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-042",
+    "name": "Alvida",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Cross Guild"
+    ],
+    "effectText": "If you have 2 or more Characters with a base cost of 5 or more, this Character gains +1 cost.\n[On Play] Place up to 1 of your opponent's Characters with a base cost of 1 or less at the bottom of the owner's deck.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-043",
+    "name": "Kuzan",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 6,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "If you have 5 or more cards in your hand, this Character gains +1 cost.\n[On Play] You may trash 1 card from your hand: Up to 1 of your opponent's Characters cannot attack until the end of your opponent's next End Phase.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-044",
+    "name": "Sakazuki",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 7,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[On Play] If your Leader has the \"Navy\" type, draw 2 cards.\n[Activate: Main] [Once Per Turn] You may trash 1 card from your hand: Give up to 1 rested DON!! card to your Leader or 1 of your Characters.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-045",
+    "name": "Jango",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 6,
+    "power": 8000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-046",
+    "name": "Zephyr(Navy)",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 5,
+    "power": 5000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "FILM",
+      "Navy"
+    ],
+    "effectText": "[On Play] Trash 2 cards from your hand.\n[Activate: Main] You may trash this Character: Return up to 1 Character with a cost of 5 or less to the owner's hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-047",
+    "name": "Sengoku",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 3,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[On Play] You may trash 1 card from your hand: Look at 5 cards from the top of your deck; reveal up to 2 \"Navy\" type cards other than [Sengoku] and add them to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-048",
+    "name": "Donquixote Rosinante",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": 1000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[Opponent's Turn] If your blue \"Navy\" type Character would be removed from the field by your opponent's effect, you may rest this Character and trash 1 card from your hand instead.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-049",
+    "name": "Buggy",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "The Four Emperors",
+      "Cross Guild"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-050",
+    "name": "Jaguar.D.Saul",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Giant",
+      "Navy",
+      "Ohara"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-051",
+    "name": "Hina",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 3,
+    "power": 3000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[Activate: Main] You may rest this Character and trash 1 card from your hand: Up to 1 of your opponent's Characters with a base cost of 4 or less cannot activate [Blocker] during this turn.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-052",
+    "name": "Fullbody",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 4,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-053",
+    "name": "Borsalino",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[Once Per Turn] If this Character would be removed from the field by your opponent's effect, you may trash 1 card from your hand instead.\n[Opponent's Turn] If your Leader has the \"Navy\" type, this Character gains [Blocker] and +1000 power.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-054",
+    "name": "Marshall.D.Teach",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Blackbeard Pirates",
+      "The Seven Warlords of the Sea"
+    ],
+    "effectText": "[On Play] If your Leader has the \"The Seven Warlords of the Sea\" type, return up to 1 Character with a cost of 1 or less other than this Character to the owner's hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-055",
+    "name": "Mohji & Cabaji",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Cross Guild"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-056",
+    "name": "Monkey.D.Garp",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 8,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[On Play] You may trash 1 card from your hand: Play up to 1 blue \"Navy\" type Character card with 8000 power or less other than [Monkey.D.Garp] from your hand.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-057",
+    "name": "Ice Block Pheasant Peck",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Navy"
+    ],
+    "effectText": "[Counter] Up to 1 of your Leader or Character cards gains +4000 power during this battle. Then, trash 1 card from your hand.",
+    "triggerText": "You may trash 1 card from your hand: Draw 1 card.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-058",
+    "name": "I Will Make Whitebeard the King of the Pirates",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 9,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[Main] If your Leader's type includes \"Whitebeard Pirates\", reveal 1 card from the top of your deck. If that card is a Character card with a type including \"Whitebeard Pirates\" and a cost of 9 or less, you may play that card. If you do, that Character gains [Rush] during this turn.",
+    "triggerText": "Draw 1 card.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-059",
+    "name": "Concasser",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Sky Island"
+    ],
+    "effectText": "[Main] If your Leader is [Sanji], draw 1 card.\n[Counter] If you have 4 or more Events in your trash, up to 1 of your Leader gains +4000 power during this battle.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-060",
+    "name": "Boeuf Burst",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Main] If your Leader is multicolored, choose one:\n• Return up to 1 of your opponent's Characters with a cost of 4 or less to the owner's hand.\n• If you have 6 or less cards in your hand, draw 2 cards.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-061",
+    "name": "Donquixote Rosinante",
+    "cardType": "Leader",
+    "color": [
+      "Purple",
+      "Yellow"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 4,
+    "attribute": [
+      "Donquixote Pirates",
+      "Navy"
+    ],
+    "effectText": "[Once Per Turn] If your [Trafalgar Law] would be K.O.'d, you may add 1 card from the top of your Life cards to your hand instead.\n[Activate: Main] [Once Per Turn] DON!! 1: The next time you play [Trafalgar Law] with a cost of 4 or more from your hand during this turn, the cost will be reduced by 2.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-062",
+    "name": "Vinsmoke Sora",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 1,
+    "power": 0,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "The Vinsmoke Family",
+      "Kingdom of GERMA"
+    ],
+    "effectText": "[On Play] If your Leader is [Sanji] and the number of DON!! cards on your field is equal to or less than the number on your opponent's field, add up to 1 DON!! card from your DON!! deck and rest it. Then, draw 1 card.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-063",
+    "name": "Vinsmoke Reiju",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "The Vinsmoke Family",
+      "GERMA 66"
+    ],
+    "effectText": "If you have 4 or more Events in your trash, this Character gains +2000 power and +5 cost.\n[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-064",
+    "name": "Vergo",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates",
+      "Navy",
+      "Punk Hazard"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-065",
+    "name": "Emporio.Ivankov",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army",
+      "Impel Down"
+    ],
+    "effectText": "If you have 4 or more Events in your trash, this Character gains [Blocker].\n[On K.O.] Add up to 1 Event from your trash to your hand.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-066",
+    "name": "Carne",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 1,
+    "power": 1000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "If you have 4 or more Events in your trash, this Character gains [Blocker].\n(After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-067",
+    "name": "Carmen",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-068",
+    "name": "Gin",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Krieg Pirates",
+      "East Blue"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-069",
+    "name": "Crocodile",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 6,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Baroque Works",
+      "The Seven Warlords of the Sea"
+    ],
+    "effectText": "[On Your Opponent's Attack] [Once Per Turn] DON!! 1: If your Leader's type includes \"Baroque Works\", up to 1 of your Leader or Character cards gains +2000 power during this battle.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-070",
+    "name": "Sanji",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Alabasta",
+      "Straw Hat Crew"
+    ],
+    "effectText": "This Character gains +1000 power for every 5 Events in your trash.\nIf this Character would be removed from the field by your opponent's effect, you may return 1 DON!! card from your field to your DON!! deck instead.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-071",
+    "name": "Charlotte Pudding",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[On Play] Look at 4 cards from the top of your deck; reveal up to 1 [Sanji] or Event card and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-072",
+    "name": "Zeff",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "When a DON!! card on your field is returned to your DON!! deck, if your Leader is [Sanji], this Character gains [Rush] during this turn.\n(This card can attack on the turn in which it is played.)",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-073",
+    "name": "Trafalgar Law",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 7,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Heart Pirates",
+      "Supernovas",
+      "Dressrosa"
+    ],
+    "effectText": "[On Play] If the number of DON!! cards on your field is equal to or less than the number on your opponent's field, add up to 1 DON!! card from your DON!! deck and set it as active. Then, all of your [Donquixote Rosinante] and \"Heart Pirates\" type Characters gain +1000 power until the end of your opponent's next End Phase.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-074",
+    "name": "Patty",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": 2000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[On Play] You may trash 1 Event from your hand: If your Leader is [Sanji], add up to 1 DON!! card from your DON!! deck and set it as active.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-075",
+    "name": "Ms. All Sunday",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Baroque Works"
+    ],
+    "effectText": "[On Play] K.O. up to 1 of your opponent's Characters with a cost of 3 or less. Then, your opponent may add 1 DON!! card from their DON!! deck and set it as active.",
+    "triggerText": "DON!! 1: Play this card.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-076",
+    "name": "Monet",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates",
+      "Punk Hazard"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-077",
+    "name": "The \"Extinguishes All Sound Created by Your Influence\" Technique",
+    "cardType": "Event",
+    "color": [
+      "Purple"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Heart Pirates"
+    ],
+    "effectText": "[Main] Select up to 1 of your [Trafalgar Law] cards and that card gains +2000 power during this turn. Then, if the selected card attacks during this turn, your opponent cannot activate [Blocker].",
+    "triggerText": "Draw 1 card.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-078",
+    "name": "Brochette Blow",
+    "cardType": "Event",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Main] If the number of DON!! cards on your field is equal to or less than the number on your opponent's field, draw 1 card. Then, give up to 1 of your opponent's Characters 3000 power during this turn.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-079",
+    "name": "Luffy Is the Man Who Will Be King of the Pirates!!!",
+    "cardType": "Event",
+    "color": [
+      "Purple"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Main] If your Leader is [Sanji], look at 3 cards from the top of your deck and add up to 1 card to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-080",
+    "name": "Baratie",
+    "cardType": "Stage",
+    "color": [
+      "Purple"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[Activate: Main] You may place this Stage at the bottom of the owner's deck: If your Leader is [Sanji], look at 3 cards from the top of your deck; reveal up to 1 Event and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": "Play this card.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-081",
+    "name": "Koala",
+    "cardType": "Leader",
+    "color": [
+      "Black",
+      "Yellow"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 4,
+    "attribute": [
+      "Revolutionary Army",
+      "Dressrosa"
+    ],
+    "effectText": "When this Leader attacks your opponent's Leader, if you have 2 or more Characters with a cost of 8 or more, draw 1 card.\n[Once Per Turn] This effect can be activated when your opponent plays a Character with a base cost of 8 or more, or when your opponent plays a Character using a Character's effect. Your opponent adds 1 card from the top of their Life cards to their hand.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-082",
+    "name": "Issho",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 8,
+    "power": 10000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy",
+      "Dressrosa"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-083",
+    "name": "Inazuma",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-084",
+    "name": "Emporio.Ivankov",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)\n[On Play] If your Leader has the \"Revolutionary Army\" type, trash 3 cards from the top of your deck.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-085",
+    "name": "Karasu",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army"
+    ],
+    "effectText": "If your Leader has the \"Revolutionary Army\" type, this Character gains +3 cost.\n[When Attacking] If your Leader has the \"Revolutionary Army\" type and your opponent has 5 or more cards in their hand, your opponent trashes 1 card from their hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-086",
+    "name": "Koala",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army",
+      "Dressrosa"
+    ],
+    "effectText": "[On Play] If your Leader has the \"Revolutionary Army\" type, look at 3 cards from the top of your deck; reveal up to 1 \"Revolutionary Army\" type card other than [Koala] or up to 1 [Nico Robin] and add it to your hand. Then, trash the rest.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-087",
+    "name": "Nico Robin",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "If your Leader is [Koala] or [Monkey.D.Luffy], this Character gains [Blocker] and +3 cost.\n[On Play] You may trash 1 card from your hand: If your opponent has 5 or more cards in their hand, your opponent trashes 2 cards from their hand.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-088",
+    "name": "Bastille",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 6,
+    "power": 8000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy",
+      "Dressrosa"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-089",
+    "name": "Hack",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Fish-Man",
+      "Revolutionary Army",
+      "Dressrosa"
+    ],
+    "effectText": "If your Leader has the \"Revolutionary Army\" type, this Character gains [Blocker] and +4 cost.\n[On K.O.] If your Leader has the \"Revolutionary Army\" type, K.O. up to 1 of your opponent's Characters with a base cost of 4 or less.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-090",
+    "name": "Belo Betty",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army"
+    ],
+    "effectText": "[When Attacking] You may trash 2 cards from the top of your deck: Give up to 1 of your opponent's Characters 2 cost during this turn.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-091",
+    "name": "Poker",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal Kingdom Pirates",
+      "SMILE"
+    ],
+    "effectText": "[Activate: Main] [Once Per Turn] You may place 3 cards from your trash at the bottom of your deck in any order: Up to 2 of your \"SMILE\" type Characters gain +2000 power during this turn.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-092",
+    "name": "Mizerka",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Animal Kingdom Pirates",
+      "SMILE"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-093",
+    "name": "Morley",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Giant",
+      "Revolutionary Army"
+    ],
+    "effectText": "If your Leader has the \"Revolutionary Army\" type, this Character gains +4 cost.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-094",
+    "name": "Monkey.D.Dragon",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 8,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army"
+    ],
+    "effectText": "[On Play] You may place 3 \"Revolutionary Army\" type cards from your trash at the bottom of your deck in any order: If your Leader has the \"Revolutionary Army\" type, play up to 1 Character card with a cost of 6 or less from your trash.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-095",
+    "name": "Lindbergh",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Minks",
+      "Revolutionary Army"
+    ],
+    "effectText": "If your Leader has the \"Revolutionary Army\" type, this Character gains +4 cost.\n[On Play] Draw 1 card and trash 1 card from your hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-096",
+    "name": "Ursa Shock",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army",
+      "The Seven Warlords of the Sea"
+    ],
+    "effectText": "[Main] K.O. up to 1 of your opponent's Characters with a cost of 4 or less. If you have a Character with a cost of 8 or more, you may select your opponent's Character with a cost of 6 or less instead.",
+    "triggerText": "Draw 1 card and trash 1 card from the top of your deck.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-097",
+    "name": "Captains Assembled",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army"
+    ],
+    "effectText": "[Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Revolutionary Army\" type card other than [Captains Assembled] and add it to your hand. Then, trash the rest.",
+    "triggerText": "Activate this card's [Main] effect.",
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-098",
+    "name": "Hair Removal Fist",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army",
+      "Impel Down"
+    ],
+    "effectText": "[Counter] Up to 1 of your Leader or Character cards gains +2000 power during this battle. Then, if you have a \"Revolutionary Army\" type Character with a cost of 8 or more, that card gains an additional +2000 power during this battle.",
+    "triggerText": "Draw 1 card and trash 1 card from the top of your deck.",
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-099",
+    "name": "Kalgara",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Sky Island",
+      "Shandian Warrior",
+      "Jaya"
+    ],
+    "effectText": "[Your Turn] When a card is removed from your or your opponent's Life cards, draw 1 card. Then, you cannot draw cards using your own effects during this turn.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-100",
+    "name": "Sabo",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army",
+      "Dressrosa"
+    ],
+    "effectText": "If you have 3 or less Life cards, this Character gains [Blocker] and +3 cost.\n[On Play] You may add 1 card from the top of your Life cards to your hand: Draw 2 cards and trash 1 card from your hand.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-101",
+    "name": "Jewelry Bonney",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 1000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Bonney Pirates",
+      "Supernovas"
+    ],
+    "effectText": "[Activate: Main] You may rest this Character: Your \"Supernovas\" type Leader gains +1000 power until the end of your opponent's next turn.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-102",
+    "name": "Shirahoshi",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Merfolk",
+      "Fish-Man Island"
+    ],
+    "effectText": "If your Character with a base cost of 6 or less would be removed from the field by your opponent's effect, you may turn 1 card from the top of your Life cards face-up instead.[Opponent's Turn] If you have no other [Shirahoshi] with a base cost of 2, all of your \"Neptunian\" type Characters gain +2000 power.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-103",
+    "name": "Seto",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Sky Island",
+      "Shandian Warrior",
+      "Jaya"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-104",
+    "name": "Sentomaru",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Navy",
+      "Egghead"
+    ],
+    "effectText": "",
+    "triggerText": "K.O. up to 1 of your opponent's Characters with a cost of 4 or less.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-105",
+    "name": "Trafalgar Lammy",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 1,
+    "power": 0,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Flevance"
+    ],
+    "effectText": "[Your Turn] [On Play] Up to 1 of your [Trafalgar Law] cards gains +2000 power during this turn.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-106",
+    "name": "Trafalgar Law",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Heart Pirates",
+      "Supernovas",
+      "Dressrosa"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-107",
+    "name": "Donquixote Doflamingo",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 8,
+    "power": 8000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates",
+      "The Seven Warlords of the Sea"
+    ],
+    "effectText": "If you have 2 or less Life cards, this Character gains [Rush].\n(This card can attack on the turn in which it is played.)\n[Opponent's Turn] [On K.O.] Add up to 1 card from the top of your deck to the top of your Life cards.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-108",
+    "name": "Donquixote Rosinante",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates",
+      "Navy"
+    ],
+    "effectText": "[On Play] Look at 5 cards from the top of your deck; reveal up to 1 [Trafalgar Law] and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-109",
+    "name": "Pacifista",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Biological Weapon",
+      "Navy",
+      "Egghead"
+    ],
+    "effectText": "",
+    "triggerText": "K.O. up to 1 of your opponent's Characters with a cost of 1 or less and add this card to your hand.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-110",
+    "name": "Buffalo",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-111",
+    "name": "Baby 5",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-112",
+    "name": "Baby 5",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates"
+    ],
+    "effectText": "",
+    "triggerText": "If your Leader is multicolored, draw 2 cards.",
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-113",
+    "name": "Roronoa Zoro",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Supernovas"
+    ],
+    "effectText": "[On K.O.] If your Leader has the \"Supernovas\" type, play up to 1 \"Supernovas\" type Character card with a cost of 4 or less from your hand rested.",
+    "triggerText": "K.O. up to 1 of your opponent's Characters with a cost of 1 or less and add this card to your hand.",
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-114",
+    "name": "Wyper",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Sky Island",
+      "Shandian Warrior"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-115",
+    "name": "I Love You!!",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates",
+      "Navy"
+    ],
+    "effectText": "[Counter] Up to 1 of your Leader or Character cards gains +2000 power during this battle. Then, if you have 2 or less Life cards, add up to 1 [Trafalgar Law] from your trash to your hand.",
+    "triggerText": null,
+    "rarity": "UC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-116",
+    "name": "We'll Ring the Bell Waiting for You!!",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Sky Island",
+      "Shandian Warrior",
+      "Jaya"
+    ],
+    "effectText": "[Main] Look at 5 cards from the top of your deck; reveal a total of up to 2 \"Shandian Warrior\" type Character cards or [Mont Blanc Noland] and add them to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": "Draw 1 card.",
+    "rarity": "C",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-117",
+    "name": "Slam Gibson",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Kid Pirates",
+      "Supernovas"
+    ],
+    "effectText": "[Main] You may rest 5 of your DON!! cards: If your Leader has the \"Supernovas\" type, add up to 1 Character with a cost of 9 or less to the top or bottom of the owner's Life cards face-down.\n[Counter] Your Leader gains +3000 power during this battle.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-118",
+    "name": "Jewelry Bonney",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Bonney Pirates",
+      "Supernovas"
+    ],
+    "effectText": "[Blocker]\n[On Play] If you have 8 or more rested cards, draw 2 cards and trash 1 card from your hand. Then, set up to 1 of your DON!! cards as active.",
+    "triggerText": null,
+    "rarity": "SEC",
+    "set": "OP12",
+    "imageUrl": ""
+  },
+  {
+    "id": "OP12-119",
+    "name": "Bartholomew Kuma",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army",
+      "The Seven Warlords of the Sea"
+    ],
+    "effectText": "[On Play] You may trash 1 card from your hand: Add up to 1 card from the top of your deck to the top of your Life cards. Then, this Character gains +2 cost until the end of your opponent's next End Phase.\n[Opponent's Turn] [On K.O.] Add up to 1 card from the top of your deck to the top of your Life cards.",
+    "triggerText": null,
+    "rarity": "SEC",
+    "set": "OP12",
+    "imageUrl": ""
+  }
+]

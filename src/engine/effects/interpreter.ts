@@ -97,6 +97,13 @@ export function emitEngineEvent(state: GameState, ev: EngineEvent): GameState {
         const expected = def.on.who === 'self' ? pid : getOpponent(pid)
         if (ev.player !== expected) continue
         if (def.on.fromHand && !ev.fromHand) continue
+        if (def.on.fromHand === false && ev.fromHand) continue
+        if (
+          def.on.minCost !== undefined &&
+          (!ev.cardId || (getCardById(ev.cardId)?.cost ?? 0) < def.on.minCost)
+        ) {
+          continue
+        }
         if (def.on.noBaseEffect && (!ev.cardId || getCardById(ev.cardId)?.effectText)) continue
         if (def.on.sourceIsSelf && ev.sourceInstanceId !== card.instanceId) continue
         if (!defMatches(s, pid, card, 'onEvent', i)) continue
@@ -250,10 +257,11 @@ function executeOp(
   const refs = (name: string) => frame.bindings[name] ?? []
 
   switch (op.op) {
-    case 'draw':
-      return advance(
-        drawCards(state, op.who === 'opponent' ? getOpponent(controller) : controller, op.count, events),
-      )
+    case 'draw': {
+      const drawer = op.who === 'opponent' ? getOpponent(controller) : controller
+      if (state.turnFlags[drawer]?.includes('noEffectDraw')) return advance(state)
+      return advance(drawCards(state, drawer, op.count, events))
+    }
 
     case 'select': {
       if (op.bind in frame.bindings) return advance(state)
@@ -750,6 +758,33 @@ function executeOp(
       return known ? advance(s) : advance(s, true)
     }
 
+    case 'activateEventFromHand': {
+      let s = state
+      for (const id of refs(op.ref)) {
+        const p = s.players[controller]
+        const idx = p.hand.findIndex((c) => c.instanceId === id)
+        if (idx < 0) continue
+        if (getCardById(p.hand[idx].cardId)?.cardType !== 'Event') continue
+        const hand = [...p.hand]
+        const [card] = hand.splice(idx, 1)
+        s = {
+          ...s,
+          players: {
+            ...s.players,
+            [controller]: { ...p, hand, trash: [...p.trash, card] },
+          },
+        }
+        events.push({
+          type: 'PLAY_CARD',
+          playerId: controller,
+          description: `${getCardById(card.cardId)?.name ?? 'Event'} activated by effect`,
+        })
+        s = emitEngineEvent(s, { kind: 'eventActivated', player: controller })
+        s = queueEffects(s, card, 'main', controller)
+      }
+      return advance(s)
+    }
+
     case 'koSelfNoReplace': {
       const card = findFieldCard(state, frame.sourceInstanceId)
       if (!card) return advance(state)
@@ -985,7 +1020,8 @@ function executeOp(
         sourceCardId: frame.sourceCardId,
       }
       if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
-      const p = state.players[controller]
+      const who = op.who === 'opponent' ? getOpponent(controller) : controller
+      const p = state.players[who]
       const targets = [
         ...(op.includeLeader ? [p.leader.instanceId] : []),
         ...p.characters.map((c) => c.instanceId),
@@ -998,26 +1034,28 @@ function executeOp(
     }
 
     case 'drawTo': {
+      if (state.turnFlags[controller]?.includes('noEffectDraw')) return advance(state)
       const deficit = op.count - state.players[controller].hand.length
       return advance(deficit > 0 ? drawCards(state, controller, deficit, events) : state)
     }
 
     case 'lifeTopToHand': {
-      if (state.turnFlags[controller]?.includes('noLifeToHand')) return advance(state)
+      const who = op.who === 'opponent' ? getOpponent(controller) : controller
+      if (state.turnFlags[who]?.includes('noLifeToHand')) return advance(state)
       let s = state
       for (let i = 0; i < op.count; i++) {
-        const p = s.players[controller]
+        const p = s.players[who]
         if (p.lifeCards.length === 0) break
         const [top, ...rest] = p.lifeCards
         s = {
           ...s,
           players: {
             ...s.players,
-            [controller]: { ...p, lifeCards: rest, hand: [...p.hand, { ...top, revealed: false }] },
+            [who]: { ...p, lifeCards: rest, hand: [...p.hand, { ...top, revealed: false }] },
           },
         }
-        s = emitEngineEvent(s, { kind: 'lifeAddedToHand', player: controller })
-        s = emitEngineEvent(s, { kind: 'lifeRemoved', player: controller })
+        s = emitEngineEvent(s, { kind: 'lifeAddedToHand', player: who })
+        s = emitEngineEvent(s, { kind: 'lifeRemoved', player: who })
       }
       return advance(s)
     }
@@ -1061,6 +1099,7 @@ function executeOp(
         cardType: op.cardType,
         typeIncludes: op.typeIncludes,
         minCost: op.minCost,
+        nameIs: op.nameIs,
       }
       return advance({
         ...state,
@@ -1162,10 +1201,15 @@ function executeOp(
 
     case 'trashCards': {
       let s = state
-      for (const id of refs(op.ref)) s = handToTrash(s, id)
+      for (const id of refs(op.ref)) {
+        const inOwnHand = s.players[controller].hand.some((c) => c.instanceId === id)
+        s = handToTrash(s, id)
+        // "a card was trashed from your hand by your effect" listeners (Kuzan
+        // leader); cost trashes are not distinguished from effect trashes
+        if (inOwnHand) s = emitEngineEvent(s, { kind: 'handTrashed', player: controller })
+      }
       return advance(s)
     }
-
     case 'lifeToHand': {
       if (state.turnFlags[controller]?.includes('noLifeToHand')) return advance(state)
       let s = state
@@ -1347,12 +1391,23 @@ function executeOp(
       let s = state
       for (const id of frame.bindings[bind]) {
         s = playCardFree(s, controller, id, op.rested ?? false, events)
+        if (op.keyword && findFieldCard(s, id)) {
+          const modifier: Modifier = {
+            kind: 'keyword',
+            value: 0,
+            keyword: op.keyword,
+            duration: 'turn',
+            sourceCardId: frame.sourceCardId,
+          }
+          s = updateFieldCard(s, id, (c) => ({ ...c, modifiers: [...c.modifiers, modifier] }))
+        }
       }
       return advance(s)
     }
 
     case 'addDon': {
-      const p = state.players[controller]
+      const who = op.who === 'opponent' ? getOpponent(controller) : controller
+      const p = state.players[who]
       const take = Math.min(op.count, p.donDeck.length)
       const donDeck = [...p.donDeck]
       const moved = donDeck.splice(0, take).map((d) => ({ ...d, isRested: op.rested }))
@@ -1360,7 +1415,7 @@ function executeOp(
         ...state,
         players: {
           ...state.players,
-          [controller]: { ...p, donDeck, donArea: [...p.donArea, ...moved] },
+          [who]: { ...p, donDeck, donArea: [...p.donArea, ...moved] },
         },
       })
     }
@@ -1374,7 +1429,7 @@ function executeOp(
         const donArea = [...p.donArea]
         let moved = 0
         for (let i = donArea.length - 1; i >= 0 && moved < op.upTo; i--) {
-          if (donArea[i].isRested) {
+          if (op.fromActive ? !donArea[i].isRested : donArea[i].isRested) {
             donArea.splice(i, 1)
             moved++
           }
@@ -1662,6 +1717,7 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
   if (filter.nameIs && !cardHasName(cardId, filter.nameIs)) return false
   if (filter.nameNot && cardHasName(cardId, filter.nameNot)) return false
   if (filter.hasTrigger && !data.triggerText) return false
+  if (filter.attributeIs && getBattleAttribute(cardId) !== filter.attributeIs) return false
   return true
 }
 
@@ -1901,6 +1957,7 @@ function guardTargetMatches(state: GameState, card: GameCard, g: SelectFilter): 
   ) {
     return false
   }
+  if (g.attributeIs && getBattleAttribute(card.cardId) !== g.attributeIs) return false
   if (g.colorIncludes && !(getCardById(card.cardId)?.color ?? []).some((c) => c === g.colorIncludes)) {
     return false
   }
@@ -2047,6 +2104,7 @@ function playCardFree(
     const [raw] = source.splice(idx, 1)
     const cardType = getCardById(raw.cardId)?.cardType
     if (cardType !== 'Character' && cardType !== 'Stage') return state
+    if (getCardRules(raw.cardId)?.notPlayableByEffects) return state
     const played: GameCard = {
       ...raw,
       // Lim (OP09-022): this player's Character cards always enter rested

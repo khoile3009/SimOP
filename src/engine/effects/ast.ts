@@ -55,6 +55,9 @@ export type EngineEventKind =
   | 'triggerActivated'
   /** A [Blocker] was activated; `player` is the blocker's owner */
   | 'blockerActivated'
+  /** A card went from a player's hand to the trash via an effect op; emitted
+   * once per card; `player` is the hand's owner (Kuzan leader) */
+  | 'handTrashed'
   /** A player's life count reached 0 (Enel) */
   | 'lifeZero'
   /** A card left a player's Life area (damage or effects); `player` is the life's owner */
@@ -68,6 +71,8 @@ export interface EventQuery {
   noBaseEffect?: boolean
   /** characterPlayed only: the card was played from its owner's hand */
   fromHand?: boolean
+  /** characterPlayed only: the played card's printed cost is at least this */
+  minCost?: number
   /** lifeDamageDealt: the damage came from THIS card's attack.
    * attacked: THIS card is the attack's target. */
   sourceIsSelf?: boolean
@@ -201,6 +206,14 @@ export interface Cond {
   leaderColorIncludes?: string
   /** Both players' life counts combined are at least this (Red Hawk) */
   minTotalLife?: number
+  /** At least `count` of your characters have effective cost >= `cost` (Koala leader) */
+  minSelfCharsCostAtLeast?: { cost: number; count: number }
+  /** Your leader's battle attribute (Zoro's Slash support) */
+  leaderAttributeIs?: string
+  /** Total DON!! given to your leader and characters (Gyukimaru) */
+  minSelfGivenDon?: number
+  /** At least this many Event cards in your trash (OP12 purple Sanji) */
+  minTrashEventsSelf?: number
   /** The OPPONENT has a character with this effective cost or less (Baskerville) */
   oppCharCostAtMost?: number
 }
@@ -288,6 +301,8 @@ export interface CardDataFilter {
   orTypeIncludes?: string
   /** The card has a [Trigger] */
   hasTrigger?: boolean
+  /** The card's battle attribute (Slash searches) */
+  attributeIs?: string
 }
 
 export type FlagName =
@@ -320,6 +335,8 @@ export type FlagName =
   | 'noRest' // cannot be rested by effect ops (Hatchan's lock, GERMA Yonji)
   | 'bottomDeckAtTurnEnd' // this card goes to the owner's deck bottom when the turn ends
   | 'setActiveAtTurnEnd' // this card is set active when the turn ends (Topknot Neptunian)
+  | 'activeAfterCharBattle' // on an attacker: sets active after battling a CHARACTER (Zoro leader)
+  | 'noAttackCharsCostAtMost' // cannot attack characters with cost <= value (Zoro leader rider)
 
 export type EffectOp =
   | { op: 'draw'; count: number; who?: 'self' | 'opponent' }
@@ -459,12 +476,12 @@ export type EffectOp =
   /** Same, but filtered by printed data instead of a name (Oden's [On K.O.]) */
   | { op: 'searchDeck'; filter: CardDataFilter; upTo: number; to: 'hand' | 'play' }
   /** Reveal top card; if it matches, may play it; otherwise it stays on top */
-  | { op: 'revealTopMayPlay'; filter: CardDataFilter; rested?: boolean }
+  | { op: 'revealTopMayPlay'; filter: CardDataFilter; rested?: boolean; keyword?: string }
   /** Reveal the TOP LIFE card; if it matches, play it (Law leader) */
   | { op: 'revealLifeTopMayPlay'; filter: CardDataFilter }
-  | { op: 'addDon'; count: number; rested: boolean } // from DON!! deck to cost area
+  | { op: 'addDon'; count: number; rested: boolean; who?: 'self' | 'opponent' } // from DON!! deck to cost area
   /** Rested cost-area DON onto the source card, or onto a bound card via toRef */
-  | { op: 'giveRestedDon'; upTo: number; toRef?: string }
+  | { op: 'giveRestedDon'; upTo: number; toRef?: string; fromActive?: boolean }
   /** Move DON already given to your other cards onto the bound card (Dragon) */
   | { op: 'moveAttachedDon'; upTo: number; toRef: string }
   /** Set a bound card's power to a fixed value via a delta modifier (Ain) */
@@ -490,15 +507,17 @@ export type EffectOp =
   /** Field-cost delta on bound cards (Black's -N cost effects) */
   | { op: 'costMod'; ref: string; amount: number; duration: ModifierDuration; untilTurnOffset?: number }
   /** Power delta on the controller's whole field at once (Uta) */
-  | { op: 'powerModAll'; amount: number; duration: ModifierDuration; includeLeader?: boolean }
+  | { op: 'powerModAll'; amount: number; duration: ModifierDuration; includeLeader?: boolean; who?: 'self' | 'opponent' }
   /** Draw until the controller's hand holds `count` cards (never discards) */
   | { op: 'drawTo'; count: number }
   /** The controller's TOP life card(s) to hand, no choice (Whitebeard, Squard) */
-  | { op: 'lifeTopToHand'; count: number }
+  | { op: 'lifeTopToHand'; count: number; who?: 'self' | 'opponent' }
+  /** Activate a bound EVENT card from the controller's hand for free (Sanji leader) */
+  | { op: 'activateEventFromHand'; ref: string }
   /** The opponent returns DON from their cost area to their DON!! deck (rested first) */
   | { op: 'oppReturnDon'; count: number }
   /** Turn-scoped restriction on the controller (cleared at end of turn) */
-  | { op: 'restrictSelf'; restriction: 'noLifeToHand' | 'noLeaderAttack' | 'donEqualize' }
+  | { op: 'restrictSelf'; restriction: 'noLifeToHand' | 'noLeaderAttack' | 'donEqualize' | 'noEffectDraw' | 'noPlayCharCost7Plus' }
   /** One-shot play-cost discount for the controller this turn (Kin'emon) */
   | {
       op: 'grantPlayDiscount'
@@ -506,6 +525,7 @@ export type EffectOp =
       cardType?: 'Character' | 'Event' | 'Stage'
       typeIncludes?: string
       minCost?: number
+      nameIs?: string
     }
   /** Skip the rest of the effect unless every bound card has this printed type */
   | { op: 'requireRefIs'; ref: string; cardType: 'Character' | 'Event' | 'Stage' }
@@ -559,7 +579,7 @@ export interface StaticDef {
   }
   power?: number
   /** Scaling auras: value per matching count, added to `power` */
-  powerPer?: { handCards?: boolean; trashEventsPer2?: boolean; trashPer5?: boolean; trashPerN?: number; amount: number }
+  powerPer?: { handCards?: boolean; trashEventsPer2?: boolean; trashEventsPerN?: number; trashPer5?: boolean; trashPerN?: number; amount: number }
   keyword?: string
   flag?: FlagName
   flagValue?: number

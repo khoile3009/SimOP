@@ -385,6 +385,10 @@ export function evalCond(
     const given = me.leader.attachedDon + me.characters.reduce((n, c) => n + c.attachedDon, 0)
     if (given < cond.minSelfGivenDon) return false
   }
+  if (cond.minTrashEventsSelf !== undefined) {
+    const n = me.trash.filter((c) => getCardById(c.cardId)?.cardType === 'Event').length
+    if (n < cond.minTrashEventsSelf) return false
+  }
   return true
 }
 
@@ -417,6 +421,7 @@ export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
   'charDisadvantageAtLeast', 'atMostLifeOfOpp', 'minSelfRestedCharsTyped',
   'allSelfCharsTypeContains', 'leaderColorIncludes', 'minTotalLife',
   'minSelfCharsCostAtLeast', 'leaderAttributeIs', 'minSelfGivenDon',
+  'minTrashEventsSelf',
 ])
 
 interface AuraGrant {
@@ -634,11 +639,12 @@ export function getEffectiveCost(state: GameState, playerId: PlayerId, card: Gam
 
 export function discountMatches(
   card: GameCard,
-  d: { amount: number; cardType?: string; typeIncludes?: string; minCost?: number },
+  d: { amount: number; cardType?: string; typeIncludes?: string; minCost?: number; nameIs?: string },
 ): boolean {
   const data = getCardById(card.cardId)
   if (d.cardType && data?.cardType !== d.cardType) return false
   if (d.typeIncludes && !cardTypes(card.cardId).includes(d.typeIncludes)) return false
   if (d.minCost !== undefined && (data?.cost ?? 0) < d.minCost) return false
+  if (d.nameIs && !cardHasName(card.cardId, d.nameIs)) return false
   return true
 }

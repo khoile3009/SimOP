@@ -2,7 +2,7 @@ import type { Deck } from '@/engine/types'
 import { getCardsBySet, getLeaders, getCardById, getAllCards } from '@/data/cardService'
 import { getEffectDefs, getStatics } from '@/engine/effects/registry'
 import { DECK_SIZE, MAX_CARD_COPIES } from '@/engine/constants'
-import { cardHasName } from '@/engine/rulesLayer'
+import { cardHasName, getCardRules } from '@/engine/rulesLayer'
 
 /**
  * Coverage decks: partition a set's card pool into legal decks such that every
@@ -23,6 +23,12 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
   const pool = getCardsBySet(set).filter(
     (c) => c.cardType === 'Character' || c.cardType === 'Event' || c.cardType === 'Stage',
   )
+  // Leaders with a deck-building cost rule (OP12 Rayleigh) refuse cards the
+  // rule excludes, both at assignment time and when padding
+  const fitsLeaderRules = (leaderId: string, card: { cost: number }) => {
+    const limit = getCardRules(leaderId)?.deckCostLimitBelow
+    return limit === undefined || card.cost < limit
+  }
 
   // Anchor on one leader per color the set actually has, then add any extra
   // leader some card's condition specifically needs (by name or type)
@@ -69,13 +75,16 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
   for (const l of anchorList) assignments.set(l.id, [])
 
   for (const card of pool) {
-    let home = anchorList.find((l) => card.color.some((c) => l.color.includes(c)))
+    let home = anchorList.find(
+      (l) => card.color.some((c) => l.color.includes(c)) && fitsLeaderRules(l.id, card),
+    )
     for (const def of getEffectDefs(card.id)) {
       const cond = def.condition
       if (!cond?.leaderNameIs && !cond?.leaderTypeIncludes) continue
       const provider = anchorList.find(
         (l) =>
           card.color.some((c) => l.color.includes(c)) &&
+          fitsLeaderRules(l.id, card) &&
           (!cond.leaderNameIs || cardHasName(l.id, cond.leaderNameIs)) &&
           (!cond.leaderTypeIncludes || l.attribute.includes(cond.leaderTypeIncludes)),
       )
@@ -135,6 +144,7 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
         if (eventIds >= 2 || total >= DECK_SIZE) break
         if (filler.cardType !== 'Event') continue
         if (!filler.color.some((c) => leader.color.includes(c))) continue
+        if (!fitsLeaderRules(leader.id, filler)) continue
         if (cards.some((c) => c.cardId === filler.id)) continue
         const qty = Math.min(MAX_CARD_COPIES, DECK_SIZE - total)
         cards.push({ cardId: filler.id, qty })
@@ -146,6 +156,7 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
         if (total >= DECK_SIZE) break
         if (!filler.color.some((c) => leader.color.includes(c))) continue
         if (cards.some((c) => c.cardId === filler.id)) continue
+        if (!fitsLeaderRules(leader.id, filler)) continue
         const qty = Math.min(MAX_CARD_COPIES, DECK_SIZE - total)
         cards.push({ cardId: filler.id, qty })
         total += qty
