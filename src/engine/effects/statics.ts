@@ -52,7 +52,49 @@ export function evalCond(
     return false
   }
   if (cond.maxDeckSelf !== undefined && me.deck.length > cond.maxDeckSelf) return false
+  if (cond.minTrashSelf !== undefined && me.trash.length < cond.minTrashSelf) return false
+  if (cond.maxTrashSelf !== undefined && me.trash.length > cond.maxTrashSelf) return false
+  if (
+    cond.minActiveDonSelf !== undefined &&
+    me.donArea.filter((d) => !d.isRested).length < cond.minActiveDonSelf
+  ) {
+    return false
+  }
+  if (
+    cond.maxLifePlusHandSelf !== undefined &&
+    me.lifeCards.length + me.hand.length > cond.maxLifePlusHandSelf
+  ) {
+    return false
+  }
+  if (
+    cond.minSelfCharCost !== undefined &&
+    !me.characters.some((c) => getEffectiveFieldCost(state, c) >= cond.minSelfCharCost!)
+  ) {
+    return false
+  }
+  if (
+    cond.lacksSelfCharCost !== undefined &&
+    me.characters.some((c) => getEffectiveFieldCost(state, c) >= cond.lacksSelfCharCost!)
+  ) {
+    return false
+  }
+  if (
+    cond.maxTotalLife !== undefined &&
+    me.lifeCards.length + opp.lifeCards.length > cond.maxTotalLife
+  ) {
+    return false
+  }
   if (cond.lessLifeThanOpp && me.lifeCards.length >= opp.lifeCards.length) return false
+  if (cond.leaderActive && me.leader.isRested) return false
+  if (
+    cond.hasOtherCharacterNamed &&
+    !me.characters.some(
+      (c) =>
+        c.instanceId !== source?.instanceId && cardHasName(c.cardId, cond.hasOtherCharacterNamed!),
+    )
+  ) {
+    return false
+  }
   if (cond.minLifeOpp !== undefined && opp.lifeCards.length < cond.minLifeOpp) return false
   if (cond.minHandOpp !== undefined && opp.hand.length < cond.minHandOpp) return false
   if (cond.maxSelfCharacters !== undefined && me.characters.length > cond.maxSelfCharacters) {
@@ -139,6 +181,11 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
         if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) continue
         if (t.nameIs && !cardHasName(card.cardId, t.nameIs)) continue
         if (t.nameNot && cardHasName(card.cardId, t.nameNot)) continue
+        if (t.colorIncludes && !(getCardById(card.cardId)?.color ?? []).some((col) => col === t.colorIncludes)) continue
+        if (t.cardType && getCardById(card.cardId)?.cardType !== t.cardType) continue
+        if (t.costAtLeast !== undefined && (getCardById(card.cardId)?.cost ?? 0) < t.costAtLeast) continue
+        if (t.costIs !== undefined && (getCardById(card.cardId)?.cost ?? 0) !== t.costIs) continue
+        if (t.activeOnly && card.isRested) continue
 
         let power = def.power ?? 0
         if (def.powerPer) {

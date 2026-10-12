@@ -34,6 +34,14 @@ interface ApiRow {
  * names here as sets introduce them - the report flags any string that fails
  * to segment. */
 const SEED_TYPES = [
+  'Yonta Maria Fleet',
+  'New Giant Pirate Crew',
+  'The Tontattas',
+  'Firetank Pirates',
+  'Dressrosa',
+  'Donquixote Pirates',
+  'Corrida Coliseum',
+  'The Revolutionary Army',
   'Black Cat Pirates',
   'Alvida Pirates',
   'The Franky Family',

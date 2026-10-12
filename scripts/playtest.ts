@@ -7,13 +7,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { runPlaytest } from '@/sim/playtest'
 import { buildCoverageDecks } from '@/sim/decks'
+import { SET_MODULES } from '@/data/sets'
 
 const games = Number(process.argv[2] ?? 400)
-const decks = [
-  ...buildCoverageDecks('OP01'),
-  ...buildCoverageDecks('OP02'),
-  ...buildCoverageDecks('OP03'),
-]
+const decks = SET_MODULES.flatMap((s) => buildCoverageDecks(s.code))
 console.log(
   `Playtest fleet: ${games} games (matchups gr/rg/gg/rr, seeded) across ${decks.length} coverage decks:`,
 )

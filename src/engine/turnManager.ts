@@ -1,6 +1,7 @@
 import type { GameState, GameCard, Modifier, PlayerId } from './types'
 import { DON_PER_TURN, DON_FIRST_TURN } from './constants'
 import { deckOutWinner } from './rulesLayer'
+import { hasFlag } from './effects/statics'
 import { createGameCard } from './gameSetup'
 
 function stripModifiers(card: GameCard, keep: (m: Modifier) => boolean): GameCard {
@@ -66,8 +67,17 @@ export function executeRefresh(state: GameState): GameState {
       ...expired.players,
       [playerId]: {
         ...player,
-        leader: { ...player.leader, isRested: false, attachedDon: 0 },
-        characters: player.characters.map((c) => ({ ...c, isRested: false, attachedDon: 0 })),
+        leader: {
+          ...player.leader,
+          isRested: hasFlag(expired, player.leader, 'noRefresh') ? player.leader.isRested : false,
+          attachedDon: 0,
+        },
+        // 'noRefresh' (Doflamingo): flagged cards stay rested through this Refresh
+        characters: player.characters.map((c) => ({
+          ...c,
+          isRested: hasFlag(expired, c, 'noRefresh') ? c.isRested : false,
+          attachedDon: 0,
+        })),
         donArea: [...player.donArea, ...returned].map((d) => ({ ...d, isRested: false })),
         stage: player.stage ? { ...player.stage, isRested: false } : null,
       },

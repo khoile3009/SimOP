@@ -162,9 +162,13 @@ function validateDeclareAttack(
   if (!attacker) return { valid: false, reason: 'Attacker not found' }
   if (attacker.isRested) return { valid: false, reason: 'Attacker is rested' }
 
-  // Characters can't attack the turn they're played (unless Rush)
+  // Characters can't attack the turn they're played (unless Rush, or a
+  // characters-only rush grant when the target is not a Leader)
   if (attackerChar && attackerChar.turnPlayed === state.turnNumber) {
-    if (!hasKeyword(state, attackerChar, 'Rush')) {
+    const oppLeaderId = state.players[getOpponent(playerId)].leader.instanceId
+    const charRush =
+      hasFlag(state, attackerChar, 'rushCharactersOnly') && targetId !== oppLeaderId
+    if (!hasKeyword(state, attackerChar, 'Rush') && !charRush) {
       return { valid: false, reason: 'Character cannot attack the turn it was played' }
     }
     // Rush with a leader carve-out (Curiel)

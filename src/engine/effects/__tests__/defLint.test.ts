@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { CardData } from '@/engine/types'
-import type { Cond, EffectDef, SelectFilter, StaticDef } from '../ast'
-import { OP01_EFFECTS, OP01_STATICS, KEYWORD_ONLY } from '@/data/op01/effects'
-import { OP02_EFFECTS, OP02_STATICS, KEYWORD_ONLY_OP02 } from '@/data/op02/effects'
-import { OP03_EFFECTS, OP03_STATICS, KEYWORD_ONLY_OP03 } from '@/data/op03/effects'
+import type { Cond, SelectFilter } from '../ast'
+import { SET_MODULES } from '@/data/sets'
 import { getAllCards, getCardById } from '@/data/cardService'
 import { cardHasName } from '@/engine/rulesLayer'
 
@@ -15,16 +13,12 @@ import { cardHasName } from '@/engine/rulesLayer'
  * and list cross-contamination hides cards from the coverage gates.
  */
 
-const SETS: Array<{
-  set: string
-  effects: Record<string, EffectDef[]>
-  statics: Record<string, StaticDef[]>
-  keywordOnly: string[]
-}> = [
-  { set: 'OP01', effects: OP01_EFFECTS, statics: OP01_STATICS, keywordOnly: KEYWORD_ONLY },
-  { set: 'OP02', effects: OP02_EFFECTS, statics: OP02_STATICS, keywordOnly: KEYWORD_ONLY_OP02 },
-  { set: 'OP03', effects: OP03_EFFECTS, statics: OP03_STATICS, keywordOnly: KEYWORD_ONLY_OP03 },
-]
+const SETS = SET_MODULES.map((s) => ({
+  set: s.code,
+  effects: s.effects,
+  statics: s.statics,
+  keywordOnly: s.keywordOnly,
+}))
 
 const KNOWN_KEYWORDS = new Set(['Rush', 'Blocker', 'Double Attack', 'Banish'])
 const ALL_TYPES = new Set(getAllCards().flatMap((c: CardData) => c.attribute))

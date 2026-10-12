@@ -6,7 +6,7 @@ import { getBattleAttribute } from './rulesLayer'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
 import { koById, queueEffects, removeFromField, emitEngineEvent } from './effects/interpreter'
-import { hasFlag } from './effects/statics'
+import { hasFlag, getFlag } from './effects/statics'
 
 /** Battle-KO protection: blanket, or scoped to the attacker's battle attribute. */
 function protectedFromBattleKo(state: GameState, defender: GameCard, attacker: GameCard): boolean {
@@ -104,7 +104,7 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
 
   // End of battle: scheduled battle-end moves, then "during this battle"
   // effects expire and the battle clears
-  newState = endOfBattleCleanup(newState, battle.attackerId, events)
+  newState = endOfBattleCleanup(newState, battle.attackerId, events, battle.currentTargetId)
 
   return { state: newState, events }
 }
@@ -115,8 +115,17 @@ export function endOfBattleCleanup(
   state: GameState,
   attackerId: string,
   events: GameEvent[],
+  targetId?: string,
 ): GameState {
   let s = state
+  const findChar = (id: string | undefined) => {
+    if (!id) return null
+    for (const pid of ['player1', 'player2'] as PlayerId[]) {
+      const c = s.players[pid].characters.find((x) => x.instanceId === id)
+      if (c) return c
+    }
+    return null
+  }
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const attacker = s.players[pid].characters.find((c) => c.instanceId === attackerId)
     if (attacker && hasFlag(s, attacker, 'bottomDeckAtBattleEnd')) {
@@ -126,6 +135,28 @@ export function endOfBattleCleanup(
         description: `${getCardById(attacker.cardId)?.name ?? 'Character'} returns to the deck bottom`,
       })
       s = removeFromField(s, attackerId, 'deckBottom')
+    }
+  }
+  // Ice Oni: a surviving character battle opponent goes under the deck when
+  // the other battler carries 'bottomDecksBattledFoe' (value = max cost)
+  for (const [aId, bId] of [
+    [attackerId, targetId],
+    [targetId, attackerId],
+  ] as const) {
+    const a = findChar(aId)
+    const b = findChar(bId)
+    if (!a || !b) continue
+    const f = getFlag(s, a, 'bottomDecksBattledFoe')
+    if (f.present && getCardById(b.cardId)?.cost !== undefined) {
+      const cost = getCardById(b.cardId)!.cost
+      if (cost <= f.value) {
+        events.push({
+          type: 'BATTLE_END_MOVE',
+          playerId: b.ownerId,
+          description: `${getCardById(b.cardId)?.name ?? 'Character'} is placed at the deck bottom`,
+        })
+        s = removeFromField(s, b.instanceId, 'deckBottom')
+      }
     }
   }
   s = expireModifiers(s, (m) => m.duration === 'battle')

@@ -1,14 +1,11 @@
 import { getCardById } from '@/data/cardService'
+import { SET_MODULES } from '@/data/sets'
 import { MAX_CARD_COPIES } from './constants'
-import op01Attributes from '@/data/op01/battleAttributes.json'
-import op02Attributes from '@/data/op02/battleAttributes.json'
-import op03Attributes from '@/data/op03/battleAttributes.json'
 
-const battleAttributes: Record<string, string> = {
-  ...op01Attributes,
-  ...op02Attributes,
-  ...op03Attributes,
-}
+const battleAttributes: Record<string, string> = Object.assign(
+  {},
+  ...SET_MODULES.map((s) => s.battleAttributes),
+)
 
 /**
  * Rules-layer registry: per-card overrides of the game's own rules, as opposed

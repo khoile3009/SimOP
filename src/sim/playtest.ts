@@ -5,6 +5,7 @@ import { effectUsageSnapshot, resetEffectUsage } from '@/engine/effects/telemetr
 import { RandomAgent, GreedyAgent, type Agent } from '@/ai/agents'
 import { runGame } from './selfplay'
 import { buildCoverageDecks, coverageCardIds, annotateUnreachable } from './decks'
+import { SET_MODULES } from '@/data/sets'
 import type { CoverageDeck } from './decks'
 import { mulberry32 } from '@/utils/rng'
 
@@ -124,7 +125,7 @@ export function runPlaytest(options: PlaytestOptions): PlaytestReport {
     baseSeed = 1,
     matchups = ['gr', 'rg', 'gg', 'rr'],
     maxActions = 3000,
-    decks = [...buildCoverageDecks('OP01'), ...buildCoverageDecks('OP02'), ...buildCoverageDecks('OP03')],
+    decks = SET_MODULES.flatMap((s) => buildCoverageDecks(s.code)),
   } = options
   const started = Date.now()
   resetEffectUsage()

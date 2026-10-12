@@ -731,12 +731,15 @@ function maybeFinishEndTurn(state: GameState): GameState {
   ) {
     return state
   }
-  // Scheduled end-of-turn trashes (Thatch) happen before turn modifiers sweep
+  // Scheduled end-of-turn moves (Thatch's self-trash, the Duck Troops' bounce)
+  // happen before turn modifiers sweep
   let swept = state
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     for (const c of [...swept.players[pid].characters]) {
       if (hasFlag(swept, c, 'trashAtTurnEnd')) {
         swept = removeFromField(swept, c.instanceId, 'trash')
+      } else if (hasFlag(swept, c, 'bounceAtTurnEnd')) {
+        swept = removeFromField(swept, c.instanceId, 'hand')
       }
     }
   }

@@ -8,21 +8,18 @@
  * gated by review, the coverage test, the def linter, and the fleet - card
  * text is never parsed at runtime.
  */
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import type { CardData } from '@/engine/types'
 import type { Cond, EffectDef, EffectOp, EffectTiming, SelectFilter, StaticDef } from '@/engine/effects/ast'
 import { getAllCards, getCardsBySet } from '@/data/cardService'
-import { OP01_EFFECTS } from '@/data/op01/effects'
-import { OP02_EFFECTS } from '@/data/op02/effects'
-import { OP03_EFFECTS } from '@/data/op03/effects'
+import { SET_MODULES } from '@/data/sets'
 
-const AUTHORED: Record<string, Record<string, EffectDef[]>> = {
-  OP01: OP01_EFFECTS,
-  OP02: OP02_EFFECTS,
-  OP03: OP03_EFFECTS,
-}
+const AUTHORED: Record<string, Record<string, EffectDef[]>> = Object.fromEntries(
+  SET_MODULES.map((s) => [s.code, s.effects]),
+)
 
-// ─── Vocabulary from the card DB ─────────────────────────────────────────────
+// ─── Vocabulary from the card DB (plus the target set, which may not be
+// registered in the manifest yet when scaffolding) ──────────────────────────
 
 const ALL_TYPES = new Set(getAllCards().flatMap((c) => c.attribute))
 const ALL_NAMES = new Set(getAllCards().map((c) => c.name))
@@ -36,6 +33,7 @@ export interface CompiledCard {
   statics: StaticDef[]
   keywordOnly: boolean
   todos: string[]
+  notes: string[]
 }
 
 // ─── Text utilities ──────────────────────────────────────────────────────────
@@ -273,6 +271,8 @@ let bindCounter = 0
 const freshBind = () => `b${++bindCounter}`
 /** Whole-segment context for clause rules that look across sentences. */
 let currentSegmentBody = ''
+/** SIMPLIFIED-deviation notes collected while compiling the current card. */
+let currentCardNotes: string[] = []
 
 type ClauseResult = { ops: EffectOp[]; cond?: Cond } | { cond: Cond; ops?: undefined } | null
 
@@ -388,6 +388,9 @@ function compileClause(clause: string, timing: EffectTiming): ClauseResult {
 
   cm = c.match(/^Return up to (\d+) (?:of your opponent's )?Characters? (.*?)to the owner's hand$/)
   if (cm) {
+    if (!/of your opponent's/.test(c)) {
+      currentCardNotes.push('bounce targets the opponent side only (rules allow either)')
+    }
     const filter = fieldFilter(parseFilter(cm[2]))
     if (!filter) return null
     const bind = freshBind()
@@ -401,6 +404,9 @@ function compileClause(clause: string, timing: EffectTiming): ClauseResult {
 
   cm = c.match(/^Place up to (\d+) (?:of your opponent's )?Characters? (.*?)at the bottom of the owner's deck$/)
   if (cm) {
+    if (!/of your opponent's/.test(c)) {
+      currentCardNotes.push('bottom-deck targets the opponent side only (rules allow either)')
+    }
     const filter = fieldFilter(parseFilter(cm[2]))
     if (!filter) return null
     const bind = freshBind()
@@ -550,7 +556,6 @@ function compileCosts(
   timing: EffectTiming,
   def: EffectDef,
   todos: string[],
-  notes: string[],
 ): string {
   let rest = body
   for (;;) {
@@ -578,7 +583,7 @@ function compileCosts(
           { op: 'abortIfEmpty', ref: bind },
           { op: 'returnDon', ref: bind },
         )
-        notes.push('DON!!-X pays from the cost area only')
+        currentCardNotes.push('DON!!-X pays from the cost area only (attached DON need the class picker)')
       }
       rest = rest.slice(m[0].length)
       continue
@@ -650,7 +655,8 @@ function compileCosts(
 
 export function compileCard(card: CardData): CompiledCard {
   bindCounter = 0
-  const out: CompiledCard = { id: card.id, defs: [], statics: [], keywordOnly: false, todos: [] }
+  currentCardNotes = []
+  const out: CompiledCard = { id: card.id, defs: [], statics: [], keywordOnly: false, todos: [], notes: [] }
 
   const compileText = (text: string, forcedTiming?: EffectTiming) => {
     const cleaned = stripReminders(text)
@@ -677,9 +683,8 @@ export function compileCard(card: CardData): CompiledCard {
       if (seg.yourTurn) def.condition = { ...def.condition, yourTurn: true }
       if (seg.opponentsTurn) def.condition = { ...def.condition, opponentsTurn: true }
 
-      const notes: string[] = []
       currentSegmentBody = seg.body
-      const body = compileCosts(seg.body, timing, def, out.todos, notes)
+      const body = compileCosts(seg.body, timing, def, out.todos)
       let failed = false
       const parts = clauses(body)
       parts.forEach((cl, i) => {
@@ -702,6 +707,7 @@ export function compileCard(card: CardData): CompiledCard {
 
   if (card.effectText) compileText(card.effectText)
   if (card.triggerText) compileText(card.triggerText, 'trigger')
+  out.notes = [...new Set(currentCardNotes)]
   return out
 }
 
@@ -813,7 +819,18 @@ async function main() {
     console.error('usage: npm run compile-effects -- <SET> [--dry-run]')
     process.exit(1)
   }
-  const pool = getCardsBySet(setCode).filter((c) => c.effectText || c.triggerText)
+  const registered = getCardsBySet(setCode)
+  const fromDisk =
+    registered.length > 0
+      ? registered
+      : (JSON.parse(
+          readFileSync(`src/data/${setCode.toLowerCase()}/cards.json`, 'utf8'),
+        ) as CardData[])
+  for (const c of fromDisk) {
+    ALL_NAMES.add(c.name)
+    for (const t of c.attribute) ALL_TYPES.add(t)
+  }
+  const pool = fromDisk.filter((c) => c.effectText || c.triggerText)
   const compiled = pool.map(compileCard)
 
   const dbgIdx = process.argv.indexOf('--debug')
@@ -871,23 +888,55 @@ async function main() {
     return
   }
 
-  // Draft emission
+  // Scaffold / draft emission
+  const setLower = setCode.toLowerCase()
+  const scaffold = process.argv.includes('--scaffold')
+  const { existsSync } = await import('node:fs')
+  const target = `src/data/${setLower}/effects.ts`
+  const out = scaffold && !existsSync(target) ? target : `src/data/${setLower}/effects.draft.ts`
+
+  const pretty = (v: unknown) =>
+    JSON.stringify(v)
+      .replace(/"([a-zA-Z_$][a-zA-Z0-9_$]*)":/g, '$1: ')
+      .replace(/,(?=["a-z{[])/g, ', ')
+
   const lines: string[] = [
-    `// DRAFT generated by scripts/compile-effects.ts - review before adopting.`,
     `import type { EffectDef, StaticDef } from '@/engine/effects/ast'`,
     ``,
-    `export const DRAFT_EFFECTS: Record<string, EffectDef[]> = {`,
+    `/**`,
+    ` * ${setCode} effect definitions as DSL data, keyed by card ID. Compiled`,
+    ` * entries were drafted by scripts/compile-effects.ts and must be reviewed;`,
+    ` * TODO comments carry the clauses the grammar refused to guess at.`,
+    ` */`,
+    `export const ${setCode}_EFFECTS: Record<string, EffectDef[]> = {`,
   ]
   for (const c of compiled) {
-    if (c.todos.length > 0) for (const t of c.todos) lines.push(`  // TODO ${c.id} ${t}`)
-    if (c.defs.length > 0) lines.push(`  '${c.id}': ${JSON.stringify(c.defs)},`)
+    for (const t of c.todos) lines.push(`  // TODO ${c.id} ${t}`)
+    if (c.defs.length > 0) {
+      lines.push(`  '${c.id}': [`)
+      for (const d of c.defs) lines.push(`    ${pretty(d)},`)
+      lines.push(`  ],`)
+    }
   }
-  lines.push(`}`, ``, `export const DRAFT_STATICS: Record<string, StaticDef[]> = {`)
+  lines.push(`}`, ``, `/** Continuous effects (auras), applied at read time. */`)
+  lines.push(`export const ${setCode}_STATICS: Record<string, StaticDef[]> = {`)
   for (const c of compiled) {
-    if (c.statics.length > 0) lines.push(`  '${c.id}': ${JSON.stringify(c.statics)},`)
+    if (c.statics.length > 0) {
+      lines.push(`  '${c.id}': [`)
+      for (const s of c.statics) lines.push(`    ${pretty(s)},`)
+      lines.push(`  ],`)
+    }
   }
   lines.push(`}`, ``)
-  const out = `src/data/${setCode.toLowerCase()}/effects.draft.ts`
+  const kw = compiled.filter((c) => c.keywordOnly && c.todos.length === 0 && c.defs.length === 0 && c.statics.length === 0).map((c) => c.id)
+  lines.push(`/** Cards fully handled by the keyword parser and/or the rules layer. */`)
+  lines.push(`export const KEYWORD_ONLY_${setCode}: string[] = ${pretty(kw)}`, ``)
+  lines.push(`/** The coverage ledger: every deviation from the printed text, with the reason. */`)
+  lines.push(`export const COVERAGE_NOTES_${setCode}: Record<string, string> = {`)
+  for (const c of compiled) {
+    for (const n of c.notes) lines.push(`  '${c.id}': 'SIMPLIFIED: ${n.replace(/'/g, "\\'")}',`)
+  }
+  lines.push(`}`, ``)
   writeFileSync(out, lines.join('\n'))
   console.log(`\nwrote ${out}`)
 }

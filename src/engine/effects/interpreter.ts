@@ -13,7 +13,7 @@ import { evalCond, cardTypes, hasFlag, getEffectiveFieldCost } from './statics'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '../powerCalc'
 import { getOpponent } from '../turnManager'
-import { cardHasName, deckOutWinner } from '../rulesLayer'
+import { cardHasName, deckOutWinner, getBattleAttribute } from '../rulesLayer'
 import { createGameCard } from '../gameSetup'
 import { shuffle } from '@/utils/shuffle'
 import { MAX_CHARACTERS } from '../constants'
@@ -337,6 +337,124 @@ function executeOp(
         }
       }
       return advance(s)
+    }
+
+    case 'handToLife': {
+      let s = state
+      for (const id of refs(op.ref)) {
+        const p = s.players[controller]
+        const idx = p.hand.findIndex((c) => c.instanceId === id)
+        if (idx < 0) continue
+        const hand = [...p.hand]
+        const [card] = hand.splice(idx, 1)
+        s = {
+          ...s,
+          players: {
+            ...s.players,
+            [controller]: { ...p, hand, lifeCards: [{ ...card, revealed: false }, ...p.lifeCards] },
+          },
+        }
+      }
+      return advance(s)
+    }
+
+    case 'revealTopCheck': {
+      const p = state.players[controller]
+      const top = p.deck[0]
+      if (!top) return advance(state)
+      let s = state
+      if (matchCardData(top.cardId, op.filter)) {
+        const source = findFieldCard(s, frame.sourceInstanceId)
+        if (source) {
+          const modifier: Modifier = {
+            kind: 'power',
+            value: op.amount,
+            duration: op.duration,
+            sourceCardId: frame.sourceCardId,
+          }
+          s = updateFieldCard(s, source.instanceId, (c) => ({
+            ...c,
+            modifiers: [...c.modifiers, modifier],
+          }))
+        }
+      }
+      return advance(moveDeckTopToBottom(s, controller, [top.instanceId]))
+    }
+
+    case 'shuffleHandIntoDeckDraw': {
+      const p = state.players[controller]
+      const count = p.hand.length
+      if (count === 0) return advance(state)
+      let s: GameState = {
+        ...state,
+        players: {
+          ...state.players,
+          [controller]: {
+            ...p,
+            hand: [],
+            deck: shuffle([...p.deck, ...p.hand.map((c) => ({ ...c, revealed: false }))]),
+          },
+        },
+      }
+      s = drawCards(s, controller, count, events)
+      return advance(s)
+    }
+
+    case 'basePowerToAttacker': {
+      const attackerId = state.battle?.attackerId
+      const attacker = attackerId ? findFieldCard(state, attackerId) : null
+      const self = findFieldCard(state, frame.sourceInstanceId)
+      if (!attacker || !self) return advance(state)
+      const selfBase = getCardById(self.cardId)?.power ?? 0
+      const delta = getEffectivePower(state, attacker) - selfBase
+      const modifier: Modifier = {
+        kind: 'power',
+        value: delta,
+        duration: op.duration,
+        sourceCardId: frame.sourceCardId,
+      }
+      return advance(
+        updateFieldCard(state, self.instanceId, (c) => ({
+          ...c,
+          modifiers: [...c.modifiers, modifier],
+        })),
+      )
+    }
+
+    case 'grantFlagAll': {
+      const modifier: Modifier = {
+        kind: 'flag',
+        value: op.value ?? 0,
+        flag: op.flag,
+        duration: op.duration,
+        sourceCardId: frame.sourceCardId,
+      }
+      if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
+      const p = state.players[controller]
+      const targets = [
+        ...(op.includeLeader ? [p.leader.instanceId] : []),
+        ...p.characters.map((c) => c.instanceId),
+      ]
+      let s = state
+      for (const id of targets) {
+        s = updateFieldCard(s, id, (c) => ({ ...c, modifiers: [...c.modifiers, modifier] }))
+      }
+      return advance(s)
+    }
+
+    case 'koSelfNoReplace': {
+      const card = findFieldCard(state, frame.sourceInstanceId)
+      if (!card) return advance(state)
+      const s = removeFromField(state, frame.sourceInstanceId, 'trash')
+      if (s === state) return advance(state)
+      events.push({
+        type: 'CHARACTER_KO',
+        playerId: card.ownerId,
+        description: `${getCardById(card.cardId)?.name ?? 'Character'} was KO'd`,
+      })
+      let out = queueEffects(s, card, 'onKo', card.ownerId)
+      out = emitEngineEvent(out, { kind: 'characterKoed', player: card.ownerId })
+      return advance(out)
     }
 
     case 'trashToDeckBottom': {
@@ -977,12 +1095,29 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
       if (excluded.has(c.instanceId)) return false
       const data = getCardById(c.cardId)
       if (filter.rested !== undefined && c.isRested !== filter.rested) return false
-      if (filter.costAtMost !== undefined || filter.costIs !== undefined) {
+      if (
+        filter.costAtMost !== undefined ||
+        filter.costIs !== undefined ||
+        filter.costAtMostTotalLife
+      ) {
         const cost = onField ? getEffectiveFieldCost(state, c) : (data?.cost ?? 0)
         if (filter.costAtMost !== undefined && cost > filter.costAtMost) return false
         if (filter.costIs !== undefined && cost !== filter.costIs) return false
+        if (filter.costAtMostTotalLife) {
+          const total =
+            state.players.player1.lifeCards.length + state.players.player2.lifeCards.length
+          if (cost > total) return false
+        }
+      }
+      if (
+        filter.basePowerAtMost !== undefined &&
+        (data?.power ?? 0) > filter.basePowerAtMost
+      ) {
+        return false
       }
       if (filter.noBaseEffect && data?.effectText) return false
+      if (filter.excludeSelf && c.instanceId === frame.sourceInstanceId) return false
+      if (filter.attributeIs && getBattleAttribute(c.cardId) !== filter.attributeIs) return false
       if (filter.hasTrigger && !data?.triggerText) return false
       if (
         filter.powerAtLeast !== undefined &&
@@ -1022,6 +1157,8 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
   const data = getCardById(cardId)
   if (!data) return false
   if (filter.orNameIs && cardHasName(cardId, filter.orNameIs)) return true
+  if (filter.nameIsAny && !filter.nameIsAny.some((n) => cardHasName(cardId, n))) return false
+  if (filter.powerAtLeast !== undefined && (data.power ?? 0) < filter.powerAtLeast) return false
   if (filter.cardType && data.cardType !== filter.cardType) return false
   if (filter.costAtMost !== undefined && data.cost > filter.costAtMost) return false
   if (filter.costIs !== undefined && data.cost !== filter.costIs) return false

@@ -67,6 +67,22 @@ export interface Cond {
   /** Substring match over the leader's type list ("Leader's type includes 'CP'") */
   leaderTypeContains?: string
   maxDeckSelf?: number
+  /** Cards in your trash ("if you have 15 or more cards in your trash") */
+  minTrashSelf?: number
+  maxTrashSelf?: number
+  /** ACTIVE DON!! in your cost area */
+  minActiveDonSelf?: number
+  /** Life cards + hand cards combined (OP04 Doflamingo leader) */
+  maxLifePlusHandSelf?: number
+  /** You have a Character with this effective cost or more / no such Character */
+  minSelfCharCost?: number
+  lacksSelfCharCost?: number
+  /** Both players' life counts combined */
+  maxTotalLife?: number
+  /** Your leader is active (unrested) */
+  leaderActive?: boolean
+  /** A character with this name OTHER than the effect's source (Kung Fu Jugon) */
+  hasOtherCharacterNamed?: string
   lessLifeThanOpp?: boolean
   minLifeOpp?: number
   minHandOpp?: number
@@ -95,6 +111,10 @@ export interface SelectFilter {
   costAtMost?: number
   /** Exact cost ("with a cost of 1"); effective on field, printed elsewhere */
   costIs?: number
+  /** Cost at most the TOTAL of both players' life counts (OP04 yellow) */
+  costAtMostTotalLife?: boolean
+  /** PRINTED power cap ("5000 base power or less") */
+  basePowerAtMost?: number
   /** The card's text box is blank ("with no base effect") */
   noBaseEffect?: boolean
   /** Effective power (base + DON + modifiers + auras) at selection time */
@@ -107,6 +127,10 @@ export interface SelectFilter {
   powerAtLeast?: number
   /** The card has a [Trigger] ("a Character card with a [Trigger]") */
   hasTrigger?: boolean
+  /** Battle attribute ("your <Slash> attribute Characters") */
+  attributeIs?: string
+  /** Exclude the effect's own source card ("other than this Character") */
+  excludeSelf?: boolean
   typeIncludes?: string
   typeIncludesAny?: string[]
   /** Substring over type names ("a type including 'CP'" matches CP6/CP7/CP9) */
@@ -123,6 +147,8 @@ export interface CardDataFilter {
   cardType?: 'Character' | 'Event' | 'Stage'
   costAtMost?: number
   costIs?: number
+  powerAtLeast?: number
+  nameIsAny?: string[]
   typeIncludes?: string
   typeContains?: string
   colorIncludes?: string
@@ -150,6 +176,10 @@ export type FlagName =
   | 'bottomDeckAtBattleEnd' // this card goes to the deck bottom when the battle ends
   | 'noLeaderAttackTurnPlayed' // cannot attack a Leader the turn it was played (Curiel)
   | 'trashAtTurnEnd' // this card is trashed when the turn ends (Thatch)
+  | 'bounceAtTurnEnd' // this card returns to its owner's hand when the turn ends
+  | 'noRefresh' // does not become active in its owner's next Refresh Phase
+  | 'bottomDecksBattledFoe' // value = max cost: the character this card battles goes to the deck bottom
+  | 'rushCharactersOnly' // may attack CHARACTERS (not leaders) the turn it was played
 
 export type EffectOp =
   | { op: 'draw'; count: number }
@@ -179,6 +209,18 @@ export type EffectOp =
   | { op: 'fieldToLife'; ref: string }
   /** Move bound cards from the controller's trash to their deck bottom */
   | { op: 'trashToDeckBottom'; ref: string }
+  /** Move bound hand cards to the TOP of the controller's Life (face-down) */
+  | { op: 'handToLife'; ref: string }
+  /** Reveal the deck top; if it matches, power-mod self; revealed card to the bottom */
+  | { op: 'revealTopCheck'; filter: CardDataFilter; amount: number; duration: ModifierDuration }
+  /** Shuffle the controller's whole hand into the deck, then draw that many */
+  | { op: 'shuffleHandIntoDeckDraw' }
+  /** Self base power becomes the attacking card's current power (delta modifier) */
+  | { op: 'basePowerToAttacker'; duration: ModifierDuration }
+  /** Grant a flag to the controller's whole field at once */
+  | { op: 'grantFlagAll'; flag: FlagName; value?: number; duration: ModifierDuration; includeLeader?: boolean }
+  /** Final K.O. of the source, bypassing its own replacement window (declined optional replacements) */
+  | { op: 'koSelfNoReplace' }
   /** Skip the rest of this effect when the condition fails - "Then, if ..." */
   | { op: 'requireCond'; cond: Cond }
   | { op: 'powerMod'; ref: string; amount: number; duration: ModifierDuration }
@@ -278,6 +320,11 @@ export interface StaticDef {
     nameNot?: string
     cardType?: 'Character' | 'Event' | 'Stage'
     colorIncludes?: string
+    /** PRINTED cost bounds on the targets */
+    costAtLeast?: number
+    costIs?: number
+    /** Only active (unrested) targets */
+    activeOnly?: boolean
   }
   power?: number
   /** Scaling auras: value per matching count, added to `power` */
