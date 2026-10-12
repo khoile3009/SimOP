@@ -303,7 +303,7 @@ export const OP01_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 4 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 4 or less' },
+        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', rested: false, costAtMost: 4 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 4 or less' },
         { op: 'rest', ref: 't' },
       ],
     },
@@ -328,7 +328,7 @@ export const OP01_EFFECTS: Record<string, EffectDef[]> = {
       donRequired: 1,
       oncePerTurn: true,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 5 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 5 or less' },
+        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', rested: false, costAtMost: 5 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 5 or less' },
         { op: 'rest', ref: 't' },
       ],
     },
@@ -459,7 +459,7 @@ export const OP01_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 3 or less' },
+        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', rested: false, costAtMost: 3 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 3 or less' },
         { op: 'rest', ref: 't' },
       ],
     },
@@ -557,14 +557,14 @@ export const OP01_EFFECTS: Record<string, EffectDef[]> = {
       ops: [
         { op: 'select', bind: 'b', filter: { owner: 'self', zone: 'leaderOrCharacters' }, min: 0, max: 1, prompt: '+4000 power during this battle' },
         { op: 'powerMod', ref: 'b', amount: 4000, duration: 'battle' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 4 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 4 or less' },
+        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', rested: false, costAtMost: 4 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 4 or less' },
         { op: 'rest', ref: 't' },
       ],
     },
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Rest up to 1 Character' },
+        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', rested: false }, min: 0, max: 1, prompt: 'Rest up to 1 Character' },
         { op: 'rest', ref: 't' },
       ],
     },
@@ -1012,7 +1012,7 @@ export const OP01_EFFECTS: Record<string, EffectDef[]> = {
         { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 1, exact: true, prompt: 'You may return 1 DON!! to your DON!! deck' },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 6 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 6 or less' },
+        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', rested: false, costAtMost: 6 }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 6 or less' },
         { op: 'rest', ref: 't' },
       ],
     },

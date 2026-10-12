@@ -100,6 +100,18 @@
       effects - bot DON-stacking rarity). 95 tests green.
       Fidelity debt worth tracking: SIMPLIFIED notes grew to ~28 for OP03, mostly
       the DON!!-X-from-field class-picker debt and "top or bottom of Life" choices.
+- [x] Ingestion acceleration (Sep 2026): clause→ops pattern compiler
+      (`npm run compile-effects -- <SET>` / `--dry-run`) drafts 50-65% of a set's
+      defs from card text with a strict grammar that refuses what it can't parse
+      exactly - dry-run validated at 162/162 ops-identical vs the authored OP01-03
+      defs. The dry-run also caught 2 real authored bugs (OP03-070/077 encoded
+      "You may trash: ..." costs as mandatory) and 2 silent-drop compiler bug
+      classes (unanchored patterns eating trailing clauses) before they could ship.
+      Plus a def LINTER (effects/__tests__/defLint.test.ts): unbound refs,
+      free-to-activate cost shapes (the Byrnndi spam class), keyword/type/name
+      typos vs the card DB, list overlaps, DON/once-per-turn on Events.
+      OP04 flow: ingest → compile → author the ~35-50 TODO cards → coverage test
+      → fleet.
 - [ ] M7 Online multiplayer (original P2) — serializable actions make this feasible whenever.
 
 ## Tasks

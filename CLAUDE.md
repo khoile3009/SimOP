@@ -52,8 +52,18 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 OP01, OP02, and OP03 coverage: FULL (Sep 2026) — every card is automated via effect defs +
 statics in `src/data/<set>/effects.ts`, printed-keyword parsing, or the rules layer;
 each set's `COVERAGE_NOTES` documents the remaining SIMPLIFIED deviations (enforced by
-that set's coverage.test.ts). New sets enter via `npm run ingest -- <API set id>`, then
-defs are authored against the printed text until the coverage test passes.
+that set's coverage.test.ts). New sets enter in three steps:
+1. `npm run ingest -- <API set id>` — fetch + convert cards.json/battleAttributes.json.
+2. `npm run compile-effects -- <SET>` — the clause→ops pattern compiler drafts
+   `effects.draft.ts` (~50-65% of cards fully compiled; unmatched clauses become TODO
+   comments). It REFUSES anything it can't parse exactly — validated at 162/162 exact
+   against the hand-authored OP01–03 defs (`--dry-run` mode reruns that comparison).
+   Compiler output is authoring-time scaffolding only; card text is never parsed at
+   runtime.
+3. Hand-author the TODO residue until the set's coverage test passes. The def linter
+   (`effects/__tests__/defLint.test.ts`) statically rejects unbound refs,
+   free-to-activate cost encodings, keyword/type/name typos, list overlaps, and
+   DON/once-per-turn marks on Event cards.
 Key mechanisms beyond the basics: statics/auras (`effects/statics.ts`, applied at read
 time — `getEffectivePower`/`hasKeyword`/`hasFlag` all take `state`), [Activate: Main]
 abilities (`ACTIVATE_EFFECT` action, costs + once-per-turn), counter events

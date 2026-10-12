@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 playtest-failures/
 /data/
+src/data/*/effects.draft.ts

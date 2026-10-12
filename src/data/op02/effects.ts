@@ -1041,7 +1041,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 2,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 0 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with a cost of 0' },
+        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costIs: 0 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with a cost of 0' },
         { op: 'ko', ref: 't' },
       ],
     },
