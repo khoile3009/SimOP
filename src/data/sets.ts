@@ -13,6 +13,9 @@ import { OP03_EFFECTS, OP03_STATICS, KEYWORD_ONLY_OP03, COVERAGE_NOTES_OP03 } fr
 import op04Cards from './op04/cards.json'
 import op04Attrs from './op04/battleAttributes.json'
 import { OP04_EFFECTS, OP04_STATICS, KEYWORD_ONLY_OP04, COVERAGE_NOTES_OP04 } from './op04/effects'
+import op05Cards from './op05/cards.json'
+import op05Attrs from './op05/battleAttributes.json'
+import { OP05_EFFECTS, OP05_STATICS, KEYWORD_ONLY_OP05, COVERAGE_NOTES_OP05 } from './op05/effects'
 
 /**
  * The set manifest: registering a set here is the ONLY wiring step after
@@ -66,5 +69,14 @@ export const SET_MODULES: SetModule[] = [
     statics: OP04_STATICS,
     keywordOnly: KEYWORD_ONLY_OP04,
     notes: COVERAGE_NOTES_OP04,
+  },
+  {
+    code: 'OP05',
+    cards: op05Cards as CardData[],
+    battleAttributes: op05Attrs,
+    effects: OP05_EFFECTS,
+    statics: OP05_STATICS,
+    keywordOnly: KEYWORD_ONLY_OP05,
+    notes: COVERAGE_NOTES_OP05,
   },
 ]

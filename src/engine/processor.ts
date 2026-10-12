@@ -42,7 +42,13 @@ export function processAction(
       newState = processAttachDon(state, actingPlayer, action.count, action.targetCardId, events)
       break
     case 'DECLARE_ATTACK':
-      newState = processDeclareAttack(state, actingPlayer, action.attackerId, action.targetId, events)
+      newState = processDeclareAttack(
+        state,
+        actingPlayer,
+        action.attackerId,
+        action.targetId,
+        events,
+      )
       break
     case 'ACTIVATE_BLOCKER':
       newState = processActivateBlocker(state, actingPlayer, action.blockerId, events)
@@ -75,7 +81,13 @@ export function processAction(
       )
       break
     case 'ACTIVATE_EFFECT':
-      newState = processActivateEffect(state, actingPlayer, action.cardInstanceId, action.effectId, events)
+      newState = processActivateEffect(
+        state,
+        actingPlayer,
+        action.cardInstanceId,
+        action.effectId,
+        events,
+      )
       break
     case 'PLAY_COUNTER_EVENT':
       newState = processPlayCounterEvent(state, actingPlayer, action.cardInstanceId, events)
@@ -112,7 +124,11 @@ function processMulligan(
   if (isMulliganComplete(newState)) {
     newState = startGame(newState)
     newState = autoAdvancePhases(newState)
-    events.push({ type: 'GAME_START', playerId: newState.currentPlayer, description: 'Game started' })
+    events.push({
+      type: 'GAME_START',
+      playerId: newState.currentPlayer,
+      description: 'Game started',
+    })
   }
 
   return newState
@@ -531,7 +547,10 @@ function processActivateEffect(
   if (returnCost > 0) {
     const sorted = [...donArea].sort((a, b) => Number(b.isRested) - Number(a.isRested))
     const returned = new Set(sorted.slice(0, returnCost).map((d) => d.instanceId))
-    donDeck = [...donDeck, ...donArea.filter((d) => returned.has(d.instanceId)).map((d) => ({ ...d, isRested: false }))]
+    donDeck = [
+      ...donDeck,
+      ...donArea.filter((d) => returned.has(d.instanceId)).map((d) => ({ ...d, isRested: false })),
+    ]
     donArea = donArea.filter((d) => !returned.has(d.instanceId))
   }
   card = {
@@ -629,7 +648,7 @@ function processPassCounter(state: GameState, events: GameEvent[]): GameState {
 
   const result = resolveDamage(afterPass)
   events.push(...result.events)
-  return runStack(result.state, events)
+  return settleDamage(runStack(result.state, events), events)
 }
 
 function processActivateTrigger(
@@ -677,7 +696,9 @@ function processActivateTrigger(
           [playerId]: { ...player, hand, trash: [...player.trash, card] },
         },
       }
-      newState = runStack(queueEffects(newState, card, 'trigger', playerId), events)
+      newState = queueEffects(newState, card, 'trigger', playerId)
+      newState = emitEngineEvent(newState, { kind: 'triggerActivated', player: playerId })
+      newState = runStack(newState, events)
     }
   }
 
@@ -752,4 +773,3 @@ function maybeFinishEndTurn(state: GameState): GameState {
   }
   return autoAdvancePhases(executeEndPhase(cleared))
 }
-

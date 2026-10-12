@@ -18,6 +18,9 @@ export type EffectTiming =
   | 'onEvent'
   /** Replacement: runs INSTEAD of this card's K.O. (two-phase event window) */
   | 'replaceKo'
+  /** Replacement provided by ANOTHER card: guards the controller's dying
+   * characters (Sabo leader). Needs EffectDef.guard; ops see binding 'target'. */
+  | 'guardKo'
   /** [End of Your Turn]: fires for the turn player's cards before the turn switch */
   | 'endOfTurn'
   /** On the attacker, after it wins a battle that K.O.'d a Character (Isuka) */
@@ -38,6 +41,14 @@ export type EngineEventKind =
   | 'lifeDamageDealt'
   /** An attack was declared; `player` is the DEFENDER, source is the target card */
   | 'attacked'
+  /** A card was drawn outside the Draw Phase (effect draws); once per draw op */
+  | 'drawnExtra'
+  /** A life card entered its owner's hand (damage or effect) */
+  | 'lifeAddedToHand'
+  /** A [Trigger] was activated */
+  | 'triggerActivated'
+  /** A player's life count reached 0 (Enel) */
+  | 'lifeZero'
 
 export interface EventQuery {
   kind: EngineEventKind
@@ -81,6 +92,19 @@ export interface Cond {
   maxTotalLife?: number
   /** Your leader is active (unrested) */
   leaderActive?: boolean
+  /** Your leader card has 2+ colors */
+  leaderMulticolor?: boolean
+  /** The SOURCE card's current effective power is at least this */
+  selfPowerAtLeast?: number
+  /** Your leader's current effective power is at most this */
+  leaderPowerAtMost?: number
+  /** You have a character with this type */
+  hasCharacterTypeIncludes?: string
+  /** Every character you control carries this type (Celestial Dragons) */
+  allSelfCharsTyped?: string
+  maxDonField?: number
+  /** No character with this name on EITHER field (Enel's Luffy clause) */
+  noCharacterNamedAnywhere?: string
   /** A character with this name OTHER than the effect's source (Kung Fu Jugon) */
   hasOtherCharacterNamed?: string
   lessLifeThanOpp?: boolean
@@ -101,18 +125,36 @@ export interface Cond {
   minDeckSelf?: number
   hasCharacterNamed?: string
   lacksCharacterNamed?: string
+  /** A character you control OTHER than the source has at least this power (Inazuma) */
+  otherCharPowerAtLeast?: number
+  /** DON!! on your field is exactly 0 OR at least this many (OP05 Luffy leader) */
+  donFieldZeroOrAtLeast?: number
+  /** The opponent has more DON!! on their field than you */
+  oppMoreDon?: boolean
+  maxLifeOpp?: number
 }
 
 /** Instance selection filter, for `select` (live zones). */
 export interface SelectFilter {
   owner: 'self' | 'opponent'
-  zone: 'characters' | 'leaderOrCharacters' | 'leader' | 'hand' | 'trash' | 'don' | 'life' | 'stage'
+  zone:
+    | 'characters'
+    | 'leaderOrCharacters'
+    | 'leader'
+    | 'hand'
+    | 'trash'
+    | 'don'
+    | 'life'
+    | 'stage'
+    | 'guarded'
   /** Effective cost for field zones (cost modifiers apply); printed cost elsewhere */
   costAtMost?: number
   /** Exact cost ("with a cost of 1"); effective on field, printed elsewhere */
   costIs?: number
   /** Cost at most the TOTAL of both players' life counts (OP04 yellow) */
   costAtMostTotalLife?: boolean
+  /** Cost at most the OPPONENT's life count (OP05 yellow) */
+  costAtMostOppLife?: boolean
   /** PRINTED power cap ("5000 base power or less") */
   basePowerAtMost?: number
   /** The card's text box is blank ("with no base effect") */
@@ -129,6 +171,9 @@ export interface SelectFilter {
   hasTrigger?: boolean
   /** Battle attribute ("your <Slash> attribute Characters") */
   attributeIs?: string
+  costAtLeast?: number
+  /** Has this type OR carries a [Trigger] (Belo Betty) */
+  typeOrTrigger?: string
   /** Exclude the effect's own source card ("other than this Character") */
   excludeSelf?: boolean
   typeIncludes?: string
@@ -146,6 +191,7 @@ export interface SelectFilter {
 export interface CardDataFilter {
   cardType?: 'Character' | 'Event' | 'Stage'
   costAtMost?: number
+  typeIncludesAny?: string[]
   costIs?: number
   powerAtLeast?: number
   nameIsAny?: string[]
@@ -209,6 +255,8 @@ export type EffectOp =
   | { op: 'fieldToLife'; ref: string }
   /** Move bound cards from the controller's trash to their deck bottom */
   | { op: 'trashToDeckBottom'; ref: string }
+  /** Return the oldest N trash cards to the deck and shuffle (Elizabello's cost) */
+  | { op: 'trashIntoDeckShuffle'; count: number }
   /** Move bound hand cards to the TOP of the controller's Life (face-down) */
   | { op: 'handToLife'; ref: string }
   /** Reveal the deck top; if it matches, power-mod self; revealed card to the bottom */
@@ -218,14 +266,44 @@ export type EffectOp =
   /** Self base power becomes the attacking card's current power (delta modifier) */
   | { op: 'basePowerToAttacker'; duration: ModifierDuration }
   /** Grant a flag to the controller's whole field at once */
-  | { op: 'grantFlagAll'; flag: FlagName; value?: number; duration: ModifierDuration; includeLeader?: boolean }
+  | {
+      op: 'grantFlagAll'
+      flag: FlagName
+      value?: number
+      duration: ModifierDuration
+      includeLeader?: boolean
+    }
   /** Final K.O. of the source, bypassing its own replacement window (declined optional replacements) */
   | { op: 'koSelfNoReplace' }
+  /** guardKo resolution: if the choice binding is empty, finally K.O. the
+   * target and stop; otherwise continue into the guard's payment ops */
+  | { op: 'guardResolve'; choiceRef: string; targetRef: string }
+  /** Move a bound LIFE card to its owner's trash (Enel's self-pay) */
+  | { op: 'lifeToTrash'; ref: string }
+  /** Take an extra turn after this one (Gear 5) */
+  | { op: 'extraTurn' }
+  /** Mass removal with filters; dest 'trash' performs K.O.s */
+  | {
+      op: 'removeAll'
+      owner: 'self' | 'opponent' | 'both'
+      dest: 'trash' | 'deckBottom'
+      costAtMost?: number
+      rested?: boolean
+      excludeSelf?: boolean
+    }
+  /** Both players trash down to `count` hand cards (from the end; approximation) */
+  | { op: 'discardTo'; count: number; who: 'both' | 'self' | 'opponent' }
   /** Skip the rest of this effect when the condition fails - "Then, if ..." */
   | { op: 'requireCond'; cond: Cond }
   | { op: 'powerMod'; ref: string; amount: number; duration: ModifierDuration }
   /** Power mod scaled by another binding's size (Ace: +1000 per trashed card) */
-  | { op: 'powerModPerRef'; ref: string; countRef: string; amountPer: number; duration: ModifierDuration }
+  | {
+      op: 'powerModPerRef'
+      ref: string
+      countRef: string
+      amountPer: number
+      duration: ModifierDuration
+    }
   /** Katakuri-style life scry, simplified: may move the top card of either
    * player's Life to the bottom of that stack (the "look" is not modeled) */
   | { op: 'scryLifeTops'; prompt: string }
@@ -254,7 +332,14 @@ export type EffectOp =
   | { op: 'playCards'; ref: string; rested?: boolean } // free play from hand/deck/trash
   | { op: 'playSelf'; rested?: boolean } // play the source card from the trash
   /** Look at top N; choose up to `upTo` matching to hand/play/trash; rest to bottom (or trash) */
-  | { op: 'searchTop'; count: number; filter: CardDataFilter; upTo: number; to: 'hand' | 'play' | 'trash'; restTo?: 'bottom' | 'trash' }
+  | {
+      op: 'searchTop'
+      count: number
+      filter: CardDataFilter
+      upTo: number
+      to: 'hand' | 'play' | 'trash'
+      restTo?: 'bottom' | 'trash'
+    }
   /** Look at top N; chosen subset goes to the bottom (order kept), rest stays on top */
   | { op: 'scryBottom'; count: number }
   /** Reveal matching cards from the whole deck; chosen to hand or play; shuffle */
@@ -284,7 +369,13 @@ export type EffectOp =
   /** Turn-scoped restriction on the controller (cleared at end of turn) */
   | { op: 'restrictSelf'; restriction: 'noLifeToHand' }
   /** One-shot play-cost discount for the controller this turn (Kin'emon) */
-  | { op: 'grantPlayDiscount'; amount: number; cardType?: 'Character' | 'Event' | 'Stage'; typeIncludes?: string; minCost?: number }
+  | {
+      op: 'grantPlayDiscount'
+      amount: number
+      cardType?: 'Character' | 'Event' | 'Stage'
+      typeIncludes?: string
+      minCost?: number
+    }
   /** Skip the rest of the effect unless every bound card has this printed type */
   | { op: 'requireRefIs'; ref: string; cardType: 'Character' | 'Event' | 'Stage' }
   /** Move bound life cards to the bottom of their owner's deck */
@@ -301,6 +392,8 @@ export interface EffectDef {
   /** Mandatory activation cost, paid on activation ([Activate: Main] only).
    * returnDon is DON!!-X: that many cost-area DON go back to the DON!! deck. */
   cost?: { restDon?: number; restSelf?: boolean; returnDon?: number }
+  /** For timing 'guardKo': which dying characters this card may save */
+  guard?: SelectFilter
   ops: EffectOp[]
 }
 
@@ -322,6 +415,7 @@ export interface StaticDef {
     colorIncludes?: string
     /** PRINTED cost bounds on the targets */
     costAtLeast?: number
+    costAtMost?: number
     costIs?: number
     /** Only active (unrested) targets */
     activeOnly?: boolean

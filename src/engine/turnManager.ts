@@ -11,10 +11,7 @@ function stripModifiers(card: GameCard, keep: (m: Modifier) => boolean): GameCar
 }
 
 /** Remove modifiers matching the predicate from every card on both fields. */
-export function expireModifiers(
-  state: GameState,
-  expired: (m: Modifier) => boolean,
-): GameState {
+export function expireModifiers(state: GameState, expired: (m: Modifier) => boolean): GameState {
   const keep = (m: Modifier) => !expired(m)
   const players = { ...state.players }
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
@@ -150,13 +147,20 @@ export function executeEndPhase(state: GameState): GameState {
   const newCharacters = player.characters.map((c) => ({ ...c, activatedThisTurn: [] }))
   const newStage = player.stage ? { ...player.stage, activatedThisTurn: [] } : null
 
-  // Switch to opponent
-  const nextPlayer: PlayerId = playerId === 'player1' ? 'player2' : 'player1'
+  // An earned extra turn (Gear 5) keeps the same player; it is a full turn
+  // with its own Refresh/Draw/DON phases
+  const takesExtra = state.extraTurnFor === playerId
+  const nextPlayer: PlayerId = takesExtra
+    ? playerId
+    : playerId === 'player1'
+      ? 'player2'
+      : 'player1'
 
   const switched: GameState = {
     ...state,
     phase: 'REFRESH',
     currentPlayer: nextPlayer,
+    extraTurnFor: takesExtra ? null : state.extraTurnFor,
     turnNumber: state.turnNumber + 1,
     players: {
       ...state.players,

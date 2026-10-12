@@ -2,6 +2,7 @@ import type { GameState, GameCard, PlayerId } from '../types'
 import type { Cond, FlagName } from './ast'
 import { getStatics } from './registry'
 import { getCardById } from '@/data/cardService'
+import { getEffectivePower } from '../powerCalc'
 import { getOpponent } from '../turnManager'
 import { cardHasName } from '../rulesLayer'
 
@@ -86,6 +87,44 @@ export function evalCond(
   }
   if (cond.lessLifeThanOpp && me.lifeCards.length >= opp.lifeCards.length) return false
   if (cond.leaderActive && me.leader.isRested) return false
+  if (cond.leaderMulticolor && (getCardById(me.leader.cardId)?.color.length ?? 0) < 2) return false
+  if (
+    cond.selfPowerAtLeast !== undefined &&
+    (!source || getEffectivePower(state, source) < cond.selfPowerAtLeast)
+  ) {
+    return false
+  }
+  if (
+    cond.leaderPowerAtMost !== undefined &&
+    getEffectivePower(state, me.leader) > cond.leaderPowerAtMost
+  ) {
+    return false
+  }
+  if (
+    cond.hasCharacterTypeIncludes &&
+    !me.characters.some((c) => cardTypes(c.cardId).includes(cond.hasCharacterTypeIncludes!))
+  ) {
+    return false
+  }
+  if (
+    cond.allSelfCharsTyped &&
+    !me.characters.every((c) => cardTypes(c.cardId).includes(cond.allSelfCharsTyped!))
+  ) {
+    return false
+  }
+  if (cond.maxDonField !== undefined && donOnField(state, controller) > cond.maxDonField) {
+    return false
+  }
+  if (
+    cond.noCharacterNamedAnywhere &&
+    (['player1', 'player2'] as PlayerId[]).some((pid) =>
+      state.players[pid].characters.some((c) =>
+        cardHasName(c.cardId, cond.noCharacterNamedAnywhere!),
+      ),
+    )
+  ) {
+    return false
+  }
   if (
     cond.hasOtherCharacterNamed &&
     !me.characters.some(
@@ -96,6 +135,7 @@ export function evalCond(
     return false
   }
   if (cond.minLifeOpp !== undefined && opp.lifeCards.length < cond.minLifeOpp) return false
+  if (cond.maxLifeOpp !== undefined && opp.lifeCards.length > cond.maxLifeOpp) return false
   if (cond.minHandOpp !== undefined && opp.hand.length < cond.minHandOpp) return false
   if (cond.maxSelfCharacters !== undefined && me.characters.length > cond.maxSelfCharacters) {
     return false
@@ -117,6 +157,23 @@ export function evalCond(
   }
   if (cond.minHandSelf !== undefined && me.hand.length < cond.minHandSelf) return false
   if (cond.maxHandSelf !== undefined && me.hand.length > cond.maxHandSelf) return false
+  if (cond.otherCharPowerAtLeast !== undefined) {
+    const found = state.players[controller].characters.some(
+      (c) =>
+        c.instanceId !== source?.instanceId && condPower(state, c) >= cond.otherCharPowerAtLeast!,
+    )
+    if (!found) return false
+  }
+  if (cond.donFieldZeroOrAtLeast !== undefined) {
+    const mine = donOnField(state, controller)
+    if (mine !== 0 && mine < cond.donFieldZeroOrAtLeast) return false
+  }
+  if (
+    cond.oppMoreDon &&
+    donOnField(state, getOpponent(controller)) <= donOnField(state, controller)
+  ) {
+    return false
+  }
   if (cond.minDonField !== undefined && donOnField(state, controller) < cond.minDonField) {
     return false
   }
@@ -151,6 +208,29 @@ interface AuraGrant {
   flags: { flag: FlagName; value: number }[]
 }
 
+/**
+ * Power read for aura CONDITIONS. A power-based condition on a static
+ * (Inazuma's "a Character with 7000 power or more") re-enters auraGrants
+ * through getEffectivePower; nested reads settle on base + DON + modifiers,
+ * mirroring the costEvalDepth guard below.
+ */
+let powerCondDepth = 0
+function condPower(state: GameState, card: GameCard): number {
+  if (powerCondDepth > 0) {
+    const base = getCardById(card.cardId)?.power ?? 0
+    const donBonus = state.currentPlayer === card.ownerId ? card.attachedDon * 1000 : 0
+    let mods = 0
+    for (const m of card.modifiers) if (m.kind === 'power') mods += m.value
+    return base + donBonus + mods
+  }
+  powerCondDepth++
+  try {
+    return getEffectivePower(state, card)
+  } finally {
+    powerCondDepth--
+  }
+}
+
 /** Everything active auras grant to `card` right now. Auras never stack recursively. */
 export function auraGrants(state: GameState, card: GameCard): AuraGrant {
   const result: AuraGrant = { power: 0, cost: 0, keywords: [], flags: [] }
@@ -181,9 +261,16 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
         if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) continue
         if (t.nameIs && !cardHasName(card.cardId, t.nameIs)) continue
         if (t.nameNot && cardHasName(card.cardId, t.nameNot)) continue
-        if (t.colorIncludes && !(getCardById(card.cardId)?.color ?? []).some((col) => col === t.colorIncludes)) continue
+        if (
+          t.colorIncludes &&
+          !(getCardById(card.cardId)?.color ?? []).some((col) => col === t.colorIncludes)
+        )
+          continue
         if (t.cardType && getCardById(card.cardId)?.cardType !== t.cardType) continue
-        if (t.costAtLeast !== undefined && (getCardById(card.cardId)?.cost ?? 0) < t.costAtLeast) continue
+        if (t.costAtLeast !== undefined && (getCardById(card.cardId)?.cost ?? 0) < t.costAtLeast)
+          continue
+        if (t.costAtMost !== undefined && (getCardById(card.cardId)?.cost ?? 0) > t.costAtMost)
+          continue
         if (t.costIs !== undefined && (getCardById(card.cardId)?.cost ?? 0) !== t.costIs) continue
         if (t.activeOnly && card.isRested) continue
 
@@ -275,7 +362,7 @@ export function getEffectiveCost(state: GameState, playerId: PlayerId, card: Gam
   const data = getCardById(card.cardId)
   let cost = data?.cost ?? 0
   const p = state.players[playerId]
-  for (const source of [p.leader, ...p.characters]) {
+  for (const source of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
     for (const def of getStatics(source.cardId)) {
       if (!def.costMod || def.target.scope !== 'myHand') continue
       if (def.donRequired && source.attachedDon < def.donRequired) continue
@@ -284,6 +371,8 @@ export function getEffectiveCost(state: GameState, playerId: PlayerId, card: Gam
       if (t.cardType && data?.cardType !== t.cardType) continue
       if (t.colorIncludes && !(data?.color ?? []).some((c) => c === t.colorIncludes)) continue
       if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) continue
+      if (t.costAtLeast !== undefined && (data?.cost ?? 0) < t.costAtLeast) continue
+      if (t.costAtMost !== undefined && (data?.cost ?? 0) > t.costAtMost) continue
       cost += def.costMod
     }
   }

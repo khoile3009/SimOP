@@ -1,11 +1,4 @@
-import type {
-  GameState,
-  GameCard,
-  GameEvent,
-  PlayerId,
-  EffectFrame,
-  Modifier,
-} from '../types'
+import type { GameState, GameCard, GameEvent, PlayerId, EffectFrame, Modifier } from '../types'
 import type { CardDataFilter, EffectOp, EffectTiming, EngineEventKind, SelectFilter } from './ast'
 import { getEffectDefs } from './registry'
 import { recordEffectFired } from './telemetry'
@@ -442,6 +435,84 @@ function executeOp(
       return advance(s)
     }
 
+    case 'guardResolve': {
+      if (refs(op.choiceRef).length > 0) return advance(state) // guard paid: target lives
+      let s = state
+      for (const id of refs(op.targetRef)) {
+        const card = findFieldCard(s, id)
+        if (!card) continue
+        const removed = removeFromField(s, id, 'trash')
+        if (removed === s) continue
+        s = removed
+        events.push({
+          type: 'CHARACTER_KO',
+          playerId: card.ownerId,
+          description: `${getCardById(card.cardId)?.name ?? 'Character'} was KO'd`,
+        })
+        s = queueEffects(s, card, 'onKo', card.ownerId)
+        s = emitEngineEvent(s, { kind: 'characterKoed', player: card.ownerId })
+      }
+      return advance(s, true) // guard declined: stop this frame
+    }
+
+    case 'lifeToTrash': {
+      let s = state
+      for (const id of refs(op.ref)) {
+        for (const pid of ['player1', 'player2'] as PlayerId[]) {
+          const p = s.players[pid]
+          const idx = p.lifeCards.findIndex((c) => c.instanceId === id)
+          if (idx < 0) continue
+          const lifeCards = [...p.lifeCards]
+          const [card] = lifeCards.splice(idx, 1)
+          s = {
+            ...s,
+            players: { ...s.players, [pid]: { ...p, lifeCards, trash: [...p.trash, card] } },
+          }
+          break
+        }
+      }
+      return advance(s)
+    }
+
+    case 'extraTurn':
+      return advance({ ...state, extraTurnFor: controller })
+
+    case 'removeAll': {
+      let s = state
+      for (const pid of ['player1', 'player2'] as PlayerId[]) {
+        if (op.owner === 'self' && pid !== controller) continue
+        if (op.owner === 'opponent' && pid === controller) continue
+        for (const c of [...s.players[pid].characters]) {
+          if (op.excludeSelf && c.instanceId === frame.sourceInstanceId) continue
+          if (op.costAtMost !== undefined && getEffectiveFieldCost(s, c) > op.costAtMost) continue
+          if (op.rested !== undefined && c.isRested !== op.rested) continue
+          if (op.dest === 'trash') s = koById(s, c.instanceId, events, { controller })
+          else {
+            if (removalBlocked(s, c.instanceId, controller, events)) continue
+            s = removeFromField(s, c.instanceId, 'deckBottom')
+          }
+        }
+      }
+      return advance(s)
+    }
+
+    case 'discardTo': {
+      let s = state
+      for (const pid of ['player1', 'player2'] as PlayerId[]) {
+        if (op.who === 'self' && pid !== controller) continue
+        if (op.who === 'opponent' && pid === controller) continue
+        const p = s.players[pid]
+        if (p.hand.length <= op.count) continue
+        const hand = [...p.hand]
+        const trashed = hand.splice(op.count)
+        s = {
+          ...s,
+          players: { ...s.players, [pid]: { ...p, hand, trash: [...p.trash, ...trashed] } },
+        }
+      }
+      return advance(s)
+    }
+
     case 'koSelfNoReplace': {
       const card = findFieldCard(state, frame.sourceInstanceId)
       if (!card) return advance(state)
@@ -460,20 +531,41 @@ function executeOp(
     case 'trashToDeckBottom': {
       let s = state
       for (const id of refs(op.ref)) {
-        const p = s.players[controller]
-        const idx = p.trash.findIndex((c) => c.instanceId === id)
-        if (idx < 0) continue
-        const trash = [...p.trash]
-        const [moved] = trash.splice(idx, 1)
-        s = {
-          ...s,
-          players: {
-            ...s.players,
-            [controller]: { ...p, trash, deck: [...p.deck, { ...moved, revealed: false }] },
-          },
+        for (const pid of ['player1', 'player2'] as PlayerId[]) {
+          const p = s.players[pid]
+          const idx = p.trash.findIndex((c) => c.instanceId === id)
+          if (idx < 0) continue
+          const trash = [...p.trash]
+          const [moved] = trash.splice(idx, 1)
+          s = {
+            ...s,
+            players: {
+              ...s.players,
+              [pid]: { ...p, trash, deck: [...p.deck, { ...moved, revealed: false }] },
+            },
+          }
+          break
         }
       }
       return advance(s)
+    }
+
+    case 'trashIntoDeckShuffle': {
+      const p = state.players[controller]
+      const take = Math.min(op.count, p.trash.length)
+      if (take === 0) return advance(state)
+      const moved = p.trash.slice(0, take).map((c) => ({ ...c, revealed: false }))
+      return advance({
+        ...state,
+        players: {
+          ...state.players,
+          [controller]: {
+            ...p,
+            trash: p.trash.slice(take),
+            deck: shuffle([...p.deck, ...moved]),
+          },
+        },
+      })
     }
 
     case 'requireCond': {
@@ -486,10 +578,27 @@ function executeOp(
     case 'grantFlag': {
       const modifier: Modifier =
         op.op === 'powerMod'
-          ? { kind: 'power', value: op.amount, duration: op.duration, sourceCardId: frame.sourceCardId }
+          ? {
+              kind: 'power',
+              value: op.amount,
+              duration: op.duration,
+              sourceCardId: frame.sourceCardId,
+            }
           : op.op === 'grantKeyword'
-            ? { kind: 'keyword', value: 0, keyword: op.keyword, duration: op.duration, sourceCardId: frame.sourceCardId }
-            : { kind: 'flag', value: op.value ?? 0, flag: op.flag, duration: op.duration, sourceCardId: frame.sourceCardId }
+            ? {
+                kind: 'keyword',
+                value: 0,
+                keyword: op.keyword,
+                duration: op.duration,
+                sourceCardId: frame.sourceCardId,
+              }
+            : {
+                kind: 'flag',
+                value: op.value ?? 0,
+                flag: op.flag,
+                duration: op.duration,
+                sourceCardId: frame.sourceCardId,
+              }
       if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
       if (op.op === 'grantFlag' && op.duration === 'untilTurn') {
         modifier.untilTurn = state.turnNumber + (op.untilTurnOffset ?? 0)
@@ -575,7 +684,10 @@ function executeOp(
       }
       if (modifier.duration === 'untilYourNextTurn') modifier.expiresFor = controller
       const p = state.players[controller]
-      const targets = [...(op.includeLeader ? [p.leader.instanceId] : []), ...p.characters.map((c) => c.instanceId)]
+      const targets = [
+        ...(op.includeLeader ? [p.leader.instanceId] : []),
+        ...p.characters.map((c) => c.instanceId),
+      ]
       let s = state
       for (const id of targets) {
         s = updateFieldCard(s, id, (c) => ({ ...c, modifiers: [...c.modifiers, modifier] }))
@@ -602,6 +714,7 @@ function executeOp(
             [controller]: { ...p, lifeCards: rest, hand: [...p.hand, { ...top, revealed: false }] },
           },
         }
+        s = emitEngineEvent(s, { kind: 'lifeAddedToHand', player: controller })
       }
       return advance(s)
     }
@@ -737,6 +850,7 @@ function executeOp(
             [controller]: { ...p, lifeCards, hand: [...p.hand, { ...card, revealed: false }] },
           },
         }
+        s = emitEngineEvent(s, { kind: 'lifeAddedToHand', player: controller })
       }
       return advance(s)
     }
@@ -792,7 +906,13 @@ function executeOp(
           .filter((c) => matchCardData(c.cardId, op.filter))
           .map((c) => c.instanceId)
         if (options.length === 0) {
-          return advance(moveDeckTopToBottom(state, controller, top.map((c) => c.instanceId)))
+          return advance(
+            moveDeckTopToBottom(
+              state,
+              controller,
+              top.map((c) => c.instanceId),
+            ),
+          )
         }
         return {
           ...state,
@@ -1042,8 +1162,7 @@ function withBinding(stack: EffectFrame[], bind: string, ids: string[]): EffectF
 // ─── Selection ───────────────────────────────────────────────────────────────
 
 function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilter): string[] {
-  const targetPlayer =
-    filter.owner === 'self' ? frame.controller : getOpponent(frame.controller)
+  const targetPlayer = filter.owner === 'self' ? frame.controller : getOpponent(frame.controller)
   const player = state.players[targetPlayer]
   let pool: GameCard[]
   switch (filter.zone) {
@@ -1068,6 +1187,11 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
       break
     case 'stage':
       pool = player.stage ? [player.stage] : []
+      break
+    case 'guarded':
+      pool = (frame.bindings['target'] ?? [])
+        .map((id) => findFieldCard(state, id))
+        .filter((c): c is GameCard => !!c)
       break
     default:
       pool = player.characters
@@ -1098,7 +1222,8 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
       if (
         filter.costAtMost !== undefined ||
         filter.costIs !== undefined ||
-        filter.costAtMostTotalLife
+        filter.costAtMostTotalLife ||
+        filter.costAtMostOppLife
       ) {
         const cost = onField ? getEffectiveFieldCost(state, c) : (data?.cost ?? 0)
         if (filter.costAtMost !== undefined && cost > filter.costAtMost) return false
@@ -1108,21 +1233,30 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
             state.players.player1.lifeCards.length + state.players.player2.lifeCards.length
           if (cost > total) return false
         }
+        if (filter.costAtMostOppLife) {
+          const oppLife = state.players[getOpponent(frame.controller)].lifeCards.length
+          if (cost > oppLife) return false
+        }
+      }
+      if (filter.costAtLeast !== undefined) {
+        const cost = onField ? getEffectiveFieldCost(state, c) : (data?.cost ?? 0)
+        if (cost < filter.costAtLeast) return false
       }
       if (
-        filter.basePowerAtMost !== undefined &&
-        (data?.power ?? 0) > filter.basePowerAtMost
+        filter.typeOrTrigger &&
+        !cardTypes(c.cardId).includes(filter.typeOrTrigger) &&
+        !data?.triggerText
       ) {
+        return false
+      }
+      if (filter.basePowerAtMost !== undefined && (data?.power ?? 0) > filter.basePowerAtMost) {
         return false
       }
       if (filter.noBaseEffect && data?.effectText) return false
       if (filter.excludeSelf && c.instanceId === frame.sourceInstanceId) return false
       if (filter.attributeIs && getBattleAttribute(c.cardId) !== filter.attributeIs) return false
       if (filter.hasTrigger && !data?.triggerText) return false
-      if (
-        filter.powerAtLeast !== undefined &&
-        getEffectivePower(state, c) < filter.powerAtLeast
-      ) {
+      if (filter.powerAtLeast !== undefined && getEffectivePower(state, c) < filter.powerAtLeast) {
         return false
       }
       if (
@@ -1163,6 +1297,9 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
   if (filter.costAtMost !== undefined && data.cost > filter.costAtMost) return false
   if (filter.costIs !== undefined && data.cost !== filter.costIs) return false
   if (filter.typeIncludes && !data.attribute.includes(filter.typeIncludes)) return false
+  if (filter.typeIncludesAny && !filter.typeIncludesAny.some((t) => data.attribute.includes(t))) {
+    return false
+  }
   if (filter.typeContains && !data.attribute.some((t) => t.includes(filter.typeContains!))) {
     return false
   }
@@ -1341,6 +1478,29 @@ export function koById(
     return pushFrame(marked, card, owner, 'replaceKo', i)
   }
 
+  // Guard replacements from OTHER cards the owner controls (Sabo leader,
+  // Rosinante): the first matching guard suspends the K.O.; its ops decide
+  // via 'guardResolve' whether the target lives
+  const p = state.players[owner]
+  for (const guard of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
+    if (guard.instanceId === instanceId) continue
+    const gDefs = getEffectDefs(guard.cardId)
+    for (let i = 0; i < gDefs.length; i++) {
+      const gd = gDefs[i]
+      if (gd.timing !== 'guardKo' || !gd.guard) continue
+      if (!defMatches(state, owner, guard, 'guardKo', i)) continue
+      if (!guardTargetMatches(state, card, gd.guard)) continue
+      const marked = markOncePerTurn(state, guard, gd.oncePerTurn, `t${i}`)
+      if (!marked) continue
+      const framed = pushFrame(marked, guard, owner, 'guardKo', i)
+      const stack = [...framed.stack]
+      const top = { ...stack[stack.length - 1] }
+      top.bindings = { ...top.bindings, target: [instanceId] }
+      stack[stack.length - 1] = top
+      return { ...framed, stack }
+    }
+  }
+
   const s = removeFromField(state, instanceId, 'trash')
   if (s === state) return state
   events.push({
@@ -1354,13 +1514,24 @@ export function koById(
   return emitEngineEvent(withOnKo, { kind: 'characterKoed', player: owner })
 }
 
+/** Does a dying card fall under a guardKo def's protection filter? */
+function guardTargetMatches(state: GameState, card: GameCard, g: SelectFilter): boolean {
+  if (g.powerAtLeast !== undefined && getEffectivePower(state, card) < g.powerAtLeast) return false
+  if (g.powerAtMost !== undefined && getEffectivePower(state, card) > g.powerAtMost) return false
+  if (g.rested !== undefined && card.isRested !== g.rested) return false
+  if (g.costAtMost !== undefined && getEffectiveFieldCost(state, card) > g.costAtMost) return false
+  if (g.typeIncludes && !cardTypes(card.cardId).includes(g.typeIncludes)) return false
+  if (g.nameIs && !cardHasName(card.cardId, g.nameIs)) return false
+  return true
+}
+
 export function drawCards(
   state: GameState,
   playerId: PlayerId,
   count: number,
   events: GameEvent[],
 ): GameState {
-  let s = state
+  let s = count > 0 ? emitEngineEvent(state, { kind: 'drawnExtra', player: playerId }) : state
   for (let i = 0; i < count; i++) {
     const p = s.players[playerId]
     if (p.deck.length === 0) {
@@ -1397,7 +1568,11 @@ function moveHandToDeckBottom(state: GameState, playerId: PlayerId, instanceId: 
   }
 }
 
-function moveDeckTopToBottom(state: GameState, playerId: PlayerId, instanceIds: string[]): GameState {
+function moveDeckTopToBottom(
+  state: GameState,
+  playerId: PlayerId,
+  instanceIds: string[],
+): GameState {
   if (instanceIds.length === 0) return state
   const ids = new Set(instanceIds)
   const p = state.players[playerId]

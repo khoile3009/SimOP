@@ -192,6 +192,18 @@ export function dealLifeDamage(
 
     const [lifeCard, ...lifeCards] = player.lifeCards
 
+    // "When your Life reaches 0" listeners (Enel) respond before any further
+    // damage lands; remaining hits park in pendingDamage and resume after
+    const lifeZeroCheck = (st: GameState): GameState | null => {
+      if (lifeCards.length > 0) return null
+      const emitted = emitEngineEvent(st, { kind: 'lifeZero', player: playerId })
+      if (emitted.stack.length === st.stack.length) return null
+      const remaining = count - i - 1
+      return remaining > 0
+        ? { ...emitted, pendingDamage: { playerId, count: remaining, banish, sourceId } }
+        : emitted
+    }
+
     if (banish) {
       // Banish: card goes to trash, no trigger
       s = {
@@ -203,6 +215,8 @@ export function dealLifeDamage(
       }
       events.push({ type: 'LIFE_BANISHED', playerId, description: 'Life card banished to trash' })
       s = damageEvent(s)
+      const zeroed = lifeZeroCheck(s)
+      if (zeroed) return zeroed
     } else {
       // Normal: card goes to hand WITHOUT being revealed - the owner checks it
       // privately, and only revealing to activate a [Trigger] makes it public
@@ -210,10 +224,24 @@ export function dealLifeDamage(
         ...s,
         players: {
           ...s.players,
-          [playerId]: { ...player, lifeCards, hand: [...player.hand, { ...lifeCard, revealed: false }] },
+          [playerId]: {
+            ...player,
+            lifeCards,
+            hand: [...player.hand, { ...lifeCard, revealed: false }],
+          },
         },
       }
       s = damageEvent(s)
+      s = emitEngineEvent(s, { kind: 'lifeAddedToHand', player: playerId })
+      const zeroed = lifeZeroCheck(s)
+      if (zeroed) {
+        const cardData0 = getCardById(lifeCard.cardId)
+        // A trigger on the final life card still prompts; its parked damage (if
+        // any) was already recorded by lifeZeroCheck
+        return cardData0?.triggerText
+          ? { ...zeroed, pendingTrigger: { cardInstanceId: lifeCard.instanceId, playerId } }
+          : zeroed
+      }
       const cardData = getCardById(lifeCard.cardId)
 
       if (cardData?.triggerText) {
@@ -237,4 +265,3 @@ export function dealLifeDamage(
 
   return s
 }
-

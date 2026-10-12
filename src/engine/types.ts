@@ -96,6 +96,8 @@ export interface GameState {
   pendingDamage: PendingDamage | null
   /** [End of Your Turn] effects are resolving; the turn switch completes when they finish */
   pendingEndTurn?: boolean
+  /** This player takes another turn after the current one (Gear 5); consumed at End Phase */
+  extraTurnFor?: PlayerId | null
   /** Per-player restrictions that expire at end of turn (e.g. 'noLifeToHand') */
   turnFlags: Record<PlayerId, string[]>
   /** One-shot cost discounts for playing matching cards this turn (Kin'emon) */
