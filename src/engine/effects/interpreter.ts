@@ -368,11 +368,14 @@ function executeOp(
         }
         const trash = [...p.trash]
         const [moved] = trash.splice(idx, 1)
+        // Printed "face-up" placements stay public knowledge (GameCard.revealed)
+        const placed = { ...moved, revealed: op.faceUp === true }
+        const lifeCards = op.bottom ? [...p.lifeCards, placed] : [placed, ...p.lifeCards]
         s = {
           ...removed,
           players: {
             ...removed.players,
-            [owner]: { ...p, trash, lifeCards: [{ ...moved, revealed: false }, ...p.lifeCards] },
+            [owner]: { ...p, trash, lifeCards },
           },
         }
       }
@@ -1635,43 +1638,52 @@ function withBinding(stack: EffectFrame[], bind: string, ids: string[]): EffectF
 // ─── Selection ───────────────────────────────────────────────────────────────
 
 function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilter): string[] {
-  const targetPlayer = filter.owner === 'self' ? frame.controller : getOpponent(frame.controller)
-  const player = state.players[targetPlayer]
-  let pool: GameCard[]
-  switch (filter.zone) {
-    case 'hand':
-      pool = player.hand
-      break
-    case 'trash':
-      pool = player.trash
-      break
-    case 'don':
-      pool = player.donArea
-      break
-    case 'life':
-      // "Add 1 card from your Life area" takes the top card
-      pool = player.lifeCards.slice(0, 1)
-      break
-    case 'leaderOrCharacters':
-      pool = [player.leader, ...player.characters]
-      break
-    case 'leader':
-      pool = [player.leader]
-      break
-    case 'stage':
-      pool = player.stage ? [player.stage] : []
-      break
-    case 'leaderOrStage':
-      pool = [player.leader, ...(player.stage ? [player.stage] : [])]
-      break
-    case 'guarded':
-      pool = (frame.bindings['target'] ?? [])
-        .map((id) => findFieldCard(state, id))
-        .filter((c): c is GameCard => !!c)
-      break
-    default:
-      pool = player.characters
+  const targetPlayer =
+    filter.owner === 'opponent' ? getOpponent(frame.controller) : frame.controller
+  const zonePool = (player: (typeof state.players)['player1']): GameCard[] => {
+    switch (filter.zone) {
+      case 'hand':
+        return player.hand
+      case 'trash':
+        return player.trash
+      case 'don':
+        return player.donArea
+      case 'life': {
+        // "Add 1 card from your Life area" takes the top card; with lifeEnds
+        // the printed "top or bottom" makes both end cards legal picks
+        if (filter.lifeEnds && player.lifeCards.length > 1) {
+          return [player.lifeCards[0], player.lifeCards[player.lifeCards.length - 1]]
+        }
+        return player.lifeCards.slice(0, 1)
+      }
+      case 'leaderOrCharacters':
+        return [player.leader, ...player.characters]
+      case 'leader':
+        return [player.leader]
+      case 'stage':
+        return player.stage ? [player.stage] : []
+      case 'leaderOrStage':
+        return [player.leader, ...(player.stage ? [player.stage] : [])]
+      case 'guarded':
+        return (frame.bindings['target'] ?? [])
+          .map((id) => findFieldCard(state, id))
+          .filter((c): c is GameCard => !!c)
+      default:
+        return player.characters
+    }
   }
+  // Re-pick from an earlier binding (destination choices like "bottom instead of top?")
+  if (filter.fromRef !== undefined) {
+    return (frame.bindings[filter.fromRef] ?? []).filter((id) => findFieldCard(state, id))
+  }
+  // owner 'any': side-unspecified targets ("up to 1 Character") span both fields
+  const pool: GameCard[] =
+    filter.owner === 'any' && filter.zone !== 'guarded'
+      ? [
+          ...zonePool(state.players[frame.controller]),
+          ...zonePool(state.players[getOpponent(frame.controller)]),
+        ]
+      : zonePool(state.players[targetPlayer])
   // Cost modifiers apply to cards on the field; hidden/hand zones use printed cost
   const onField = ['characters', 'leaderOrCharacters', 'leader', 'stage'].includes(filter.zone)
 

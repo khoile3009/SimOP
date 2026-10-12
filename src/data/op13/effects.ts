@@ -2279,6 +2279,5 @@ export const COVERAGE_NOTES_OP13: Record<string, string> = {
   'OP13-105': 'SIMPLIFIED: the full life reorder is modeled as the top-to-bottom life scry',
   'OP13-109':
     'SIMPLIFIED: the save confirm uses the top life card; with no face-down life the flip is skipped',
-  'OP13-119':
-    'SIMPLIFIED: bounce targets the opponent side only; the opponent replay is their choice from hand',
+  'OP13-119': 'SIMPLIFIED: the opponent replay is their choice from hand',
 }

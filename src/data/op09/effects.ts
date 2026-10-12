@@ -988,7 +988,7 @@ export const OP09_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 3 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -2168,7 +2168,6 @@ export const COVERAGE_NOTES_OP09: Record<string, string> = {
     'SIMPLIFIED: K.O.s a single target with 4000 power or less (the 2-target total-power split is not modeled)',
   'OP09-044': 'SIMPLIFIED: the hand trash happens after the search resolves',
   'OP09-052': "SIMPLIFIED: revives on any K.O. during the opponent's turn (battle K.O.s included)",
-  'OP09-058': 'SIMPLIFIED: the trigger bounce targets the opponent side only (rules allow either)',
   'OP09-061': 'SIMPLIFIED: the listener fires on any DON!! return, not only 2-or-more at once',
   'OP09-068':
     "SIMPLIFIED: Blocker lasts through the opponent's next turn via a turn-anchored modifier",

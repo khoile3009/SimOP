@@ -1042,7 +1042,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', basePowerAtMost: 5000 },
+          filter: { owner: 'any', zone: 'characters', basePowerAtMost: 5000 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -1076,7 +1076,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', baseCostIs: 1 },
+          filter: { owner: 'any', zone: 'characters', baseCostIs: 1 },
           min: 0,
           max: 1,
           prompt: 'Bottom-deck',
@@ -1108,7 +1108,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 2 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 2 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -1154,7 +1154,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 1 },
           min: 0,
           max: 1,
           prompt: 'Bottom-deck',
@@ -2046,7 +2046,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 6 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 6 },
           min: 0,
           max: 1,
           prompt: 'Add to their Life',
@@ -2109,7 +2109,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 4 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 4 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -2243,11 +2243,7 @@ export const COVERAGE_NOTES_OP11: Record<string, string> = {
   'OP11-035': "SIMPLIFIED: revives on any K.O. during the opponent's turn (battle K.O.s included)",
   'OP11-040': 'SIMPLIFIED: unchosen cards go to the deck bottom (text allows top or bottom)',
   'OP11-041': 'SIMPLIFIED: the two life-removal listeners carry separate once-per-turn marks',
-  'OP11-051':
-    "SIMPLIFIED: revives on any K.O. during the opponent's turn; bounce targets the opponent side only",
-  'OP11-056': 'SIMPLIFIED: bottom-deck targets the opponent side only (rules allow either)',
-  'OP11-059': 'SIMPLIFIED: bounce targets the opponent side only (rules allow either)',
-  'OP11-061': 'SIMPLIFIED: bottom-deck targets the opponent side only (rules allow either)',
+  'OP11-051': "SIMPLIFIED: revives on any K.O. during the opponent's turn (battle K.O.s included)",
   'OP11-062':
     'SIMPLIFIED: the cost-guess engine: a guess only hits when the top card is already known via a peek',
   'OP11-066':
@@ -2261,7 +2257,5 @@ export const COVERAGE_NOTES_OP11: Record<string, string> = {
     'SIMPLIFIED: fires only when Shu himself is attacked; the Slash-attribute check is not modeled',
   'OP11-091': 'SIMPLIFIED: the opponent picks the 3 Events; bottom order is not chosen',
   'OP11-102': 'SIMPLIFIED: the Event and Trigger listeners carry separate once-per-turn marks',
-  'OP11-116':
-    'SIMPLIFIED: targets the opponent side only; placed on TOP of Life, face-up not modeled',
-  'OP11-118': 'SIMPLIFIED: bounce targets the opponent side only (rules allow either)',
+  'OP11-116': 'SIMPLIFIED: placed on TOP of Life; face-up not modeled',
 }

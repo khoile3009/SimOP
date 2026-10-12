@@ -778,7 +778,7 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 3 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -871,7 +871,7 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 6 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 6 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -992,7 +992,7 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 6 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 6 },
           min: 0,
           max: 1,
           prompt: 'Bottom-deck',
@@ -2389,16 +2389,13 @@ export const KEYWORD_ONLY_OP08: string[] = ['OP08-003', 'OP08-072']
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP08: Record<string, string> = {
   'OP08-002': 'SIMPLIFIED: the kept card goes to the deck bottom (text allows top or bottom)',
-  'OP08-042': 'SIMPLIFIED: bounce targets the opponent side only (rules allow either)',
   'OP08-043':
     'SIMPLIFIED: the attack tax (attack allowed by trashing 2) is modeled as a hard attack lock',
   'OP08-045':
     'SIMPLIFIED: the replacement rewrites K.O.s only (bounces and bottom-decking go through)',
-  'OP08-047': 'SIMPLIFIED: the bounce targets the opponent side only (rules allow either)',
   'OP08-050': 'SIMPLIFIED: both cards go to the bottom (text allows top or bottom)',
   'OP08-052': 'SIMPLIFIED: an unplayed revealed card stays on top (text allows top or bottom)',
   'OP08-054': 'SIMPLIFIED: an unplayed revealed card stays on top (text allows top or bottom)',
-  'OP08-055': 'SIMPLIFIED: bottom-deck targets the opponent side only (rules allow either)',
   'OP08-056':
     "SIMPLIFIED: listens for your own effect removals only, regardless of the removed card's type",
   'OP08-057':

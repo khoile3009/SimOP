@@ -19,7 +19,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       on: { kind: 'donAttached', who: 'self' },
       condition: { yourTurn: true },
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 7 }, min: 0, max: 1, prompt: "Give up to 1 of your opponent's Characters -1 cost this turn" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 7 },
+          min: 0,
+          max: 1,
+          prompt: "Give up to 1 of your opponent's Characters -1 cost this turn",
+        },
         { op: 'costMod', ref: 't', amount: -1, duration: 'turn' },
       ],
     },
@@ -30,7 +37,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'l', filter: { owner: 'self', zone: 'leader' }, min: 0, max: 1, prompt: 'Up to 1 of your Leader gains +2000 until the start of your next turn' },
+        {
+          op: 'select',
+          bind: 'l',
+          filter: { owner: 'self', zone: 'leader' },
+          min: 0,
+          max: 1,
+          prompt: 'Up to 1 of your Leader gains +2000 until the start of your next turn',
+        },
         { op: 'powerMod', ref: 'l', amount: 2000, duration: 'untilYourNextTurn' },
         { op: 'restrictSelf', restriction: 'noLifeToHand' },
       ],
@@ -39,7 +53,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 2,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', powerAtMost: 3000 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with 3000 power or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', powerAtMost: 3000 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with 3000 power or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -47,7 +68,18 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 
   // Curly.Dadan
   'OP02-005': [
-    { timing: 'onPlay', ops: [{ op: 'searchTop', count: 5, filter: { cardType: 'Character', colorIncludes: 'Red', costIs: 1 }, upTo: 1, to: 'hand' }] },
+    {
+      timing: 'onPlay',
+      ops: [
+        {
+          op: 'searchTop',
+          count: 5,
+          filter: { cardType: 'Character', colorIncludes: 'Red', costIs: 1 },
+          upTo: 1,
+          to: 'hand',
+        },
+      ],
+    },
   ],
 
   // Squard
@@ -56,7 +88,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'onPlay',
       condition: { leaderTypeIncludes: 'Whitebeard Pirates' },
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -4000 power this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -4000 power this turn',
+        },
         { op: 'powerMod', ref: 't', amount: -4000, duration: 'turn' },
         { op: 'lifeTopToHand', count: 1 },
       ],
@@ -69,7 +108,21 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'activateMain',
       cost: { restSelf: true },
       ops: [
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', colorIncludes: 'Red', costIs: 1, nameNot: 'Dogura' }, min: 0, max: 1, prompt: 'Play up to 1 red cost-1 Character other than Dogura' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            colorIncludes: 'Red',
+            costIs: 1,
+            nameNot: 'Dogura',
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 red cost-1 Character other than Dogura',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -80,7 +133,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', powerAtMost: 3000 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with 3000 power or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', powerAtMost: 3000 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with 3000 power or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -91,7 +151,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 2, prompt: 'Give up to 2 Characters -3000 power this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 2,
+          prompt: 'Give up to 2 Characters -3000 power this turn',
+        },
         { op: 'powerMod', ref: 't', amount: -3000, duration: 'turn' },
         { op: 'requireCond', cond: { leaderTypeIncludes: 'Whitebeard Pirates' } },
         { op: 'grantKeyword', ref: 'self', keyword: 'Rush', duration: 'turn' },
@@ -105,7 +172,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'activateMain',
       cost: { restSelf: true },
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'characters', colorIncludes: 'Red', costIs: 1 }, min: 0, max: 1, prompt: 'Up to 1 of your red cost-1 Characters gains +3000 this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'self', zone: 'characters', colorIncludes: 'Red', costIs: 1 },
+          min: 0,
+          max: 1,
+          prompt: 'Up to 1 of your red cost-1 Characters gains +3000 this turn',
+        },
         { op: 'powerMod', ref: 't', amount: 3000, duration: 'turn' },
       ],
     },
@@ -116,7 +190,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'characters', colorIncludes: 'Red', costIs: 1 }, min: 0, max: 1, prompt: 'Up to 1 of your red cost-1 Characters gains +3000 this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'self', zone: 'characters', colorIncludes: 'Red', costIs: 1 },
+          min: 0,
+          max: 1,
+          prompt: 'Up to 1 of your red cost-1 Characters gains +3000 this turn',
+        },
         { op: 'powerMod', ref: 't', amount: 3000, duration: 'turn' },
       ],
     },
@@ -128,7 +209,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 2,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', powerAtMost: 2000 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with 2000 power or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', powerAtMost: 2000 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with 2000 power or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -139,7 +227,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onKo',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand', typeIncludes: 'Whitebeard Pirates' }, min: 0, max: 1, prompt: 'You may trash 1 {Whitebeard Pirates} card to play Marco from the trash rested' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand', typeIncludes: 'Whitebeard Pirates' },
+          min: 0,
+          max: 1,
+          prompt: 'You may trash 1 {Whitebeard Pirates} card to play Marco from the trash rested',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
         { op: 'requireCond', cond: { maxLifeSelf: 2 } },
@@ -154,14 +249,28 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'main',
       condition: { leaderTypeIncludes: 'Whitebeard Pirates' },
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', powerAtMost: 3000 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with 3000 power or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', powerAtMost: 3000 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with 3000 power or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'leaderOrCharacters' }, min: 0, max: 1, prompt: 'Give up to 1 Leader or Character -3000 power this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'leaderOrCharacters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Leader or Character -3000 power this turn',
+        },
         { op: 'powerMod', ref: 't', amount: -3000, duration: 'turn' },
       ],
     },
@@ -169,7 +278,18 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 
   // Whitebeard Pirates (event)
   'OP02-022': [
-    { timing: 'main', ops: [{ op: 'searchTop', count: 5, filter: { cardType: 'Character', typeIncludes: 'Whitebeard Pirates' }, upTo: 1, to: 'hand' }] },
+    {
+      timing: 'main',
+      ops: [
+        {
+          op: 'searchTop',
+          count: 5,
+          filter: { cardType: 'Character', typeIncludes: 'Whitebeard Pirates' },
+          upTo: 1,
+          to: 'hand',
+        },
+      ],
+    },
     { timing: 'trigger', ops: [{ op: 'activateTiming', timing: 'main' }] },
   ],
 
@@ -183,7 +303,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 'l', filter: { owner: 'self', zone: 'leader' }, min: 0, max: 1, prompt: 'Up to 1 of your Leader gains +1000 this turn' },
+        {
+          op: 'select',
+          bind: 'l',
+          filter: { owner: 'self', zone: 'leader' },
+          min: 0,
+          max: 1,
+          prompt: 'Up to 1 of your Leader gains +1000 this turn',
+        },
         { op: 'powerMod', ref: 'l', amount: 1000, duration: 'turn' },
       ],
     },
@@ -200,7 +327,15 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'activateMain',
       oncePerTurn: true,
       condition: { maxSelfCharacters: 1 },
-      ops: [{ op: 'grantPlayDiscount', amount: 1, cardType: 'Character', typeIncludes: 'Land of Wano', minCost: 3 }],
+      ops: [
+        {
+          op: 'grantPlayDiscount',
+          amount: 1,
+          cardType: 'Character',
+          typeIncludes: 'Land of Wano',
+          minCost: 3,
+        },
+      ],
     },
   ],
 
@@ -212,7 +347,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       oncePerTurn: true,
       condition: { maxSelfCharacters: 3 },
       ops: [
-        { op: 'select', bind: 'd', filter: { owner: 'self', zone: 'don', rested: true }, min: 0, max: 2, prompt: 'Set up to 2 DON!! as active' },
+        {
+          op: 'select',
+          bind: 'd',
+          filter: { owner: 'self', zone: 'don', rested: true },
+          min: 0,
+          max: 2,
+          prompt: 'Set up to 2 DON!! as active',
+        },
         { op: 'setActive', ref: 'd' },
       ],
     },
@@ -223,7 +365,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'endOfTurn',
       ops: [
-        { op: 'select', bind: 'd', filter: { owner: 'self', zone: 'don', rested: true }, min: 0, max: 1, prompt: 'Set up to 1 DON!! as active' },
+        {
+          op: 'select',
+          bind: 'd',
+          filter: { owner: 'self', zone: 'don', rested: true },
+          min: 0,
+          max: 1,
+          prompt: 'Set up to 1 DON!! as active',
+        },
         { op: 'setActive', ref: 'd' },
       ],
     },
@@ -231,10 +380,27 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 
   // Kouzuki Oden
   'OP02-030': [
-    { timing: 'activateMain', oncePerTurn: true, cost: { restDon: 3 }, ops: [{ op: 'setActive', ref: 'self' }] },
+    {
+      timing: 'activateMain',
+      oncePerTurn: true,
+      cost: { restDon: 3 },
+      ops: [{ op: 'setActive', ref: 'self' }],
+    },
     {
       timing: 'onKo',
-      ops: [{ op: 'searchDeck', filter: { cardType: 'Character', colorIncludes: 'Green', typeIncludes: 'Land of Wano', costIs: 3 }, upTo: 1, to: 'play' }],
+      ops: [
+        {
+          op: 'searchDeck',
+          filter: {
+            cardType: 'Character',
+            colorIncludes: 'Green',
+            typeIncludes: 'Land of Wano',
+            costIs: 3,
+          },
+          upTo: 1,
+          to: 'play',
+        },
+      ],
     },
   ],
 
@@ -243,10 +409,25 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don', rested: false }, min: 0, max: 2, exact: true, prompt: 'You may rest 2 DON!!' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don', rested: false },
+          min: 0,
+          max: 2,
+          exact: true,
+          prompt: 'You may rest 2 DON!!',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'rest', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'characters', typeIncludes: 'Minks', costAtMost: 5 }, min: 0, max: 1, prompt: 'Set up to 1 {Minks} Character with cost 5 or less as active' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'self', zone: 'characters', typeIncludes: 'Minks', costAtMost: 5 },
+          min: 0,
+          max: 1,
+          prompt: 'Set up to 1 {Minks} Character with cost 5 or less as active',
+        },
         { op: 'setActive', ref: 't' },
       ],
     },
@@ -258,7 +439,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 1,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 2, rested: false }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 2 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 2, rested: false },
+          min: 0,
+          max: 1,
+          prompt: 'Rest up to 1 Character with cost 2 or less',
+        },
         { op: 'rest', ref: 't' },
       ],
     },
@@ -271,7 +459,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       cost: { restDon: 1 },
       ops: [
         { op: 'returnToHand', ref: 'self' },
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', costIs: 3 }, min: 0, max: 1, prompt: 'Play up to 1 Character with a cost of 3' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: { owner: 'self', zone: 'hand', cardType: 'Character', costIs: 3 },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 Character with a cost of 3',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -282,19 +477,47 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don', rested: false }, min: 0, max: 1, exact: true, prompt: 'You may rest 1 DON!!' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don', rested: false },
+          min: 0,
+          max: 1,
+          exact: true,
+          prompt: 'You may rest 1 DON!!',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'rest', ref: 'pay' },
-        { op: 'searchTop', count: 3, filter: { typeIncludes: 'FILM', nameNot: 'Nami' }, upTo: 1, to: 'hand' },
+        {
+          op: 'searchTop',
+          count: 3,
+          filter: { typeIncludes: 'FILM', nameNot: 'Nami' },
+          upTo: 1,
+          to: 'hand',
+        },
       ],
     },
     {
       timing: 'whenAttacking',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don', rested: false }, min: 0, max: 1, exact: true, prompt: 'You may rest 1 DON!!' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don', rested: false },
+          min: 0,
+          max: 1,
+          exact: true,
+          prompt: 'You may rest 1 DON!!',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'rest', ref: 'pay' },
-        { op: 'searchTop', count: 3, filter: { typeIncludes: 'FILM', nameNot: 'Nami' }, upTo: 1, to: 'hand' },
+        {
+          op: 'searchTop',
+          count: 3,
+          filter: { typeIncludes: 'FILM', nameNot: 'Nami' },
+          upTo: 1,
+          to: 'hand',
+        },
       ],
     },
   ],
@@ -304,7 +527,20 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', typeIncludesAny: ['FILM', 'Straw Hat Crew'], costAtMost: 2 }, min: 0, max: 1, prompt: 'Play up to 1 {FILM} or {Straw Hat Crew} Character with cost 2 or less' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            typeIncludesAny: ['FILM', 'Straw Hat Crew'],
+            costAtMost: 2,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 {FILM} or {Straw Hat Crew} Character with cost 2 or less',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -315,7 +551,20 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', typeIncludesAny: ['FILM', 'Straw Hat Crew'], costAtMost: 3 }, min: 0, max: 1, prompt: 'Play up to 1 {FILM} or {Straw Hat Crew} Character with cost 3 or less' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            typeIncludesAny: ['FILM', 'Straw Hat Crew'],
+            costAtMost: 3,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 {FILM} or {Straw Hat Crew} Character with cost 3 or less',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -326,7 +575,20 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', typeIncludesAny: ['FILM', 'Straw Hat Crew'], costAtMost: 4 }, min: 0, max: 1, prompt: 'Play up to 1 {FILM} or {Straw Hat Crew} Character with cost 4 or less' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            typeIncludesAny: ['FILM', 'Straw Hat Crew'],
+            costAtMost: 4,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 {FILM} or {Straw Hat Crew} Character with cost 4 or less',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -337,7 +599,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 6, rested: false }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 6 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 6, rested: false },
+          min: 0,
+          max: 1,
+          prompt: 'Rest up to 1 Character with cost 6 or less',
+        },
         { op: 'rest', ref: 't' },
       ],
     },
@@ -348,7 +617,21 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', typeIncludes: 'Minks', nameNot: 'Wanda', costAtMost: 3 }, min: 0, max: 1, prompt: 'Play up to 1 {Minks} Character other than Wanda with cost 3 or less' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            typeIncludes: 'Minks',
+            nameNot: 'Wanda',
+            costAtMost: 3,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 {Minks} Character other than Wanda with cost 3 or less',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -359,16 +642,43 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'counter',
       ops: [
-        { op: 'select', bind: 'b', filter: { owner: 'self', zone: 'leaderOrCharacters' }, min: 0, max: 1, prompt: '+6000 power during this battle' },
+        {
+          op: 'select',
+          bind: 'b',
+          filter: { owner: 'self', zone: 'leaderOrCharacters' },
+          min: 0,
+          max: 1,
+          prompt: '+6000 power during this battle',
+        },
         { op: 'powerMod', ref: 'b', amount: 6000, duration: 'battle' },
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', costAtMost: 3, noBaseEffect: true }, min: 0, max: 1, prompt: 'Play up to 1 Character with cost 3 or less and no base effect' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            costAtMost: 3,
+            noBaseEffect: true,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 Character with cost 3 or less and no base effect',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'leaderOrCharacters', costAtMost: 5, rested: false }, min: 0, max: 1, prompt: 'Rest up to 1 Leader or Character with cost 5 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'leaderOrCharacters', costAtMost: 5, rested: false },
+          min: 0,
+          max: 1,
+          prompt: 'Rest up to 1 Leader or Character with cost 5 or less',
+        },
         { op: 'rest', ref: 't' },
       ],
     },
@@ -379,14 +689,34 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'main',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', rested: true, costAtMost: 4 }, min: 0, max: 1, prompt: 'K.O. up to 1 rested Character with cost 4 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', rested: true, costAtMost: 4 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 rested Character with cost 4 or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', costAtMost: 4, noBaseEffect: true }, min: 0, max: 1, prompt: 'Play up to 1 Character with cost 4 or less and no base effect' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            costAtMost: 4,
+            noBaseEffect: true,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 Character with cost 4 or less and no base effect',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -397,14 +727,28 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'main',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 4, rested: false }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 4 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 4, rested: false },
+          min: 0,
+          max: 1,
+          prompt: 'Rest up to 1 Character with cost 4 or less',
+        },
         { op: 'rest', ref: 't' },
       ],
     },
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', rested: true, costAtMost: 3 }, min: 0, max: 1, prompt: 'K.O. up to 1 rested Character with cost 3 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', rested: true, costAtMost: 3 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 rested Character with cost 3 or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -417,10 +761,24 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       condition: { minHandSelf: 1 },
       cost: { restSelf: true },
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand', typeIncludes: 'Land of Wano' }, min: 1, max: 1, prompt: 'Trash 1 {Land of Wano} card' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand', typeIncludes: 'Land of Wano' },
+          min: 1,
+          max: 1,
+          prompt: 'Trash 1 {Land of Wano} card',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 'd', filter: { owner: 'self', zone: 'don', rested: true }, min: 0, max: 1, prompt: 'Set up to 1 DON!! as active' },
+        {
+          op: 'select',
+          bind: 'd',
+          filter: { owner: 'self', zone: 'don', rested: true },
+          min: 0,
+          max: 1,
+          prompt: 'Set up to 1 DON!! as active',
+        },
         { op: 'setActive', ref: 'd' },
       ],
     },
@@ -430,7 +788,11 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 
   // Ivankov leader
   'OP02-049': [
-    { timing: 'endOfTurn', condition: { maxHandSelf: 0, minDeckSelf: 1 }, ops: [{ op: 'draw', count: 2 }] },
+    {
+      timing: 'endOfTurn',
+      condition: { maxHandSelf: 0, minDeckSelf: 1 },
+      ops: [{ op: 'draw', count: 2 }],
+    },
   ],
 
   // Ivankov: draw to 3, then a free Impel Down play
@@ -439,7 +801,21 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'onPlay',
       ops: [
         { op: 'drawTo', count: 3 },
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', colorIncludes: 'Blue', typeIncludes: 'Impel Down', costAtMost: 6 }, min: 0, max: 1, prompt: 'Play up to 1 blue {Impel Down} Character with cost 6 or less' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            colorIncludes: 'Blue',
+            typeIncludes: 'Impel Down',
+            costAtMost: 6,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 blue {Impel Down} Character with cost 6 or less',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -452,7 +828,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       condition: { hasCharacterNamed: 'Mohji' },
       ops: [
         { op: 'draw', count: 2 },
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'hand' }, min: 1, max: 1, prompt: 'Trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 1,
+          max: 1,
+          prompt: 'Trash 1 card from your hand',
+        },
         { op: 'trashCards', ref: 't' },
       ],
     },
@@ -465,10 +848,24 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 1,
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 1, prompt: 'You may trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 1,
+          prompt: 'You may trash 1 card from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 }, min: 0, max: 1, prompt: "Place up to 1 Character with cost 1 or less at the bottom of the owner's deck" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 },
+          min: 0,
+          max: 1,
+          prompt: "Place up to 1 Character with cost 1 or less at the bottom of the owner's deck",
+        },
         { op: 'bottomDeckFromField', ref: 't' },
       ],
     },
@@ -476,12 +873,34 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 
   // Kuma
   'OP02-057': [
-    { timing: 'onPlay', ops: [{ op: 'searchTop', count: 2, filter: { typeIncludes: 'The Seven Warlords of the Sea' }, upTo: 1, to: 'hand' }] },
+    {
+      timing: 'onPlay',
+      ops: [
+        {
+          op: 'searchTop',
+          count: 2,
+          filter: { typeIncludes: 'The Seven Warlords of the Sea' },
+          upTo: 1,
+          to: 'hand',
+        },
+      ],
+    },
   ],
 
   // Buggy
   'OP02-058': [
-    { timing: 'onPlay', ops: [{ op: 'searchTop', count: 5, filter: { colorIncludes: 'Blue', typeIncludes: 'Impel Down', nameNot: 'Buggy' }, upTo: 1, to: 'hand' }] },
+    {
+      timing: 'onPlay',
+      ops: [
+        {
+          op: 'searchTop',
+          count: 5,
+          filter: { colorIncludes: 'Blue', typeIncludes: 'Impel Down', nameNot: 'Buggy' },
+          upTo: 1,
+          to: 'hand',
+        },
+      ],
+    },
   ],
 
   // Boa Hancock
@@ -490,9 +909,23 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       ops: [
         { op: 'draw', count: 1 },
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'hand' }, min: 1, max: 1, prompt: 'Trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 1,
+          max: 1,
+          prompt: 'Trash 1 card from your hand',
+        },
         { op: 'trashCards', ref: 't' },
-        { op: 'select', bind: 'more', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 3, prompt: 'Trash up to 3 more cards from your hand' },
+        {
+          op: 'select',
+          bind: 'more',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 3,
+          prompt: 'Trash up to 3 more cards from your hand',
+        },
         { op: 'trashCards', ref: 'more' },
       ],
     },
@@ -503,7 +936,9 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'whenAttacking',
       condition: { maxHandSelf: 1 },
-      ops: [{ op: 'grantFlag', ref: 'self', flag: 'noBlockCostAtMost', value: 5, duration: 'battle' }],
+      ops: [
+        { op: 'grantFlag', ref: 'self', flag: 'noBlockCostAtMost', value: 5, duration: 'battle' },
+      ],
     },
   ],
 
@@ -512,10 +947,25 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 2, exact: true, prompt: 'You may trash 2 cards from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 2,
+          exact: true,
+          prompt: 'You may trash 2 cards from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 4 }, min: 0, max: 1, prompt: "Return up to 1 Character with cost 4 or less to the owner's hand" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'any', zone: 'characters', costAtMost: 4 },
+          min: 0,
+          max: 1,
+          prompt: "Return up to 1 Character with cost 4 or less to the owner's hand",
+        },
         { op: 'returnToHand', ref: 't' },
         { op: 'grantKeyword', ref: 'self', keyword: 'Double Attack', duration: 'turn' },
       ],
@@ -523,10 +973,25 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'whenAttacking',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 2, exact: true, prompt: 'You may trash 2 cards from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 2,
+          exact: true,
+          prompt: 'You may trash 2 cards from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 4 }, min: 0, max: 1, prompt: "Return up to 1 Character with cost 4 or less to the owner's hand" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'any', zone: 'characters', costAtMost: 4 },
+          min: 0,
+          max: 1,
+          prompt: "Return up to 1 Character with cost 4 or less to the owner's hand",
+        },
         { op: 'returnToHand', ref: 't' },
         { op: 'grantKeyword', ref: 'self', keyword: 'Double Attack', duration: 'turn' },
       ],
@@ -538,7 +1003,20 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'trash', cardType: 'Event', colorIncludes: 'Blue', costIs: 1 }, min: 0, max: 1, prompt: 'Add up to 1 blue cost-1 Event from your trash to your hand' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: {
+            owner: 'self',
+            zone: 'trash',
+            cardType: 'Event',
+            colorIncludes: 'Blue',
+            costIs: 1,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Add up to 1 blue cost-1 Event from your trash to your hand',
+        },
         { op: 'toHand', ref: 't' },
       ],
     },
@@ -550,10 +1028,24 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 1,
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 1, prompt: 'You may trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 1,
+          prompt: 'You may trash 1 card from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 2 }, min: 0, max: 1, prompt: "Place up to 1 Character with cost 2 or less at the bottom of the owner's deck" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'any', zone: 'characters', costAtMost: 2 },
+          min: 0,
+          max: 1,
+          prompt: "Place up to 1 Character with cost 2 or less at the bottom of the owner's deck",
+        },
         { op: 'bottomDeckFromField', ref: 't' },
         { op: 'grantFlag', ref: 'self', flag: 'bottomDeckAtBattleEnd', duration: 'battle' },
       ],
@@ -565,7 +1057,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'endOfTurn',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 1, prompt: 'You may trash 1 card to set Mr.3 as active' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 1,
+          prompt: 'You may trash 1 card to set Mr.3 as active',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
         { op: 'setActive', ref: 'self' },
@@ -578,7 +1077,15 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'main',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 2, exact: true, prompt: 'You may trash 2 cards from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 2,
+          exact: true,
+          prompt: 'You may trash 2 cards from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
         { op: 'requireCond', cond: { leaderTypeIncludes: 'Impel Down' } },
@@ -593,7 +1100,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'main',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 4 }, min: 0, max: 1, prompt: "Return up to 1 Character with cost 4 or less to the owner's hand" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'any', zone: 'characters', costAtMost: 4 },
+          min: 0,
+          max: 1,
+          prompt: "Return up to 1 Character with cost 4 or less to the owner's hand",
+        },
         { op: 'returnToHand', ref: 't' },
       ],
     },
@@ -605,17 +1119,38 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'counter',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 1, prompt: 'You may trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 1,
+          prompt: 'You may trash 1 card from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 'b', filter: { owner: 'self', zone: 'leaderOrCharacters' }, min: 0, max: 1, prompt: '+3000 power during this battle' },
+        {
+          op: 'select',
+          bind: 'b',
+          filter: { owner: 'self', zone: 'leaderOrCharacters' },
+          min: 0,
+          max: 1,
+          prompt: '+3000 power during this battle',
+        },
         { op: 'powerMod', ref: 'b', amount: 3000, duration: 'battle' },
       ],
     },
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 2 }, min: 0, max: 1, prompt: "Return up to 1 Character with cost 2 or less to the owner's hand" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'any', zone: 'characters', costAtMost: 2 },
+          min: 0,
+          max: 1,
+          prompt: "Return up to 1 Character with cost 2 or less to the owner's hand",
+        },
         { op: 'returnToHand', ref: 't' },
       ],
     },
@@ -626,7 +1161,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'counter',
       ops: [
-        { op: 'select', bind: 'b', filter: { owner: 'self', zone: 'leaderOrCharacters' }, min: 0, max: 1, prompt: '+6000 power during this battle' },
+        {
+          op: 'select',
+          bind: 'b',
+          filter: { owner: 'self', zone: 'leaderOrCharacters' },
+          min: 0,
+          max: 1,
+          prompt: '+6000 power during this battle',
+        },
         { op: 'powerMod', ref: 'b', amount: 6000, duration: 'battle' },
         { op: 'drawTo', count: 2 },
       ],
@@ -634,7 +1176,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 7 }, min: 0, max: 1, prompt: "Return up to 1 Character with cost 7 or less to the owner's hand" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'any', zone: 'characters', costAtMost: 7 },
+          min: 0,
+          max: 1,
+          prompt: "Return up to 1 Character with cost 7 or less to the owner's hand",
+        },
         { op: 'returnToHand', ref: 't' },
       ],
     },
@@ -648,9 +1197,23 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       cost: { restSelf: true },
       ops: [
         { op: 'draw', count: 1 },
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'hand' }, min: 1, max: 1, prompt: 'Trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 1,
+          max: 1,
+          prompt: 'Trash 1 card from your hand',
+        },
         { op: 'trashCards', ref: 't' },
-        { op: 'select', bind: 'more', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 3, prompt: 'Trash up to 3 more cards from your hand' },
+        {
+          op: 'select',
+          bind: 'more',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 3,
+          prompt: 'Trash up to 3 more cards from your hand',
+        },
         { op: 'trashCards', ref: 'more' },
       ],
     },
@@ -674,10 +1237,25 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'whenAttacking',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 4, exact: true, prompt: 'You may return 4 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 4,
+          exact: true,
+          prompt: 'You may return 4 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with cost 3 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with cost 3 or less',
+        },
         { op: 'ko', ref: 't' },
         { op: 'powerMod', ref: 'self', amount: 1000, duration: 'turn' },
       ],
@@ -689,7 +1267,19 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', typeIncludes: 'Jailer Beast' }, min: 0, max: 1, prompt: 'Play up to 1 {Jailer Beast} Character from your hand' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            typeIncludes: 'Jailer Beast',
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 {Jailer Beast} Character from your hand',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -700,7 +1290,15 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 1, exact: true, prompt: 'You may return 1 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 1,
+          exact: true,
+          prompt: 'You may return 1 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
         { op: 'playSelf' },
@@ -713,10 +1311,25 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 1, exact: true, prompt: 'You may return 1 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 1,
+          exact: true,
+          prompt: 'You may return 1 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with cost 1 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with cost 1 or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -727,10 +1340,32 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 2, exact: true, prompt: 'You may return 2 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 2,
+          exact: true,
+          prompt: 'You may return 2 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
-        { op: 'select', bind: 'p', filter: { owner: 'self', zone: 'hand', cardType: 'Character', typeIncludes: 'SMILE', nameNot: 'Daifugo', costAtMost: 3 }, min: 0, max: 1, prompt: 'Play up to 1 {SMILE} Character other than Daifugo with cost 3 or less' },
+        {
+          op: 'select',
+          bind: 'p',
+          filter: {
+            owner: 'self',
+            zone: 'hand',
+            cardType: 'Character',
+            typeIncludes: 'SMILE',
+            nameNot: 'Daifugo',
+            costAtMost: 3,
+          },
+          min: 0,
+          max: 1,
+          prompt: 'Play up to 1 {SMILE} Character other than Daifugo with cost 3 or less',
+        },
         { op: 'playCards', ref: 'p' },
       ],
     },
@@ -741,10 +1376,25 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 1, exact: true, prompt: 'You may return 1 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 1,
+          exact: true,
+          prompt: 'You may return 1 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 4, rested: false }, min: 0, max: 1, prompt: 'Rest up to 1 Character with cost 4 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 4, rested: false },
+          min: 0,
+          max: 1,
+          prompt: 'Rest up to 1 Character with cost 4 or less',
+        },
         { op: 'rest', ref: 't' },
       ],
     },
@@ -761,7 +1411,18 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 
   // Hannyabal
   'OP02-083': [
-    { timing: 'onPlay', ops: [{ op: 'searchTop', count: 5, filter: { colorIncludes: 'Purple', typeIncludes: 'Impel Down', nameNot: 'Hannyabal' }, upTo: 1, to: 'hand' }] },
+    {
+      timing: 'onPlay',
+      ops: [
+        {
+          op: 'searchTop',
+          count: 5,
+          filter: { colorIncludes: 'Purple', typeIncludes: 'Impel Down', nameNot: 'Hannyabal' },
+          upTo: 1,
+          to: 'hand',
+        },
+      ],
+    },
   ],
 
   // Magellan: drains DON coming and going
@@ -769,7 +1430,15 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 1, exact: true, prompt: 'You may return 1 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 1,
+          exact: true,
+          prompt: 'You may return 1 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
         { op: 'oppReturnDon', count: 1 },
@@ -780,12 +1449,20 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 
   // Minokoala
   'OP02-086': [
-    { timing: 'onKo', condition: { leaderTypeIncludes: 'Impel Down' }, ops: [{ op: 'addDon', count: 1, rested: true }] },
+    {
+      timing: 'onKo',
+      condition: { leaderTypeIncludes: 'Impel Down' },
+      ops: [{ op: 'addDon', count: 1, rested: true }],
+    },
   ],
 
   // Minotaur
   'OP02-087': [
-    { timing: 'onKo', condition: { leaderTypeIncludes: 'Impel Down' }, ops: [{ op: 'addDon', count: 1, rested: true }] },
+    {
+      timing: 'onKo',
+      condition: { leaderTypeIncludes: 'Impel Down' },
+      ops: [{ op: 'addDon', count: 1, rested: true }],
+    },
   ],
 
   // Judgment of Hell
@@ -793,10 +1470,25 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'counter',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 1, exact: true, prompt: 'You may return 1 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 1,
+          exact: true,
+          prompt: 'You may return 1 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'leaderOrCharacters' }, min: 0, max: 2, prompt: 'Give up to 2 Leader or Characters -3000 power this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'leaderOrCharacters' },
+          min: 0,
+          max: 2,
+          prompt: 'Give up to 2 Leader or Characters -3000 power this turn',
+        },
         { op: 'powerMod', ref: 't', amount: -3000, duration: 'turn' },
       ],
     },
@@ -814,10 +1506,25 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'main',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 1, exact: true, prompt: 'You may return 1 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 1,
+          exact: true,
+          prompt: 'You may return 1 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -3000 power this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -3000 power this turn',
+        },
         { op: 'powerMod', ref: 't', amount: -3000, duration: 'turn' },
       ],
     },
@@ -849,7 +1556,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       condition: { minHandSelf: 1 },
       cost: { restSelf: true },
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 1, max: 1, prompt: 'Trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 1,
+          max: 1,
+          prompt: 'Trash 1 card from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
         { op: 'searchTop', count: 3, filter: { typeIncludes: 'Impel Down' }, upTo: 1, to: 'hand' },
@@ -862,7 +1576,15 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'don' }, min: 0, max: 2, exact: true, prompt: 'You may return 2 DON!! to your DON!! deck' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'don' },
+          min: 0,
+          max: 2,
+          exact: true,
+          prompt: 'You may return 2 DON!! to your DON!! deck',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
         { op: 'powerModAll', amount: 1000, duration: 'untilYourNextTurn', includeLeader: true },
@@ -879,7 +1601,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       donRequired: 1,
       oncePerTurn: true,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -1 cost this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -1 cost this turn',
+        },
         { op: 'costMod', ref: 't', amount: -1, duration: 'turn' },
         { op: 'requireCond', cond: { anyCharacterCostAtMost: 0 } },
         { op: 'powerMod', ref: 'self', amount: 1000, duration: 'turn' },
@@ -889,7 +1618,12 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 
   // Isuka: battle K.O.s stand her back up
   'OP02-094': [
-    { timing: 'afterBattleKo', donRequired: 1, oncePerTurn: true, ops: [{ op: 'setActive', ref: 'self' }] },
+    {
+      timing: 'afterBattleKo',
+      donRequired: 1,
+      oncePerTurn: true,
+      ops: [{ op: 'setActive', ref: 'self' }],
+    },
   ],
 
   // Kuzan
@@ -898,7 +1632,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'whenAttacking',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -4 cost this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -4 cost this turn',
+        },
         { op: 'costMod', ref: 't', amount: -4, duration: 'turn' },
       ],
     },
@@ -909,10 +1650,24 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 1, prompt: 'You may trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 1,
+          prompt: 'You may trash 1 card from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with cost 3 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with cost 3 or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -923,10 +1678,24 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 1, prompt: 'You may trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 1,
+          prompt: 'You may trash 1 card from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 5 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with cost 5 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 5 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with cost 5 or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -937,7 +1706,9 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'whenAttacking',
       condition: { anyCharacterCostAtMost: 0 },
-      ops: [{ op: 'grantFlag', ref: 'self', flag: 'noBlockCostAtMost', value: 5, duration: 'battle' }],
+      ops: [
+        { op: 'grantFlag', ref: 'self', flag: 'noBlockCostAtMost', value: 5, duration: 'battle' },
+      ],
     },
   ],
 
@@ -956,7 +1727,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 1,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -2 cost this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -2 cost this turn',
+        },
         { op: 'costMod', ref: 't', amount: -2, duration: 'turn' },
       ],
     },
@@ -970,7 +1748,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 1,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -3 cost this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -3 cost this turn',
+        },
         { op: 'costMod', ref: 't', amount: -3, duration: 'turn' },
       ],
     },
@@ -981,7 +1766,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -2 cost this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -2 cost this turn',
+        },
         { op: 'costMod', ref: 't', amount: -2, duration: 'turn' },
       ],
     },
@@ -992,7 +1784,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onBlock',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 6 }, min: 0, max: 1, prompt: 'Up to 1 Character with cost 6 or less cannot attack this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 6 },
+          min: 0,
+          max: 1,
+          prompt: 'Up to 1 Character with cost 6 or less cannot attack this turn',
+        },
         { op: 'grantFlag', ref: 't', flag: 'cannotAttack', duration: 'turn' },
       ],
     },
@@ -1013,9 +1812,23 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'activateMain',
       cost: { restSelf: true },
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -1 cost this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -1 cost this turn',
+        },
         { op: 'costMod', ref: 't', amount: -1, duration: 'turn' },
-        { op: 'select', bind: 'b', filter: { owner: 'self', zone: 'leaderOrCharacters' }, min: 0, max: 1, prompt: 'Up to 1 Leader or Character gains +1000 this turn' },
+        {
+          op: 'select',
+          bind: 'b',
+          filter: { owner: 'self', zone: 'leaderOrCharacters' },
+          min: 0,
+          max: 1,
+          prompt: 'Up to 1 Leader or Character gains +1000 this turn',
+        },
         { op: 'powerMod', ref: 'b', amount: 1000, duration: 'turn' },
       ],
     },
@@ -1026,7 +1839,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'whenAttacking',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -2 cost this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -2 cost this turn',
+        },
         { op: 'costMod', ref: 't', amount: -2, duration: 'turn' },
         { op: 'requireCond', cond: { anyCharacterCostAtMost: 0 } },
         { op: 'powerMod', ref: 'self', amount: 2000, duration: 'battle' },
@@ -1041,7 +1861,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'whenAttacking',
       donRequired: 2,
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costIs: 0 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with a cost of 0' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costIs: 0 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with a cost of 0',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -1052,14 +1879,28 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'main',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters' }, min: 0, max: 1, prompt: 'Give up to 1 Character -5 cost this turn' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: 'Give up to 1 Character -5 cost this turn',
+        },
         { op: 'costMod', ref: 't', amount: -5, duration: 'turn' },
       ],
     },
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with cost 3 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with cost 3 or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -1070,10 +1911,24 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'counter',
       ops: [
-        { op: 'select', bind: 'pay', filter: { owner: 'self', zone: 'hand' }, min: 0, max: 1, prompt: 'You may trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 'pay',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 0,
+          max: 1,
+          prompt: 'You may trash 1 card from your hand',
+        },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'trashCards', ref: 'pay' },
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'characters' }, min: 0, max: 1, prompt: "Up to 1 of your Characters cannot be K.O.'d during this battle" },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'self', zone: 'characters' },
+          min: 0,
+          max: 1,
+          prompt: "Up to 1 of your Characters cannot be K.O.'d during this battle",
+        },
         { op: 'grantFlag', ref: 't', flag: 'noBattleKo', duration: 'battle' },
         { op: 'grantFlag', ref: 't', flag: 'noEffectKo', duration: 'battle' },
       ],
@@ -1081,7 +1936,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'trigger',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'stage', costAtMost: 3 }, min: 0, max: 1, prompt: 'K.O. up to 1 Stage with cost 3 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'stage', costAtMost: 3 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Stage with cost 3 or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -1092,7 +1954,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'main',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with cost 1 or less' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with cost 1 or less',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -1100,7 +1969,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'trigger',
       ops: [
         { op: 'draw', count: 2 },
-        { op: 'select', bind: 't', filter: { owner: 'self', zone: 'hand' }, min: 1, max: 1, prompt: 'Trash 1 card from your hand' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'self', zone: 'hand' },
+          min: 1,
+          max: 1,
+          prompt: 'Trash 1 card from your hand',
+        },
         { op: 'trashCards', ref: 't' },
       ],
     },
@@ -1111,7 +1987,14 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'onPlay',
       ops: [
-        { op: 'select', bind: 't', filter: { owner: 'opponent', zone: 'characters', costAtMost: 0 }, min: 0, max: 1, prompt: 'K.O. up to 1 Character with a cost of 0' },
+        {
+          op: 'select',
+          bind: 't',
+          filter: { owner: 'opponent', zone: 'characters', costAtMost: 0 },
+          min: 0,
+          max: 1,
+          prompt: 'K.O. up to 1 Character with a cost of 0',
+        },
         { op: 'ko', ref: 't' },
       ],
     },
@@ -1122,18 +2005,36 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
 export const OP02_STATICS: Record<string, StaticDef[]> = {
   // Jozu: Rush at low life under a Whitebeard leader
   'OP02-008': [
-    { donRequired: 1, condition: { maxLifeSelf: 2, leaderTypeIncludes: 'Whitebeard Pirates' }, target: { scope: 'self' }, keyword: 'Rush' },
+    {
+      donRequired: 1,
+      condition: { maxLifeSelf: 2, leaderTypeIncludes: 'Whitebeard Pirates' },
+      target: { scope: 'self' },
+      keyword: 'Rush',
+    },
   ],
   // Whitey Bay
   'OP02-014': [{ donRequired: 1, target: { scope: 'self' }, flag: 'canAttackActive' }],
   // Rakuyo
   'OP02-019': [
-    { donRequired: 1, condition: { yourTurn: true }, target: { scope: 'myCharacters', typeIncludes: 'Whitebeard Pirates' }, power: 1000 },
+    {
+      donRequired: 1,
+      condition: { yourTurn: true },
+      target: { scope: 'myCharacters', typeIncludes: 'Whitebeard Pirates' },
+      power: 1000,
+    },
   ],
   // Moby Dick: Whitebeard leader and WB characters +2000 at 1 life
   'OP02-024': [
-    { condition: { yourTurn: true, maxLifeSelf: 1 }, target: { scope: 'myLeader', nameIs: 'Edward.Newgate' }, power: 2000 },
-    { condition: { yourTurn: true, maxLifeSelf: 1 }, target: { scope: 'myCharacters', typeIncludes: 'Whitebeard Pirates' }, power: 2000 },
+    {
+      condition: { yourTurn: true, maxLifeSelf: 1 },
+      target: { scope: 'myLeader', nameIs: 'Edward.Newgate' },
+      power: 2000,
+    },
+    {
+      condition: { yourTurn: true, maxLifeSelf: 1 },
+      target: { scope: 'myCharacters', typeIncludes: 'Whitebeard Pirates' },
+      power: 2000,
+    },
   ],
   // Inuarashi: untouchable while all DON are rested
   'OP02-027': [
@@ -1141,7 +2042,11 @@ export const OP02_STATICS: Record<string, StaticDef[]> = {
   ],
   // Toki: Blocker while you have an Oden
   'OP02-031': [
-    { condition: { hasCharacterNamed: 'Kouzuki Oden' }, target: { scope: 'self' }, keyword: 'Blocker' },
+    {
+      condition: { hasCharacterNamed: 'Kouzuki Oden' },
+      target: { scope: 'self' },
+      keyword: 'Blocker',
+    },
   ],
   // Inazuma
   'OP02-050': [{ condition: { maxHandSelf: 1 }, target: { scope: 'self' }, power: 2000 }],
@@ -1159,12 +2064,15 @@ export const OP02_STATICS: Record<string, StaticDef[]> = {
   'OP02-102': [{ target: { scope: 'self' }, flag: 'noEffectKo' }],
   // Borsalino: sturdier on their turn
   'OP02-114': [
-    { condition: { opponentsTurn: true }, target: { scope: 'self' }, power: 1000, flag: 'noEffectKo' },
+    {
+      condition: { opponentsTurn: true },
+      target: { scope: 'self' },
+      power: 1000,
+      flag: 'noEffectKo',
+    },
   ],
   // Kuzan: everything the opponent has costs 5 less
-  'OP02-121': [
-    { condition: { yourTurn: true }, target: { scope: 'oppCharacters' }, costMod: -5 },
-  ],
+  'OP02-121': [{ condition: { yourTurn: true }, target: { scope: 'oppCharacters' }, costMod: -5 }],
 }
 
 /**
@@ -1175,24 +2083,23 @@ export const KEYWORD_ONLY_OP02: string[] = ['OP02-012', 'OP02-038', 'OP02-081', 
 
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP02: Record<string, string> = {
-  'OP02-072': 'SIMPLIFIED: DON!!-4 pays from the cost area only (attached DON need the class picker)',
+  'OP02-072':
+    'SIMPLIFIED: DON!!-4 pays from the cost area only (attached DON need the class picker)',
   'OP02-075': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
   'OP02-076': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
   'OP02-078': 'SIMPLIFIED: DON!!-2 pays from the cost area only',
   'OP02-079': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
   'OP02-082': 'SIMPLIFIED: DON!!-8 pays from the cost area only',
-  'OP02-085': 'SIMPLIFIED: DON!!-1 pays from the cost area only; forced opponent returns take cost-area DON, rested first',
+  'OP02-085':
+    'SIMPLIFIED: DON!!-1 pays from the cost area only; forced opponent returns take cost-area DON, rested first',
   'OP02-089': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
   'OP02-090': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
   'OP02-120': 'SIMPLIFIED: DON!!-2 pays from the cost area only',
-  'OP02-056': 'SIMPLIFIED: "top or bottom in any order" implemented as choose-a-subset-for-bottom (order preserved)',
+  'OP02-056':
+    'SIMPLIFIED: "top or bottom in any order" implemented as choose-a-subset-for-bottom (order preserved)',
   'OP02-057': 'SIMPLIFIED: revealed leftovers go to the bottom ("top or bottom" not offered)',
-  'OP02-062': 'SIMPLIFIED: "return up to 1 Character" targets the opponent side only (rules allow either)',
-  'OP02-064': 'SIMPLIFIED: "place up to 1 Character" targets the opponent side only (rules allow either)',
-  'OP02-067': 'SIMPLIFIED: bounce targets restricted to the opponent side (rules allow either)',
-  'OP02-068': 'SIMPLIFIED: trigger bounce targets the opponent side only (rules allow either)',
-  'OP02-069': 'SIMPLIFIED: trigger bounce targets the opponent side only (rules allow either)',
   'OP02-066': 'SIMPLIFIED: "draw up to 2" always draws 2',
   'OP02-026': 'SIMPLIFIED: "3 or less Characters" is checked after the played Character lands',
-  'OP02-002': 'SIMPLIFIED: fires on ATTACH_DON actions and effect-given DON (each attach action once, whatever its count)',
+  'OP02-002':
+    'SIMPLIFIED: fires on ATTACH_DON actions and effect-given DON (each attach action once, whatever its count)',
 }

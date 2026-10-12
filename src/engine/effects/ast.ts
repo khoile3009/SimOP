@@ -234,7 +234,12 @@ export interface Cond {
 
 /** Instance selection filter, for `select` (live zones). */
 export interface SelectFilter {
-  owner: 'self' | 'opponent'
+  /** 'any': the printed target names no side ("up to 1 Character") - both fields are legal */
+  owner: 'self' | 'opponent' | 'any'
+  /** Options are the cards already bound under this ref ("place it at the bottom instead?" re-picks) */
+  fromRef?: string
+  /** Life zone only: both the top and bottom cards are options ("from the top or bottom of your Life") */
+  lifeEnds?: boolean
   zone:
     | 'characters'
     | 'leaderOrCharacters'
@@ -387,7 +392,7 @@ export type EffectOp =
   /** Trash the top card(s) of a player's Life */
   | { op: 'trashLifeTop'; owner: 'self' | 'opponent'; count: number }
   /** Move a bound field character to the TOP of its owner's Life (Katakuri) */
-  | { op: 'fieldToLife'; ref: string }
+  | { op: 'fieldToLife'; ref: string; faceUp?: boolean; bottom?: boolean }
   /** Move bound cards from the controller's trash to their deck bottom */
   | { op: 'trashToDeckBottom'; ref: string }
   /** Return the oldest N trash cards to the deck and shuffle (Elizabello's cost) */

@@ -892,7 +892,7 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 5 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 5 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -996,7 +996,7 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 1 },
           min: 0,
           max: 1,
           prompt: 'Bottom-deck',
@@ -1190,7 +1190,7 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 2 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 2 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -2494,12 +2494,9 @@ export const COVERAGE_NOTES_OP10: Record<string, string> = {
   'OP10-037': 'SIMPLIFIED: the guard covers opponent-effect K.O.s only (other removals go through)',
   'OP10-042':
     'SIMPLIFIED: the removal listeners do not check that the removed card was Dressrosa-typed; two once-per-turn marks',
-  'OP10-046': 'SIMPLIFIED: bounce targets the opponent side only (rules allow either)',
   'OP10-049': 'SIMPLIFIED: the guard covers opponent-effect K.O.s only (text covers any removal)',
-  'OP10-052': 'SIMPLIFIED: bottom-deck targets the opponent side only (rules allow either)',
   'OP10-058':
     'SIMPLIFIED: the two plays are separate picks; the rested rider applies to the second (cost 4 or less) pick',
-  'OP10-061': 'SIMPLIFIED: bounce targets the opponent side only (rules allow either)',
   'OP10-103': 'SIMPLIFIED: the life payment takes the top card (text allows top or bottom)',
   'OP10-107':
     'SIMPLIFIED: the life payment takes the top card (text allows top or bottom); face-up not modeled',

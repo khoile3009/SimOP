@@ -899,7 +899,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 2 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 2 },
           min: 0,
           max: 1,
           prompt: 'Bottom-deck',
@@ -936,7 +936,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 2 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 2 },
           min: 0,
           max: 1,
           prompt: 'Bottom-deck',
@@ -953,7 +953,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 3 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -973,7 +973,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 4 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 4 },
           min: 0,
           max: 1,
           prompt: 'Bottom-deck',
@@ -1043,7 +1043,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 2 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 2 },
           min: 0,
           max: 1,
           prompt: 'Bottom-deck',
@@ -1057,7 +1057,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b3',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 3 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 3 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -2251,12 +2251,7 @@ export const COVERAGE_NOTES_OP05: Record<string, string> = {
   'OP05-040': 'SIMPLIFIED: the refresh-lock reads printed cost; the wipe K.O.s by effective cost',
   'OP05-043':
     'SIMPLIFIED: unchosen cards go to the deck bottom (text allows top or bottom in any order)',
-  'OP05-045': 'SIMPLIFIED: bottom-deck targets the opponent side only (rules allow either)',
-  'OP05-048': 'SIMPLIFIED: bottom-deck targets the opponent side only (rules allow either)',
-  'OP05-049': 'SIMPLIFIED: bounce targets the opponent side only (rules allow either)',
-  'OP05-051': 'SIMPLIFIED: bottom-deck targets the opponent side only (rules allow either)',
   'OP05-055': 'SIMPLIFIED: scry models top-or-bottom as choosing a subset for the bottom',
-  'OP05-057': 'SIMPLIFIED: bottom-deck/bounce target the opponent side only (rules allow either)',
   'OP05-058': 'SIMPLIFIED: hands trash from the newest cards down to 5 (no choice of which)',
   'OP05-060':
     'SIMPLIFIED: the 0-or-3+ DON!! check gates activation (officially checked after paying the life)',

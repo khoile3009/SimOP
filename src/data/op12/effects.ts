@@ -892,7 +892,7 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 5 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 5 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -1007,7 +1007,7 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 1 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 1 },
           min: 0,
           max: 1,
           prompt: 'Return to hand',
@@ -1914,7 +1914,7 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', costAtMost: 9 },
+          filter: { owner: 'any', zone: 'characters', costAtMost: 9 },
           min: 0,
           max: 1,
           prompt: 'Add to their Life',
@@ -2115,9 +2115,6 @@ export const COVERAGE_NOTES_OP12: Record<string, string> = {
   'OP12-040':
     'SIMPLIFIED: any of your own hand-trash effects count (the Navy-source check is not modeled; costs count too)',
   'OP12-041': 'SIMPLIFIED: the activated Event resolves its [Main] text at base cost 3 or less',
-  'OP12-042': 'SIMPLIFIED: bottom-deck targets the opponent side only (rules allow either)',
-  'OP12-046': 'SIMPLIFIED: bounce targets the opponent side only (rules allow either)',
-  'OP12-054': 'SIMPLIFIED: bounce targets the opponent side only (rules allow either)',
   'OP12-061': 'SIMPLIFIED: the guard pays by taking your top life card to hand',
   'OP12-070':
     'SIMPLIFIED: the replacement covers opponent-effect K.O.s only (other removals go through)',
@@ -2129,7 +2126,7 @@ export const COVERAGE_NOTES_OP12: Record<string, string> = {
     'SIMPLIFIED: the two life-removal listeners share the effect via the draw restriction, not a shared mark',
   'OP12-102':
     'SIMPLIFIED: the aura ignores the base-cost-2 qualifier on "no other Shirahoshi"; the guard covers opponent-effect K.O.s only',
-  'OP12-117': 'SIMPLIFIED: the life placement targets the opponent side only, on TOP of the stack',
+  'OP12-117': 'SIMPLIFIED: the life placement goes on TOP of the stack',
   'OP12-090': 'SIMPLIFIED: the top-deck trash payment is mandatory on attack',
   'OP12-119':
     "SIMPLIFIED: the self cost boost reads as a +2 modifier until the opponent's next End Phase",
