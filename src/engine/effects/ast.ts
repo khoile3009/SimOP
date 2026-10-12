@@ -181,6 +181,18 @@ export interface Cond {
   minOppCharsBasePowerAtLeast?: { power: number; count: number }
   /** Either player's life count is 0 (Roger) */
   anyPlayerLifeZero?: boolean
+  /** The combined effective cost of your characters is at least this (Law leader) */
+  minSelfCharsTotalCost?: number
+  /** You control a character with this type and at least this power (Sugar leader) */
+  charTypedPowerAtLeast?: { type: string; power: number }
+  /** ANY character on either field has at least this effective cost (Rebecca) */
+  anyCharacterCostAtLeast?: number
+  /** The opponent has at least this many MORE characters than you (Liberation) */
+  charDisadvantageAtLeast?: number
+  /** Your life count is at most the opponent's (X.Drake) */
+  atMostLifeOfOpp?: boolean
+  /** At least `count` of your RESTED characters carry `type` (green Nami) */
+  minSelfRestedCharsTyped?: { type: string; count: number }
   /** The OPPONENT has a character with this effective cost or less (Baskerville) */
   oppCharCostAtMost?: number
 }
@@ -197,6 +209,7 @@ export interface SelectFilter {
     | 'don'
     | 'life'
     | 'stage'
+    | 'leaderOrStage'
     | 'guarded'
   /** Effective cost for field zones (cost modifiers apply); printed cost elsewhere */
   costAtMost?: number
@@ -436,6 +449,8 @@ export type EffectOp =
   | { op: 'searchDeck'; filter: CardDataFilter; upTo: number; to: 'hand' | 'play' }
   /** Reveal top card; if it matches, may play it; otherwise it stays on top */
   | { op: 'revealTopMayPlay'; filter: CardDataFilter; rested?: boolean }
+  /** Reveal the TOP LIFE card; if it matches, play it (Law leader) */
+  | { op: 'revealLifeTopMayPlay'; filter: CardDataFilter }
   | { op: 'addDon'; count: number; rested: boolean } // from DON!! deck to cost area
   /** Rested cost-area DON onto the source card, or onto a bound card via toRef */
   | { op: 'giveRestedDon'; upTo: number; toRef?: string }
@@ -485,7 +500,7 @@ export interface EffectDef {
   timing: EffectTiming
   /** For timings 'replaceKo'/'guardKo': 'oppEffect' narrows the window to
    * opponent-effect K.O.s, 'effect' to any non-battle K.O.; default any K.O. */
-  replaceWhen?: 'any' | 'oppEffect' | 'effect'
+  replaceWhen?: 'any' | 'oppEffect' | 'effect' | 'battle'
   /** For timing 'onEvent': which engine event this def listens for */
   on?: EventQuery
   /** [DON!! xN]: needs at least N DON attached to the source card */
@@ -514,6 +529,7 @@ export interface StaticDef {
      * only itself (OP07 Sanji) */
     scope: 'self' | 'myLeader' | 'myCharacters' | 'myCharactersOther' | 'oppCharacters' | 'myHand' | 'handSelf'
     typeIncludes?: string
+    typeIncludesAny?: string[]
     nameIs?: string
     nameNot?: string
     cardType?: 'Character' | 'Event' | 'Stage'

@@ -359,6 +359,39 @@ function executeOp(
       return advance(s)
     }
 
+    case 'revealLifeTopMayPlay': {
+      const bind = `$op${frame.pc}`
+      const p = state.players[controller]
+      const top = p.lifeCards[0]
+      if (!top) return advance(state)
+      if (!(bind in frame.bindings)) {
+        if (!matchCardData(top.cardId, op.filter)) return advance(state)
+        return {
+          ...state,
+          pendingChoice: {
+            playerId: controller,
+            prompt: 'Play the revealed Life card?',
+            options: [top.instanceId],
+            min: 0,
+            max: 1,
+            bind,
+          },
+        }
+      }
+      const chosen = frame.bindings[bind]
+      if (chosen.length === 0) return advance(state)
+      // Move the card out of life, then play it from a hand-like holding spot
+      const lifeCards = p.lifeCards.slice(1)
+      const s: GameState = {
+        ...state,
+        players: {
+          ...state.players,
+          [controller]: { ...p, lifeCards, hand: [...p.hand, { ...top, revealed: true }] },
+        },
+      }
+      return advance(playCardFree(s, controller, top.instanceId, false, events))
+    }
+
     case 'revealTopCheck': {
       const p = state.players[controller]
       const top = p.deck[0]
@@ -1437,6 +1470,9 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
     case 'stage':
       pool = player.stage ? [player.stage] : []
       break
+    case 'leaderOrStage':
+      pool = [player.leader, ...(player.stage ? [player.stage] : [])]
+      break
     case 'guarded':
       pool = (frame.bindings['target'] ?? [])
         .map((id) => findFieldCard(state, id))
@@ -1793,7 +1829,7 @@ export function koById(
 
 /** Whether a replacement window applies given how the K.O. arrived. */
 function replaceWindowOpen(
-  when: 'any' | 'oppEffect' | 'effect' | undefined,
+  when: 'any' | 'oppEffect' | 'effect' | 'battle' | undefined,
   opts: { byBattle?: boolean; controller?: PlayerId },
   owner: PlayerId,
 ): boolean {
@@ -1801,6 +1837,7 @@ function replaceWindowOpen(
     return !opts.byBattle && opts.controller !== undefined && opts.controller !== owner
   }
   if (when === 'effect') return !opts.byBattle
+  if (when === 'battle') return opts.byBattle === true
   return true
 }
 

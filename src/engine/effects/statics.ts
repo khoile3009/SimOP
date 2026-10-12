@@ -267,6 +267,12 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
           if (t.scope === 'myCharactersOther' && card.instanceId === source.instanceId) continue
         }
         if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) continue
+        if (
+          t.typeIncludesAny &&
+          !t.typeIncludesAny.some((ty) => cardTypes(card.cardId).includes(ty))
+        ) {
+          continue
+        }
         if (t.nameIs && !cardHasName(card.cardId, t.nameIs)) continue
         if (t.nameNot && cardHasName(card.cardId, t.nameNot)) continue
         if (
