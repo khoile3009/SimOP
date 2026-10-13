@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { CardData, CardType, Deck } from '@/engine/types'
-import { getCardsBySet } from '@/data/cardService'
+import { getAllCards } from '@/data/cardService'
+import { SET_MODULES } from '@/data/sets'
+import { useIncrementalList } from '@/hooks/useIncrementalList'
 import { getLeaderColors, getCardCount, canAddCard } from '@/stores/deckStore'
 import CardImage from '@/components/cards/CardImage'
 import CardDetail from '@/components/cards/CardDetail'
@@ -14,25 +16,25 @@ export default function CardPool({ deck, onAdd }: CardPoolProps) {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<CardType | ''>('')
   const [costFilter, setCostFilter] = useState<number | ''>('')
+  const [setFilter, setSetFilter] = useState('')
   const [inspecting, setInspecting] = useState<CardData | null>(null)
 
   const leaderColors = getLeaderColors(deck.leader)
 
   const poolCards = useMemo(() => {
-    return getCardsBySet('OP01').filter((c) => {
-      // Exclude leaders from pool
+    return getAllCards().filter((c) => {
       if (c.cardType === 'Leader') return false
-      // Color restriction
+      // The pool only shows cards the leader's colors can run
       if (!c.color.some((col) => leaderColors.includes(col))) return false
-      // Search
+      if (setFilter && !c.id.startsWith(`${setFilter}-`)) return false
       if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false
-      // Type filter
       if (typeFilter && c.cardType !== typeFilter) return false
-      // Cost filter
       if (costFilter !== '' && c.cost !== costFilter) return false
       return true
     })
-  }, [leaderColors, search, typeFilter, costFilter])
+  }, [leaderColors, search, typeFilter, costFilter, setFilter])
+
+  const { visible, hasMore, sentinelRef } = useIncrementalList(poolCards, 60)
 
   const TYPES: CardType[] = ['Character', 'Event', 'Stage']
   const COSTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -49,13 +51,27 @@ export default function CardPool({ deck, onAdd }: CardPoolProps) {
           className="w-40 rounded bg-ocean-800 px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-info-blue"
         />
         <select
+          value={setFilter}
+          onChange={(e) => setSetFilter(e.target.value)}
+          className="rounded bg-ocean-800 px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-info-blue"
+        >
+          <option value="">All Sets</option>
+          {SET_MODULES.map((m) => (
+            <option key={m.code} value={m.code}>
+              {m.code}
+            </option>
+          ))}
+        </select>
+        <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value as CardType | '')}
           className="rounded bg-ocean-800 px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-info-blue"
         >
           <option value="">All Types</option>
           {TYPES.map((t) => (
-            <option key={t} value={t}>{t}</option>
+            <option key={t} value={t}>
+              {t}
+            </option>
           ))}
         </select>
         <select
@@ -65,18 +81,20 @@ export default function CardPool({ deck, onAdd }: CardPoolProps) {
         >
           <option value="">Any Cost</option>
           {COSTS.map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>
+              {c}
+            </option>
           ))}
         </select>
         <span className="ml-auto text-sm text-text-muted">
-          Showing {leaderColors.join('/')} cards
+          {poolCards.length} {leaderColors.join('/')} cards
         </span>
       </div>
 
       {/* Card grid */}
       <div className="flex-1 overflow-y-auto">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
-          {poolCards.map((card) => {
+          {visible.map((card) => {
             const count = getCardCount(deck, card.id)
             const { ok } = canAddCard(deck, card)
 
@@ -110,6 +128,7 @@ export default function CardPool({ deck, onAdd }: CardPoolProps) {
             )
           })}
         </div>
+        {hasMore && <div ref={sentinelRef} className="h-8" />}
       </div>
 
       {inspecting && <CardDetail card={inspecting} onClose={() => setInspecting(null)} />}

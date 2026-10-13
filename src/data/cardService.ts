@@ -33,6 +33,11 @@ export function getLeaders(set: string): CardData[] {
   return getCardsBySet(set).filter((c) => c.cardType === 'Leader')
 }
 
+/** Every leader in the pool, in set order. */
+export function getAllLeaders(): CardData[] {
+  return SET_MODULES.flatMap((m) => getLeaders(m.code))
+}
+
 /** Search cards by name (case-insensitive) */
 export function searchCards(query: string): CardData[] {
   const lower = query.toLowerCase()

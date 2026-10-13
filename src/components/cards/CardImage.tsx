@@ -17,6 +17,8 @@ export default function CardImage({ card, className = '', onClick }: CardImagePr
       src={src}
       alt={card.name}
       className={`rounded-sm ${className}`}
+      loading="lazy"
+      decoding="async"
       onError={() => setFailed(true)}
       onClick={onClick}
       draggable={false}

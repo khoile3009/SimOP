@@ -1,10 +1,12 @@
 import type { CardType, Color } from '@/engine/types'
+import { SET_MODULES } from '@/data/sets'
 
 export interface Filters {
   search: string
   color: Color | ''
   cardType: CardType | ''
   cost: number | ''
+  set: string
 }
 
 const COLORS: Color[] = ['Red', 'Green', 'Blue', 'Purple', 'Black', 'Yellow']
@@ -31,6 +33,13 @@ export default function FilterBar({ filters, onChange, totalResults }: FilterBar
       />
 
       <Select
+        value={filters.set}
+        onChange={(v) => update({ set: v })}
+        placeholder="All Sets"
+        options={SET_MODULES.map((m) => m.code)}
+      />
+
+      <Select
         value={filters.color}
         onChange={(v) => update({ color: v as Color | '' })}
         placeholder="All Colors"
@@ -51,9 +60,13 @@ export default function FilterBar({ filters, onChange, totalResults }: FilterBar
         options={COSTS.map(String)}
       />
 
-      {(filters.search || filters.color || filters.cardType || filters.cost !== '') && (
+      {(filters.search ||
+        filters.color ||
+        filters.cardType ||
+        filters.cost !== '' ||
+        filters.set) && (
         <button
-          onClick={() => onChange({ search: '', color: '', cardType: '', cost: '' })}
+          onClick={() => onChange({ search: '', color: '', cardType: '', cost: '', set: '' })}
           className="text-sm text-text-muted hover:text-text-primary"
         >
           Clear
