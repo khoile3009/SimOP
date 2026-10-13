@@ -1607,7 +1607,12 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
   'OP11-088': [
     {
       timing: 'onEvent',
-      on: { kind: 'attacked', who: 'self', sourceIsSelf: true },
+      on: {
+        kind: 'attackDeclared',
+        who: 'opponent',
+        attackerIsLeader: false,
+        attackerAttributeIs: 'Slash',
+      },
       oncePerTurn: true,
       ops: [{ op: 'powerMod', ref: 'self', amount: 5000, duration: 'battle' }],
     },
@@ -2267,7 +2272,5 @@ export const COVERAGE_NOTES_OP11: Record<string, string> = {
   'OP11-074': 'SIMPLIFIED: cost-guess hits only with a prior peek',
   'OP11-079': 'SIMPLIFIED: cost-guess hits only with a prior peek',
   'OP11-081': 'SIMPLIFIED: cost-guess hits only with a prior peek',
-  'OP11-088':
-    'SIMPLIFIED: fires only when Shu himself is attacked; the Slash-attribute check is not modeled',
   'OP11-091': 'SIMPLIFIED: the opponent picks the 3 Events; bottom order is not chosen',
 }

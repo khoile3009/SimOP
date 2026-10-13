@@ -1893,7 +1893,7 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
       ops: [
         { op: 'trashLifeTop', owner: 'self', count: 1 },
         { op: 'requireCond', cond: { leaderTypeIncludes: 'Big Mom Pirates' } },
-        { op: 'deckTopToLife', count: 1 },
+        { op: 'atTurnEnd', kind: 'deckTopToLife', count: 1 },
       ],
     },
   ],
@@ -2421,6 +2421,5 @@ export const COVERAGE_NOTES_OP08: Record<string, string> = {
     'SIMPLIFIED: modes are offered cost-down first; declining it rolls into the draw mode',
   'OP08-074': 'SIMPLIFIED: the end-of-turn DON!! return takes cost-area DON only, rested first',
   'OP08-098': "SIMPLIFIED: the played card's cost cap reads DON!! at resolution time",
-  'OP08-101': 'SIMPLIFIED: the life refill happens immediately instead of at the end of the turn',
   'OP08-118': 'SIMPLIFIED: the two debuff picks may select the same Character only once each',
 }

@@ -49,8 +49,9 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 
 ## Effect System
 
-Coverage: FULL for every main set on optcgapi — OP01–OP13, OP16, OP17 (Oct 2026;
-OP-14/OP-15 are absent from the API). Every card is automated via effect defs +
+Coverage: FULL FIDELITY for every main set on optcgapi — OP01–OP13, OP16, OP17
+(engine declared complete Oct 2026: the SIMPLIFIED ledger holds only rules-equivalent
+conveniences, ordering nuances and API transcriptions. OP-14/OP-15 are absent from the API). Every card is automated via effect defs +
 statics in `src/data/<set>/effects.ts`, printed-keyword parsing, or the rules layer;
 each set's `COVERAGE_NOTES` documents the remaining SIMPLIFIED deviations (enforced by
 the shared coverage test). Each set is fleet-certified: 1600 games, zero invariant

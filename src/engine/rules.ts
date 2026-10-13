@@ -10,6 +10,7 @@ import {
   hasFlag,
   getEffectiveCost,
   getEffectiveFieldCost,
+  getEffectiveCounter,
 } from './effects/statics'
 import { getEffectivePower } from './powerCalc'
 
@@ -339,8 +340,9 @@ function validateUseCounter(
     if (!card) return { valid: false, reason: 'Counter card not in hand' }
     const cardData = getCardById(card.cardId)
     if (!cardData) return { valid: false, reason: 'Card data not found' }
-    // Counter VALUES only; [Counter] events go through PLAY_COUNTER_EVENT (and pay cost)
-    if (cardData.counter === null || cardData.counter <= 0) {
+    // Counter VALUES only; [Counter] events go through PLAY_COUNTER_EVENT (and pay cost).
+    // Effective: counterSet hand auras can give counterless cards a value (OP17 Kaido)
+    if (getEffectiveCounter(state, playerId, card) <= 0) {
       return { valid: false, reason: `${cardData.name} has no counter value` }
     }
   }

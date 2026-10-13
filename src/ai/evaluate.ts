@@ -1,4 +1,5 @@
 import type { GameState, PlayerId } from '@/engine/types'
+import { getEffectiveCounter } from '@/engine/effects/statics'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '@/engine/powerCalc'
 import { getOpponent } from '@/engine/turnManager'
@@ -105,7 +106,7 @@ function sideStats(state: GameState, playerId: PlayerId): SideStats {
   }
 
   let counterHand = 0
-  for (const card of me.hand) counterHand += getCardById(card.cardId)?.counter ?? 0
+  for (const card of me.hand) counterHand += getEffectiveCounter(state, playerId, card)
 
   return {
     life: me.lifeCards.length,

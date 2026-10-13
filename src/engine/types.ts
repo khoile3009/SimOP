@@ -98,6 +98,12 @@ export interface GameState {
   pendingEndTurn?: boolean
   /** This player takes another turn after the current one (Gear 5); consumed at End Phase */
   extraTurnFor?: PlayerId | null
+  /** One-shot effects printed "at the end of this turn", run in the End Phase */
+  atTurnEnd?: Array<{
+    player: PlayerId
+    kind: 'setActiveDon' | 'deckTopToLife' | 'addDonActive'
+    count: number
+  }>
   /** Per-player restrictions that expire at end of turn (e.g. 'noLifeToHand') */
   turnFlags: Record<PlayerId, string[]>
   /** One-shot cost discounts for playing matching cards this turn (Kin'emon) */

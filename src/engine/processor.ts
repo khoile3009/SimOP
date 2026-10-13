@@ -29,7 +29,7 @@ import {
   removeFromField,
 } from './effects/interpreter'
 import { getEffectDefs } from './effects/registry'
-import { getEffectiveCost, discountMatches, hasFlag } from './effects/statics'
+import { getEffectiveCost, discountMatches, hasFlag, getEffectiveCounter } from './effects/statics'
 import { legalActions } from './legalActions'
 import { getCardRules } from './rulesLayer'
 import { MAX_CHARACTERS } from './constants'
@@ -519,8 +519,7 @@ function processUseCounter(
     const idx = newHand.findIndex((c) => c.instanceId === id)
     if (idx >= 0) {
       const card = newHand[idx]
-      const cardData = getCardById(card.cardId)
-      totalCounterPower += cardData?.counter ?? 0
+      totalCounterPower += getEffectiveCounter(state, playerId, card)
       newTrash.push(newHand[idx])
       newHand.splice(idx, 1)
     }
@@ -880,12 +879,67 @@ function maybeFinishEndTurn(state: GameState): GameState {
       }
     }
   }
+  // Scheduled "at the end of this turn" one-shots (Gordon's DON refresh,
+  // Charlotte Angel's life refill) run now
+  for (const job of swept.atTurnEnd ?? []) {
+    const p = swept.players[job.player]
+    if (job.kind === 'setActiveDon') {
+      let left = job.count
+      swept = {
+        ...swept,
+        players: {
+          ...swept.players,
+          [job.player]: {
+            ...p,
+            donArea: p.donArea.map((d) => {
+              if (left > 0 && d.isRested) {
+                left--
+                return { ...d, isRested: false }
+              }
+              return d
+            }),
+          },
+        },
+      }
+    } else if (job.kind === 'addDonActive') {
+      const pp = swept.players[job.player]
+      const take = Math.min(job.count, pp.donDeck.length)
+      const donDeck = [...pp.donDeck]
+      const moved = donDeck.splice(0, take).map((d) => ({ ...d, isRested: false }))
+      swept = {
+        ...swept,
+        players: {
+          ...swept.players,
+          [job.player]: { ...pp, donDeck, donArea: [...pp.donArea, ...moved] },
+        },
+      }
+    } else if (job.kind === 'deckTopToLife') {
+      for (let i = 0; i < job.count; i++) {
+        const pp = swept.players[job.player]
+        if (pp.deck.length === 0) break
+        const deck = [...pp.deck]
+        const [top] = deck.splice(0, 1)
+        swept = {
+          ...swept,
+          players: {
+            ...swept.players,
+            [job.player]: {
+              ...pp,
+              deck,
+              lifeCards: [{ ...top, revealed: false }, ...pp.lifeCards],
+            },
+          },
+        }
+      }
+    }
+  }
   // "During this turn" player restrictions and unused play discounts expire now
   const cleared: GameState = {
     ...swept,
     pendingEndTurn: false,
     turnFlags: { player1: [], player2: [] },
     playDiscounts: { player1: [], player2: [] },
+    atTurnEnd: [],
   }
   // The next player's [Start of Your Turn] auto effects queue as Main opens
   const next = autoAdvancePhases(executeEndPhase(cleared))

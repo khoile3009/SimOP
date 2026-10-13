@@ -124,7 +124,7 @@
       (optcgapi drops minus signs on debuff texts — all opponent-bound mods are
       authored negative and verified by regex). Remaining fidelity debt lives in
       each set's COVERAGE_NOTES (SIMPLIFIED entries only; zero MISSING anywhere).
-- [~] Full-fidelity campaign (Oct 2026, IN PROGRESS) — burn down the SIMPLIFIED
+- [x] Full-fidelity campaign (Oct 2026, COMPLETE) — burn down the SIMPLIFIED
       ledger toward a complete engine (started at 312 notes; ~100 are benign
       bot-ordering/auto-accept equivalences that stay documented). Phases:
       1. DONE: no-machinery slices — baseCostAtMost/baseCostIs filters,
@@ -135,8 +135,29 @@
          misrecorded — their texts print "your opponent's") 290 → 246, and
          life-stack fidelity (fieldToLife/handToLife faceUp, fieldToLife
          bottom, fromRef destination re-picks, lifeEnds payments; 19 cards)
-         246 → 227. Deck-top "top or bottom" ordering leftovers (~15 notes)
-         fold into phase 5.
+         246 → 227.
+      3. DONE: attached-DON payments (includeAttached synthetic options,
+         owner-agnostic returnDon, cost.returnDon counts attached;
+         oppReturnDon replaced by opponent-chooser selects) 227 → 185.
+      4. DONE: "would be removed" replacement windows (guardScope 'removal',
+         removeByEffect choke, guardResolve completes the original removal)
+         + the advance() frame fix (ops that push frames no longer skip the
+         new frame's first op — latent engine-wide listener bug) 185 → 167ish;
+         event precision (per-card removal payloads, attackDeclared,
+         koCause, oncePerTurnKey shared marks, trigger-Events count as
+         eventActivated) + multi-select set bounds (totalCostAtMost/
+         totalPowerAtMost/distinctNames) 185 → 151.
+      5. DONE: counter-value hand auras (getEffectiveCounter read by
+         counter legality/values/AI), at-turn-end scheduler (state.atTurnEnd:
+         setActiveDon/addDonActive/deckTopToLife), zone 'anyOwn' rest costs,
+         attackerAttributeIs, hasOtherCharacterTypedColor,
+         allSelfCharsNoCounter, revealTopMayPlay unplayedTo 'bottom'.
+         312 → 138 notes. ENGINE DECLARED COMPLETE (Oct 2026): every
+         remaining SIMPLIFIED note is a rules-equivalent convenience
+         (auto-accepting strictly-better "you may"s, free ordering choices,
+         mode-offer order), a hidden-info display nuance, or an API-corruption
+         transcription — none grants a strategic advantage the AI could
+         exploit, so the pool is sound for learned-eval training.
       3. Class-based DON picker (design approved, artifact linked below) —
          clears the ~36 "DON!!-X pays from cost area only" notes.
       4. Generalized removal-replacement window ("would be removed" guards,

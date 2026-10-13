@@ -439,7 +439,7 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don', rested: false },
+          filter: { owner: 'self', zone: 'anyOwn', rested: false },
           min: 0,
           max: 1,
           prompt: 'Rest a DON!! to save it?',
@@ -861,7 +861,7 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don', rested: false },
+          filter: { owner: 'self', zone: 'anyOwn', rested: false },
           min: 0,
           max: 4,
           exact: true,
@@ -2952,6 +2952,19 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
 
 /** Continuous effects (auras), applied at read time. */
 export const OP17_STATICS: Record<string, StaticDef[]> = {
+  'OP17-063': [
+    {
+      target: { scope: 'myHand', cardType: 'Character', noCounter: true },
+      counterSet: 1000,
+    },
+  ],
+  'OP17-118': [
+    {
+      condition: { allSelfCharsNoCounter: true },
+      target: { scope: 'handSelf' },
+      counterSet: 2000,
+    },
+  ],
   'OP17-002': [{ target: { scope: 'self' }, condition: { opponentsTurn: true }, power: 3000 }],
   'OP17-003': [{ target: { scope: 'self' }, flag: 'rushCharactersOnly' }],
   'OP17-005': [
@@ -3028,22 +3041,17 @@ export const COVERAGE_NOTES_OP17: Record<string, string> = {
   'OP17-018': 'SIMPLIFIED: the counter checks a Whitebeard character at 8000+, not two',
   'OP17-020':
     'SIMPLIFIED: the either-or activation cost always rests a DON!! (the hand-trash mode is dropped)',
-  'OP17-021': 'SIMPLIFIED: the save cost rests a DON!! (text allows any of your cards)',
   'OP17-034':
     'SIMPLIFIED: the opponent-leader 6000-power check reads any opponent character presence',
-  'OP17-038': 'SIMPLIFIED: the rest-4-cards payment rests DON!! only',
   'OP17-039': 'SIMPLIFIED: a missed reveal leaves the card on top, publicly known',
   'OP17-049':
     'SIMPLIFIED: the opponent chooses by trashing 2 or declining (which hands Linlin the draw)',
   'OP17-050':
     'SIMPLIFIED: both looked-at cards go to the bottom (text allows reordering onto the top)',
-  'OP17-063': 'SIMPLIFIED: the hand-counter aura on counterless Characters is not modeled',
   'OP17-085': 'SIMPLIFIED: the character play lock lands after Brogy; hand first, then trash',
   'OP17-092': 'SIMPLIFIED: the character play lock lands after Dorry; hand first, then trash',
   'OP17-099':
     "SIMPLIFIED: the opponent chooses by trashing 1 or declining, which triggers Linlin's trash-and-ramp",
   'OP17-112': 'SIMPLIFIED: the power set reads as a +4000 aura on 4000-base Trigger characters',
   'OP17-117': 'SIMPLIFIED: the opponent pays exactly 3 or declines into the K.O.',
-  'OP17-118':
-    'SIMPLIFIED: the conditional +2000 counter value in hand is not modeled (counter values are static)',
 }

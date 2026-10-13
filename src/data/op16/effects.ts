@@ -646,7 +646,7 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don', rested: false },
+          filter: { owner: 'self', zone: 'anyOwn', rested: false },
           min: 0,
           max: 2,
           exact: true,
@@ -2463,6 +2463,12 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
 
 /** Continuous effects (auras), applied at read time. */
 export const OP16_STATICS: Record<string, StaticDef[]> = {
+  'OP16-118': [
+    {
+      target: { scope: 'myHand', cardType: 'Character', basePowerIs: 8000 },
+      counterSet: 2000,
+    },
+  ],
   'OP16-003': [
     { condition: { yourTurn: true }, target: { scope: 'myLeader' }, keyword: 'Double Attack' },
     { condition: { yourTurn: true }, target: { scope: 'myLeader' }, power: 2000 },
@@ -2525,7 +2531,6 @@ export const COVERAGE_NOTES_OP16: Record<string, string> = {
     'SIMPLIFIED: the 10000-power trash cost matches exact printed power via a floor+cap pair',
   'OP16-015': 'SIMPLIFIED: both power sets read as set-to-7000 of effective power',
   'OP16-019': "SIMPLIFIED: 8000-power is read from the hand card's printed power",
-  'OP16-033': 'SIMPLIFIED: the save cost rests 2 DON!! (text allows any 2 of your cards)',
   'OP16-058': 'SIMPLIFIED: the power set reads effective power',
   'OP16-059': 'SIMPLIFIED: both plays enter active',
   'OP16-060':
@@ -2534,6 +2539,4 @@ export const COVERAGE_NOTES_OP16: Record<string, string> = {
     'SIMPLIFIED: the from-trash Rush grant is not modeled as a leader listener (black Yamato plays grant it themselves where printed)',
   'OP16-082': 'SIMPLIFIED: the unchosen searched cards are trashed per print',
   'OP16-104': "SIMPLIFIED: power copy reads the target's effective power",
-  'OP16-118':
-    'SIMPLIFIED: the +2000 counter aura on 8000-power hand cards is not modeled (counter values are static)',
 }

@@ -320,7 +320,12 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'leaderOrCharacters' },
+          filter: {
+            owner: 'self',
+            zone: 'leaderOrCharacters',
+            cardTypeAny: ['Character'],
+            orNameIs: 'Silvers Rayleigh',
+          },
           min: 0,
           max: 1,
           prompt: '+2000 power',
@@ -422,7 +427,12 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'self', zone: 'leaderOrCharacters' },
+          filter: {
+            owner: 'self',
+            zone: 'leaderOrCharacters',
+            cardTypeAny: ['Character'],
+            orNameIs: 'Silvers Rayleigh',
+          },
           min: 0,
           max: 1,
           prompt: '+2000 power',
@@ -2120,8 +2130,6 @@ export const KEYWORD_ONLY_OP12: string[] = ['OP12-050', 'OP12-106']
 
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP12: Record<string, string> = {
-  'OP12-016': 'SIMPLIFIED: the counter buff may target any leader, not only Rayleigh',
-  'OP12-019': 'SIMPLIFIED: the counter buff may target any leader, not only Rayleigh',
   'OP12-020': 'SIMPLIFIED: the leader untaps at the end of any battle against a Character',
   'OP12-037':
     'SIMPLIFIED: rests up to 2 Characters only (the Characters-or-DON mixed total is not modeled)',

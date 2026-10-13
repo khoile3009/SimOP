@@ -5,7 +5,7 @@ import { getOpponent } from './turnManager'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
 import { getEffectDefs } from './effects/registry'
-import { getEffectiveCost } from './effects/statics'
+import { getEffectiveCost, getEffectiveCounter } from './effects/statics'
 
 /**
  * Which player must act next, or null if the game is over / no decision is pending.
@@ -189,7 +189,7 @@ function counterOptions(state: GameState, actor: PlayerId): GameAction[] {
   if (needed <= 0) return actions
 
   const counters = player.hand
-    .map((card) => ({ card, value: getCardById(card.cardId)?.counter ?? 0 }))
+    .map((card) => ({ card, value: getEffectiveCounter(state, actor, card) }))
     .filter((c) => c.value > 0)
     .sort((a, b) => b.value - a.value)
 

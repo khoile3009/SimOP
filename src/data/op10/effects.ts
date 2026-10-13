@@ -2496,7 +2496,7 @@ export const OP10_STATICS: Record<string, StaticDef[]> = {
   ],
   'OP10-108': [
     {
-      condition: { hasOtherCharacterTyped: 'Supernovas' },
+      condition: { hasOtherCharacterTypedColor: { type: 'Supernovas', color: 'Yellow' } },
       target: { scope: 'self' },
       keyword: 'Blocker',
     },
@@ -2518,7 +2518,5 @@ export const COVERAGE_NOTES_OP10: Record<string, string> = {
   'OP10-034': 'SIMPLIFIED: the saved life card goes to hand hidden, as damage would',
   'OP10-058':
     'SIMPLIFIED: the two plays are separate picks; the rested rider applies to the second (cost 4 or less) pick',
-  'OP10-108':
-    'SIMPLIFIED: the Blocker condition checks the Supernovas type only (not the yellow color)',
   'OP10-112': 'SIMPLIFIED: the rest-self cost is matched by cost (8+) rather than identity',
 }

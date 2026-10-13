@@ -150,6 +150,10 @@ export function emitEngineEvent(state: GameState, ev: EngineEvent): GameState {
         }
         if (q.attackerIsLeader !== undefined && ev.attackerIsLeader !== q.attackerIsLeader) continue
         if (q.targetIsLeader !== undefined && ev.targetIsLeader !== q.targetIsLeader) continue
+        if (q.attackerAttributeIs) {
+          const atk = ev.sourceInstanceId ? findFieldCard(s, ev.sourceInstanceId) : null
+          if (!atk || getBattleAttribute(atk.cardId) !== q.attackerAttributeIs) continue
+        }
         if (def.on.fromHand && !ev.fromHand) continue
         if (def.on.fromHand === false && ev.fromHand) continue
         if (
@@ -1582,6 +1586,12 @@ function executeOp(
       return advance(s)
     }
 
+    case 'atTurnEnd': {
+      const who = controller
+      const queue = [...(state.atTurnEnd ?? []), { player: who, kind: op.kind, count: op.count }]
+      return advance({ ...state, atTurnEnd: queue })
+    }
+
     case 'addDon': {
       const who = op.who === 'opponent' ? getOpponent(controller) : controller
       const p = state.players[who]
@@ -1807,6 +1817,13 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
         return player.stage ? [player.stage] : []
       case 'leaderOrStage':
         return [player.leader, ...(player.stage ? [player.stage] : [])]
+      case 'anyOwn':
+        return [
+          player.leader,
+          ...player.characters,
+          ...(player.stage ? [player.stage] : []),
+          ...player.donArea,
+        ]
       case 'guarded':
         return (frame.bindings['target'] ?? [])
           .map((id) => findFieldCard(state, id))

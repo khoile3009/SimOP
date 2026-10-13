@@ -102,6 +102,8 @@ export interface EventQuery {
   attackerIsLeader?: boolean
   /** attackDeclared: the attack targets a Leader */
   targetIsLeader?: boolean
+  /** attackDeclared: the attacker's battle attribute (Shu) */
+  attackerAttributeIs?: string
 }
 
 /** Predicates over game state, evaluated from the effect controller's seat. */
@@ -191,6 +193,10 @@ export interface Cond {
   minSelfRestedAny?: number
   /** A character you control OTHER than the source has this type (Raki) */
   hasOtherCharacterTyped?: string
+  /** An OTHER character of this type AND color (Apoo's yellow Supernovas) */
+  hasOtherCharacterTypedColor?: { type: string; color: string }
+  /** Every character you control has no printed counter (OP17 Xebec's hand aura) */
+  allSelfCharsNoCounter?: boolean
   /** Rested DON!! in your cost area (Caribou) */
   minSelfRestedDon?: number
   /** Your leader has ANY of these types */
@@ -279,6 +285,8 @@ export interface SelectFilter {
     | 'life'
     | 'stage'
     | 'leaderOrStage'
+    /** Every card you control: leader, characters, stage and cost-area DON!! ("rest 2 of your cards") */
+    | 'anyOwn'
     | 'guarded'
   /** Effective cost for field zones (cost modifiers apply); printed cost elsewhere */
   costAtMost?: number
@@ -569,7 +577,9 @@ export type EffectOp =
     }
   /** Reveal the TOP LIFE card; if it matches, play it (Law leader) */
   | { op: 'revealLifeTopMayPlay'; filter: CardDataFilter }
-  | { op: 'addDon'; count: number; rested: boolean; who?: 'self' | 'opponent' } // from DON!! deck to cost area
+  | { op: 'addDon'; count: number; rested: boolean; who?: 'self' | 'opponent' }
+  /** Schedule a one-shot for the End Phase ("at the end of this turn") */
+  | { op: 'atTurnEnd'; kind: 'setActiveDon' | 'deckTopToLife' | 'addDonActive'; count: number } // from DON!! deck to cost area
   /** Rested cost-area DON onto the source card, or onto a bound card via toRef */
   | { op: 'giveRestedDon'; upTo: number; toRef?: string; fromActive?: boolean }
   /** Move DON already given to your other cards onto the bound card (Dragon) */
@@ -723,6 +733,8 @@ export interface StaticDef {
     hasTrigger?: boolean
     /** Only targets with exactly this printed power */
     basePowerIs?: number
+    /** Only targets with NO printed counter value (OP17 Kaido/Xebec hand auras) */
+    noCounter?: boolean
   }
   power?: number
   /** Scaling auras: value per matching count, added to `power` */
@@ -741,4 +753,7 @@ export interface StaticDef {
   flagValue?: number
   /** Cost delta for matching cards (scope 'myHand'); applied at read time, floor 0 */
   costMod?: number
+  /** The counter value matching HAND cards get ("the counter ... becomes +2000");
+   * scope 'myHand' or 'handSelf', read by getEffectiveCounter */
+  counterSet?: number
 }

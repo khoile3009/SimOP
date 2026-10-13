@@ -1,5 +1,5 @@
 import type { GameState, GameCard, PlayerId } from '../types'
-import type { Cond, FlagName } from './ast'
+import type { Cond, FlagName, StaticDef } from './ast'
 import { getStatics } from './registry'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '../powerCalc'
@@ -29,6 +29,22 @@ export function evalCond(
   if (!cond) return true
   if (cond.anyOf !== undefined) {
     if (!cond.anyOf.some((c) => evalCond(state, controller, source, c))) return false
+  }
+  if (cond.allSelfCharsNoCounter !== undefined) {
+    const clean = state.players[controller].characters.every(
+      (c) => (getCardById(c.cardId)?.counter ?? 0) <= 0,
+    )
+    if (clean !== cond.allSelfCharsNoCounter) return false
+  }
+  if (cond.hasOtherCharacterTypedColor !== undefined) {
+    const q = cond.hasOtherCharacterTypedColor
+    const found = state.players[controller].characters.some(
+      (c) =>
+        c.instanceId !== source?.instanceId &&
+        cardTypes(c.cardId).includes(q.type) &&
+        (getCardById(c.cardId)?.color ?? []).some((col) => col === q.color),
+    )
+    if (!found) return false
   }
   if (cond.minSelfCharsTypedDistinct !== undefined) {
     const q = cond.minSelfCharsTypedDistinct
@@ -519,6 +535,8 @@ export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
   'anyOf',
   'charTypedCostAtLeast',
   'minSelfCharsTypedDistinct',
+  'hasOtherCharacterTypedColor',
+  'allSelfCharsNoCounter',
   'lacksCharTypedCostAtLeast',
   'charDisadvantageAtLeast',
   'atMostLifeOfOpp',
@@ -759,6 +777,37 @@ export function getEffectiveCost(state: GameState, playerId: PlayerId, card: Gam
     if (discountMatches(card, d)) cost -= d.amount
   }
   return Math.max(0, cost)
+}
+
+/** Effective counter value of a hand card: printed counter plus 'counterSet'
+ * hand auras ("the counter of ... becomes +2000"). */
+export function getEffectiveCounter(state: GameState, playerId: PlayerId, card: GameCard): number {
+  const data = getCardById(card.cardId)
+  let counter = data?.counter ?? 0
+  const apply = (def: StaticDef): void => {
+    const t = def.target
+    if (t.cardType && data?.cardType !== t.cardType) return
+    if (t.basePowerIs !== undefined && (data?.power ?? 0) !== t.basePowerIs) return
+    if (t.noCounter && (data?.counter ?? 0) > 0) return
+    if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) return
+    counter = def.counterSet ?? counter
+  }
+  const p = state.players[playerId]
+  for (const source of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
+    if (isNegated(source)) continue
+    for (const def of getStatics(source.cardId)) {
+      if (def.counterSet === undefined || def.target.scope !== 'myHand') continue
+      if (def.donRequired && source.attachedDon < def.donRequired) continue
+      if (!evalCond(state, playerId, source, def.condition)) continue
+      apply(def)
+    }
+  }
+  for (const def of getStatics(card.cardId)) {
+    if (def.counterSet === undefined || def.target.scope !== 'handSelf') continue
+    if (!evalCond(state, playerId, card, def.condition)) continue
+    apply(def)
+  }
+  return counter
 }
 
 export function discountMatches(
