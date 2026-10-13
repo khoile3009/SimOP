@@ -524,22 +524,6 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
       ],
     },
   ],
-  'OP11-027': [
-    {
-      timing: 'trigger',
-      ops: [
-        {
-          op: 'select',
-          bind: 'b1',
-          filter: { owner: 'opponent', zone: 'characters', rested: false, costAtMost: 4 },
-          min: 0,
-          max: 1,
-          prompt: 'Rest',
-        },
-        { op: 'rest', ref: 'b1' },
-      ],
-    },
-  ],
   'OP11-028': [
     {
       timing: 'onPlay',

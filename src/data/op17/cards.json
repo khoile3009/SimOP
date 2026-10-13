@@ -996,7 +996,7 @@
     "attribute": [
       "Rocks Pirates"
     ],
-    "effectText": "[On Play] Your opponent chooses one:\n\u2022 Draw 2 cards.\n\u2022 Your opponent trashes 2 cards from their hand.\n[On Your Opponent's Attack] [Once Per Turn] You may trash 1 card from your hand: Up to 1 of your Leader or Characters gains +1000 power during this battle.",
+    "effectText": "[On Play] Your opponent chooses one:\n• Draw 2 cards.\n• Your opponent trashes 2 cards from their hand.\n[On Your Opponent's Attack] [Once Per Turn] You may trash 1 card from your hand: Up to 1 of your Leader or Characters gains +1000 power during this battle.",
     "triggerText": null,
     "rarity": "R",
     "set": "OP17",
@@ -2049,7 +2049,7 @@
       "Big Mom Pirates",
       "Rocks Pirates"
     ],
-    "effectText": "[When Attacking] You may trash 1 card from your hand:\nYour opponent chooses one:\n\u2022 Trash 1 card from your hand. Then, add up to 1 card from the top of your deck to the top of your Life cards.\n\u2022 Trash 1 card from your opponent's hand.",
+    "effectText": "[When Attacking] You may trash 1 card from your hand:\nYour opponent chooses one:\n• Trash 1 card from your hand. Then, add up to 1 card from the top of your deck to the top of your Life cards.\n• Trash 1 card from your opponent's hand.",
     "triggerText": null,
     "rarity": "L",
     "set": "OP17",
@@ -2151,8 +2151,8 @@
     "attribute": [
       "Big Mom Pirates"
     ],
-    "effectText": "[Your Turn] [On Play] You may rest 2 of your DON!! cards: If your Leader has the {Big Mom Pirates} type, add up to 1 card from the top of your deck to the top of your Life Cards.\nTrigger Play this card.",
-    "triggerText": null,
+    "effectText": "[Your Turn] [On Play] You may rest 2 of your DON!! cards: If your Leader has the {Big Mom Pirates} type, add up to 1 card from the top of your deck to the top of your Life Cards.",
+    "triggerText": "Play this card.",
     "rarity": "UC",
     "set": "OP17",
     "imageUrl": ""
@@ -2313,7 +2313,7 @@
       "The Four Emperors",
       "Big Mom Pirates"
     ],
-    "effectText": "[Your Turn] The base power of all of your Characters with a [Trigger] and 4000 base power becomes 8000.\n[On Play] Draw 1 card, then choose one:\n\u2022Add up to 1 card from the top of your deck to the top of your Life cards.\n\u2022 Add up to 1 card from the top of your opponent's Life cards to the owner's hand.",
+    "effectText": "[Your Turn] The base power of all of your Characters with a [Trigger] and 4000 base power becomes 8000.\n[On Play] Draw 1 card, then choose one:\n•Add up to 1 card from the top of your deck to the top of your Life cards.\n• Add up to 1 card from the top of your opponent's Life cards to the owner's hand.",
     "triggerText": null,
     "rarity": "SR",
     "set": "OP17",

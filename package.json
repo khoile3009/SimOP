@@ -20,7 +20,8 @@
     "train": "vite-node scripts/train.ts",
     "evalab": "vite-node scripts/evalab.ts --",
     "ingest": "vite-node scripts/ingest.ts --",
-    "compile-effects": "vite-node scripts/compile-effects.ts --"
+    "compile-effects": "vite-node scripts/compile-effects.ts --",
+    "deffire": "vite-node scripts/deffire.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -191,6 +191,15 @@ describe('effect definition linter', () => {
     // Guards the OP06-OP11 regression where Cond fields existed in the AST but
     // evalCond never read them - the "conditions" silently always passed
     const errors: string[] = []
+    // A 'trigger' def on a card with no printed [Trigger] can never activate
+    // (pendingTrigger is only offered for cards with triggerText) - OP11-027 bug class
+    for (const { effects } of SETS) {
+      for (const [id, defs] of Object.entries(effects)) {
+        if (defs.some((d) => d.timing === 'trigger') && !getCardById(id)?.triggerText) {
+          errors.push(`${id}: trigger def but the card has no printed [Trigger]`)
+        }
+      }
+    }
     const checkCond = (where: string, cond: Record<string, unknown> | undefined) => {
       if (!cond) return
       for (const key of Object.keys(cond)) {

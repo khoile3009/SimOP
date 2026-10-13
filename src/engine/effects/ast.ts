@@ -197,6 +197,8 @@ export interface Cond {
   hasOtherCharacterTypedColor?: { type: string; color: string }
   /** Every character you control has no printed counter (OP17 Xebec's hand aura) */
   allSelfCharsNoCounter?: boolean
+  /** At most `count` of your characters have effective power >= `power` (Brownbeard) */
+  maxSelfCharsPoweredAtLeast?: { power: number; count: number }
   /** Rested DON!! in your cost area (Caribou) */
   minSelfRestedDon?: number
   /** Your leader has ANY of these types */

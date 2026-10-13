@@ -30,6 +30,13 @@ export function evalCond(
   if (cond.anyOf !== undefined) {
     if (!cond.anyOf.some((c) => evalCond(state, controller, source, c))) return false
   }
+  if (cond.maxSelfCharsPoweredAtLeast !== undefined) {
+    const q = cond.maxSelfCharsPoweredAtLeast
+    const n = state.players[controller].characters.filter(
+      (c) => condPower(state, c) >= q.power,
+    ).length
+    if (n > q.count) return false
+  }
   if (cond.allSelfCharsNoCounter !== undefined) {
     const clean = state.players[controller].characters.every(
       (c) => (getCardById(c.cardId)?.counter ?? 0) <= 0,
@@ -537,6 +544,7 @@ export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
   'minSelfCharsTypedDistinct',
   'hasOtherCharacterTypedColor',
   'allSelfCharsNoCounter',
+  'maxSelfCharsPoweredAtLeast',
   'lacksCharTypedCostAtLeast',
   'charDisadvantageAtLeast',
   'atMostLifeOfOpp',

@@ -78,15 +78,21 @@ const EXPECTED_ACTION_TYPES = [
   'END_TURN',
 ]
 
-function checkInvariants(state: GameState): string | null {
+export function checkInvariants(state: GameState): string | null {
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
     const cardTotal =
-      p.deck.length + p.hand.length + p.trash.length + p.lifeCards.length +
-      p.characters.length + (p.stage ? 1 : 0)
+      p.deck.length +
+      p.hand.length +
+      p.trash.length +
+      p.lifeCards.length +
+      p.characters.length +
+      (p.stage ? 1 : 0)
     if (cardTotal !== 50) return `${pid} card conservation broken: ${cardTotal} != 50`
     const donTotal =
-      p.donArea.length + p.donDeck.length + p.leader.attachedDon +
+      p.donArea.length +
+      p.donDeck.length +
+      p.leader.attachedDon +
       p.characters.reduce((s, c) => s + c.attachedDon, 0)
     if (donTotal !== 10) return `${pid} DON conservation broken: ${donTotal} != 10`
     if (p.characters.length > 5) return `${pid} has ${p.characters.length} characters (max 5)`
@@ -97,7 +103,8 @@ function checkInvariants(state: GameState): string | null {
   const pc = state.pendingChoice
   if (pc) {
     if (pc.options.length === 0) return 'pendingChoice with zero options'
-    if (new Set(pc.options).size !== pc.options.length) return 'pendingChoice with duplicate options'
+    if (new Set(pc.options).size !== pc.options.length)
+      return 'pendingChoice with duplicate options'
     if (pc.min > pc.max) return `pendingChoice min ${pc.min} > max ${pc.max}`
   }
   if (state.stack.length > 20) return `resolution stack depth ${state.stack.length}`

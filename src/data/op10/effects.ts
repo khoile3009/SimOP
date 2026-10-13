@@ -173,7 +173,7 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'whenAttacking',
       ops: [{ op: 'powerMod', ref: 'self', amount: 1000, duration: 'turn' }],
-      condition: { maxSelfCharacters: 1 },
+      condition: { maxSelfCharsPoweredAtLeast: { power: 6000, count: 1 } },
     },
   ],
   'OP10-015': [
