@@ -7,6 +7,7 @@
 import { runHeadToHead } from '@/sim/benchmark'
 import type { Deck } from '@/engine/types'
 import { buildCoverageDecks } from '@/sim/decks'
+import { SET_MODULES } from '@/data/sets'
 import { HAND_WEIGHTS, makeEval } from '@/ai/evaluate'
 import type { Weights } from '@/ai/evaluate'
 import { GreedyAgent } from '@/ai/agents'
@@ -24,7 +25,7 @@ const handEval = makeEval(HAND_WEIGHTS)
 const fitEval = makeEval(fittedWeights)
 
 // Non-mirror deck pairs so matchup-conditional features can matter
-const decks = buildCoverageDecks('OP01')
+const decks = SET_MODULES.flatMap((s) => buildCoverageDecks(s.code))
 const deckPairs: [Deck, Deck][] = decks.map(
   (d, i) => [d.deck, decks[(i + 3) % decks.length].deck] as [Deck, Deck],
 )

@@ -60,6 +60,10 @@ interface SideStats {
   counterPressure: number
   tradeCoverage: number
   blockers: number
+  deckCounterDensity: number
+  deckTriggerDensity: number
+  deckThreatDensity: number
+  curveNextTurn: number
 }
 
 function sideStats(state: GameState, playerId: PlayerId): SideStats {
@@ -108,6 +112,24 @@ function sideStats(state: GameState, playerId: PlayerId): SideStats {
   let counterHand = 0
   for (const card of me.hand) counterHand += getEffectiveCounter(state, playerId, card)
 
+  // Deck-potential: the hidden pool (deck + face-down life) is a known multiset
+  // to its owner (decklist minus seen cards), so these are honest by construction
+  const pool = [...me.deck, ...me.lifeCards]
+  let poolCounter = 0
+  let poolTriggers = 0
+  let poolThreats = 0
+  let poolCurve = 0
+  const nextTurnDon = Math.min(10, me.donArea.length + Math.min(2, me.donDeck.length))
+  for (const card of pool) {
+    const d = getCardById(card.cardId)
+    if (!d) continue
+    poolCounter += d.counter ?? 0
+    if (d.triggerText) poolTriggers++
+    if (d.cardType === 'Character' && (d.power ?? 0) >= 6000) poolThreats++
+    if (d.cardType === 'Character' && d.cost <= nextTurnDon) poolCurve++
+  }
+  const poolSize = Math.max(1, pool.length)
+
   return {
     life: me.lifeCards.length,
     hand: me.hand.length,
@@ -122,6 +144,10 @@ function sideStats(state: GameState, playerId: PlayerId): SideStats {
     counterPressure,
     tradeCoverage,
     blockers,
+    deckCounterDensity: poolCounter / poolSize / 1000,
+    deckTriggerDensity: poolTriggers / poolSize,
+    deckThreatDensity: poolThreats / poolSize,
+    curveNextTurn: poolCurve / poolSize,
   }
 }
 
@@ -144,6 +170,10 @@ export function featureVector(state: GameState, playerId: PlayerId): Features {
     counterPressureDiff: me.counterPressure - them.counterPressure,
     tradeCoverageDiff: me.tradeCoverage - them.tradeCoverage,
     blockersDiff: me.blockers - them.blockers,
+    deckCounterDensityDiff: me.deckCounterDensity - them.deckCounterDensity,
+    deckTriggerDensityDiff: me.deckTriggerDensity - them.deckTriggerDensity,
+    deckThreatDensityDiff: me.deckThreatDensity - them.deckThreatDensity,
+    curveNextTurnDiff: me.curveNextTurn - them.curveNextTurn,
   }
   // Matchup identity - priced only by the fitted model
   f[`ldrMe:${state.players[playerId].leader.cardId}`] = 1
