@@ -12,7 +12,6 @@ import { runGame } from '@/sim/selfplay'
 import { buildCoverageDecks } from '@/sim/decks'
 import { SET_MODULES } from '@/data/sets'
 import { GreedyAgent, type Agent } from '@/ai/agents'
-import { TurnPlannerAgent } from '@/ai/turnSearch'
 import { featureVector } from '@/ai/evaluate'
 import { mulberry32 } from '@/utils/rng'
 import type { Features } from '@/ai/evaluate'
@@ -23,14 +22,11 @@ const shard = process.argv[3] !== undefined ? Number(process.argv[3]) : null
 const offset = shard !== null ? shard * games : 0
 // Planner-heavy data would be ideal but is ~20x slower; greedy-dominant with a
 // planner and random sprinkle keeps labels meaningful and generation fast
-// Gen-2: no random games - random-agent labels polluted gen-1's targets
+// Gen-2: no random games (label pollution) and no planner games - whole-turn
+// search has pathological cases on the full-fidelity action space (minutes per
+// game; tracked in TODO). Greedy both sides keeps labels competent and fast.
 const MIX: ((rand: () => number) => Agent)[][] = [
   [(r) => new GreedyAgent(r), (r) => new GreedyAgent(r)],
-  [(r) => new GreedyAgent(r), (r) => new GreedyAgent(r)],
-  [(r) => new GreedyAgent(r), (r) => new GreedyAgent(r)],
-  [(r) => new GreedyAgent(r), (r) => new GreedyAgent(r)],
-  [(r) => new TurnPlannerAgent(r), (r) => new GreedyAgent(r)],
-  [(r) => new GreedyAgent(r), (r) => new TurnPlannerAgent(r)],
 ]
 
 // Gen-2: the full card pool, not just OP01

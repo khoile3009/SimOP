@@ -11,6 +11,7 @@ import { SET_MODULES } from '@/data/sets'
 import { HAND_WEIGHTS, makeEval } from '@/ai/evaluate'
 import type { Weights } from '@/ai/evaluate'
 import { GreedyAgent } from '@/ai/agents'
+import { MctsAgent } from '@/ai/mcts'
 import { TurnPlannerAgent } from '@/ai/turnSearch'
 import fitted from '@/ai/weights.fitted.json'
 
@@ -43,6 +44,22 @@ console.log(
   `fitted win rate ${Math.round((100 * greedy.bWins) / Math.max(1, greedy.aWins + greedy.bWins))}%`,
 )
 
+if (process.env.MCTS) {
+  const mcts = runHeadToHead(
+    { name: 'mcts-hand', factory: (r) => new MctsAgent(r, { evalFn: handEval }) },
+    { name: 'mcts-fitted', factory: (r) => new MctsAgent(r, { evalFn: fitEval }) },
+    games,
+    { deckPairs },
+  )
+  console.log(
+    `mcts   : hand ${mcts.aWins} - ${mcts.bWins} fitted (draws ${mcts.draws})  ` +
+      `fitted win rate ${Math.round((100 * mcts.bWins) / Math.max(1, mcts.aWins + mcts.bWins))}%`,
+  )
+}
+if (!process.env.PLANNER) {
+  console.log('\n(planner leg skipped - set PLANNER=1 to run it; turn search has a tracked perf issue on the full pool)')
+  process.exit(0)
+}
 const planner = runHeadToHead(
   { name: 'planner-hand', factory: (r) => new TurnPlannerAgent(r, { evalFn: handEval }) },
   { name: 'planner-fitted', factory: (r) => new TurnPlannerAgent(r, { evalFn: fitEval }) },

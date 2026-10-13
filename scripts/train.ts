@@ -6,7 +6,7 @@
  * calibration table. Writes src/ai/weights.fitted.json, which evaluate.ts
  * loads as the active weights.
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { HAND_WEIGHTS } from '@/ai/evaluate'
 import type { Weights } from '@/ai/evaluate'
 
@@ -16,10 +16,15 @@ interface Row {
   features: Record<string, number>
 }
 
-const rows: Row[] = readFileSync('data/train.jsonl', 'utf8')
-  .split('\n')
-  .filter(Boolean)
-  .map((line) => JSON.parse(line))
+// Reads data/train.jsonl or sharded data/train-<n>.jsonl files (gendata shards)
+const files = readdirSync('data').filter((f) => /^train(-\d+)?\.jsonl$/.test(f))
+const rows: Row[] = files.flatMap((f) =>
+  readFileSync(`data/${f}`, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line) as Row),
+)
+console.log(`read ${files.length} shard file(s): ${files.join(', ')}`)
 
 const games = [...new Set(rows.map((r) => r.game))]
 // Deterministic by-game split

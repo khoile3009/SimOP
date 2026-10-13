@@ -165,9 +165,22 @@
       5. Multi-select constraints (totalCostAtMost/totalPowerAtMost/
          distinctNames, ~9 notes); counter-value auras (OP16-118, OP17-063).
       Each phase gates on: typecheck, 138+ tests, defLint, 1600-game fleet.
-- [ ] M4 gen-2 retrain — UNBLOCKED by full card coverage (the parking condition
-      is met). Decision needed: kick off the gen-2 recipe above (mid-turn
-      afterstates, no random games, deck-potential features) on the 14-set pool.
+- [x] M4 gen-2 retrain — RUN (Oct 2026), gate FAILED, hand weights stay active.
+      Recipe executed on the complete engine: 81.5k rows / 3.8k greedy games
+      across all 200 coverage decks, mid-turn afterstates sampled (up to 2
+      quiet states/turn at p=0.2), no random games, four deck-potential
+      features added (deckCounterDensity/deckTriggerDensity/deckThreatDensity/
+      curveNextTurn — all earned weights; counterHandDiff fell from its gen-1
+      trap level to 0.17). Prediction: held-out log-loss 0.61 → 0.57, tight
+      monotone calibration. Decisions: greedy-mediated A/B at PARITY (fitted
+      47% over 300 cross-deck games — gen-1 was 20-40%), but MCTS-mediated A/B
+      LOST decisively (fitted 29% of 24) — deep search exploits residual
+      correlational biases in outcome-label value learning. Weights archived in
+      src/ai/weights.gen2.json; weights.fitted.json reverted to empty.
+      GEN-3 (when resumed): pairwise ranking loss over (chosen, rejected)
+      afterstates — decision-supervised, not outcome-supervised — and/or
+      MCTS-in-the-loop evaluation during training. Planner-mediated eval and
+      planner data generation both blocked on the turnSearch perf issue below.
 - [ ] M7 Online multiplayer (original P2) — serializable actions make this feasible whenever.
 
 ## Tasks
@@ -196,6 +209,11 @@ Backlog (feature ideas):
 - [x]: UI/UX streamlining phase 1 — "the board is the picker": field-zone effect choices highlight eligible cards in place (green ring, dim ineligible) with the prompt/confirm in the ControlsBar strip; hand-zone choices reuse the counter-step hand toggles (HandZone pickMode); hidden-zone choices (deck/trash/life/DON) use a non-dimming bottom sheet instead of a full-screen modal. Triggers keep a small centered prompt. Remaining ideas: single-click plays, hover previews instead of Inspect.
 - [x]: M2 analyzer shipped: chess-style eval bar + Analyze toggle, eval-history sparkline, and whole-turn line recommendations (src/ai/turnSearch.ts) — beam search generates candidate lines, then each is ADVERSARIALLY VERIFIED (minimax over every defender option at every response node, so counter allocation across the turn is priced in; diverged tails repaired greedily). Published value = worst case; "if they X → n%" branch annotations on the top line. Lethal badges: GUARANTEED (closed-form defense-capacity certificate vs any possible hand — ignores life triggers, noted in tooltip) vs LETHAL (through best defense with their revealed hand).
 - [x]: M3 shipped: determinization (src/ai/determinize.ts — hidden pools resampled uniformly, incl. own life per CR 3-10-2), MctsAgent (src/ai/mcts.ts — perfect-info UCT with eval leaves, tree crosses turn boundaries and searches its own defense) beating the acceptance gate: mcts 73% > planner 50% > greedy 27% on the 30-game ladder (mcts vs planner 20-10). Analyzer Honest mode: 10 sampled worlds, lines ranked by world-frequency with avg value and "lethal in X% of worlds". AI difficulty select in /play (greedy/planner/mcts).
+- [ ]: PERF: TurnPlannerAgent has pathological cases on the full-fidelity pool
+  (observed Oct 2026 during gen-2 data generation: some planner games take
+  minutes; greedy is unaffected). Likely the whole-turn beam meeting the larger
+  action space (owner-'any' targets, attached-DON options, constraint selects).
+  Profile turnSearch before trusting the Analyze panel on newer sets.
 - [ ]: M3 leftovers: click-through board preview per line step; honest-information MCTS variant (determinized root voting) for a fair hidden-info bot; knowledge tracking for determinize (cards seen via searches/bottom-decking are currently resampled uniformly).
 - [ ]: Class-based DON picker (design approved — v1 grouped-modal variant): DON are fungible within a class (zone, carrier, state incl. rested/frozen), so selection = count per class, never "which physical DON". Design draft with interactive prototype + engine mapping: https://claude.ai/artifact/VQkJ7FGmdYNLnapQ4J6xaS
   Build when an effect must touch attached DON (restand/attach manipulation in later sets, or full-fidelity DON!!-X — current OP01 DON!!-X pays from the cost area only, which is fine for now). Engine diff when built: grouped PendingChoice shape ({key, carrierUid?, capacity}), CHOOSE as count-vector, returnDon/restand ops accept {class: count}, legalActions emits canonical count-vectors (also shrinks bot action space). Card-target choices keep the flat instanceId shape.
