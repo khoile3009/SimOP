@@ -1075,7 +1075,7 @@ export const OP06_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1289,7 +1289,7 @@ export const OP06_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1341,7 +1341,7 @@ export const OP06_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1370,7 +1370,7 @@ export const OP06_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -2333,14 +2333,8 @@ export const COVERAGE_NOTES_OP06: Record<string, string> = {
     'SIMPLIFIED: fires on opponent Events only (Blocker activation is not an engine event) and the mill is mandatory',
   'OP06-051': 'SIMPLIFIED: trashing exactly 2 is all-or-nothing',
   'OP06-057': 'SIMPLIFIED: an unplayed revealed card stays on top (text allows top or bottom)',
-  'OP06-062':
-    'SIMPLIFIED: DON!!-X pays from the cost area only; the different-names rule on the mass play is not enforced',
-  'OP06-071':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP06-074':
-    'SIMPLIFIED: DON!!-X pays from the cost area only; negation covers printed keywords, statics and effect defs',
-  'OP06-075':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
+  'OP06-062': 'SIMPLIFIED: the different-names rule on the mass play is not enforced',
+  'OP06-074': 'SIMPLIFIED: negation covers printed keywords, statics and effect defs',
   'OP06-086':
     'SIMPLIFIED: the cost-4 pick plays active and the cost-2 pick plays rested (text lets you choose which)',
   'OP06-092': 'SIMPLIFIED: the opponent picks the 3 trash cards; bottom order is not chosen',

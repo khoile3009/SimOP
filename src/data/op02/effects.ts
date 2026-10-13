@@ -1240,7 +1240,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 4,
           exact: true,
@@ -1293,7 +1293,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1314,7 +1314,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1343,7 +1343,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 2,
           exact: true,
@@ -1379,7 +1379,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1433,7 +1433,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1441,10 +1441,34 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'returnDon', ref: 'pay' },
-        { op: 'oppReturnDon', count: 1 },
+        {
+          op: 'select',
+          bind: 'odon1',
+          filter: { owner: 'opponent', zone: 'don', includeAttached: true },
+          min: 1,
+          max: 1,
+          chooser: 'opponent',
+          prompt: 'Return 1 of your DON!!',
+        },
+        { op: 'returnDon', ref: 'odon1' },
       ],
     },
-    { timing: 'onKo', condition: { opponentsTurn: true }, ops: [{ op: 'oppReturnDon', count: 2 }] },
+    {
+      timing: 'onKo',
+      condition: { opponentsTurn: true },
+      ops: [
+        {
+          op: 'select',
+          bind: 'odon2',
+          filter: { owner: 'opponent', zone: 'don', includeAttached: true },
+          min: 2,
+          max: 2,
+          chooser: 'opponent',
+          prompt: 'Return 2 of your DON!!',
+        },
+        { op: 'returnDon', ref: 'odon2' },
+      ],
+    },
   ],
 
   // Minokoala
@@ -1473,7 +1497,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1496,7 +1520,16 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'trigger',
       ops: [
         { op: 'requireCond', cond: { minDonFieldOpp: 6 } },
-        { op: 'oppReturnDon', count: 1 },
+        {
+          op: 'select',
+          bind: 'odon3',
+          filter: { owner: 'opponent', zone: 'don', includeAttached: true },
+          min: 1,
+          max: 1,
+          chooser: 'opponent',
+          prompt: 'Return 1 of your DON!!',
+        },
+        { op: 'returnDon', ref: 'odon3' },
       ],
     },
   ],
@@ -1509,7 +1542,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1532,7 +1565,16 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'trigger',
       ops: [
         { op: 'requireCond', cond: { minDonFieldOpp: 6 } },
-        { op: 'oppReturnDon', count: 1 },
+        {
+          op: 'select',
+          bind: 'odon4',
+          filter: { owner: 'opponent', zone: 'don', includeAttached: true },
+          min: 1,
+          max: 1,
+          chooser: 'opponent',
+          prompt: 'Return 1 of your DON!!',
+        },
+        { op: 'returnDon', ref: 'odon4' },
       ],
     },
   ],
@@ -1544,7 +1586,16 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'trigger',
       ops: [
         { op: 'requireCond', cond: { minDonFieldOpp: 6 } },
-        { op: 'oppReturnDon', count: 1 },
+        {
+          op: 'select',
+          bind: 'odon5',
+          filter: { owner: 'opponent', zone: 'don', includeAttached: true },
+          min: 1,
+          max: 1,
+          chooser: 'opponent',
+          prompt: 'Return 1 of your DON!!',
+        },
+        { op: 'returnDon', ref: 'odon5' },
       ],
     },
   ],
@@ -1579,7 +1630,7 @@ export const OP02_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 2,
           exact: true,
@@ -2083,18 +2134,8 @@ export const KEYWORD_ONLY_OP02: string[] = ['OP02-012', 'OP02-038', 'OP02-081', 
 
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP02: Record<string, string> = {
-  'OP02-072':
-    'SIMPLIFIED: DON!!-4 pays from the cost area only (attached DON need the class picker)',
-  'OP02-075': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP02-076': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP02-078': 'SIMPLIFIED: DON!!-2 pays from the cost area only',
-  'OP02-079': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP02-082': 'SIMPLIFIED: DON!!-8 pays from the cost area only',
-  'OP02-085':
-    'SIMPLIFIED: DON!!-1 pays from the cost area only; forced opponent returns take cost-area DON, rested first',
-  'OP02-089': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP02-090': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP02-120': 'SIMPLIFIED: DON!!-2 pays from the cost area only',
+  'OP02-082':
+    'SIMPLIFIED: the DON!!-8 cost auto-picks its DON: cost-area rested first, then active, then attached',
   'OP02-056':
     'SIMPLIFIED: "top or bottom in any order" implemented as choose-a-subset-for-bottom (order preserved)',
   'OP02-057': 'SIMPLIFIED: revealed leftovers go to the bottom ("top or bottom" not offered)',

@@ -240,6 +240,9 @@ export interface SelectFilter {
   fromRef?: string
   /** Life zone only: both the top and bottom cards are options ("from the top or bottom of your Life") */
   lifeEnds?: boolean
+  /** DON zone only: attached DON ride along as synthetic options (id "attached:<carrier>:<i>") -
+   * DON!!-X returns may pay with any DON on the field (CR 2-2-3) */
+  includeAttached?: boolean
   zone:
     | 'characters'
     | 'leaderOrCharacters'
@@ -628,6 +631,10 @@ export interface EffectDef {
   /** For timings 'replaceKo'/'guardKo': 'oppEffect' narrows the window to
    * opponent-effect K.O.s, 'effect' to any non-battle K.O.; default any K.O. */
   replaceWhen?: 'any' | 'oppEffect' | 'effect' | 'battle'
+  /** 'removal': this guardKo/replaceKo window also opens when the card would LEAVE
+   * the field by effect (bounce, bottom-deck, into Life) - "would be removed from
+   * the field". Absent = K.O.s only. */
+  guardScope?: 'removal'
   /** For timing 'onEvent': which engine event this def listens for */
   on?: EventQuery
   /** [DON!! xN]: needs at least N DON attached to the source card */

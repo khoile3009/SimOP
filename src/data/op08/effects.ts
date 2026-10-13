@@ -2321,7 +2321,7 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 10,
           exact: true,
@@ -2413,6 +2413,4 @@ export const COVERAGE_NOTES_OP08: Record<string, string> = {
   'OP08-098': "SIMPLIFIED: the played card's cost cap reads DON!! at resolution time",
   'OP08-101': 'SIMPLIFIED: the life refill happens immediately instead of at the end of the turn',
   'OP08-118': 'SIMPLIFIED: the two debuff picks may select the same Character only once each',
-  'OP08-119':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
 }

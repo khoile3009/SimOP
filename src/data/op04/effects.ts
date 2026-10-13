@@ -1111,7 +1111,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 2,
           exact: true,
@@ -1131,7 +1131,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1207,7 +1207,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 2,
           exact: true,
@@ -1241,7 +1241,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1272,7 +1272,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1291,7 +1291,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1339,7 +1339,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1356,7 +1356,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1480,7 +1480,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1536,7 +1536,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -2477,24 +2477,8 @@ export const COVERAGE_NOTES_OP04: Record<string, string> = {
     'SIMPLIFIED: the bounce goes to the hand only ("or the bottom of their deck" not offered)',
   'OP04-058':
     'SIMPLIFIED: fires on any DON!! leaving your field (the engine does not track WHOSE effect caused it)',
-  'OP04-060':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP04-064':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP04-065':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP04-066':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP04-067':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP04-069':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
   'OP04-073':
     'SIMPLIFIED: trigger plays this card without the DON cost printed on similar cards (none printed here)',
-  'OP04-074':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP04-076':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
   'OP04-090':
     "SIMPLIFIED: the trash-to-deck-bottom cost returns cards in selection order, not 'any order'",
   'OP04-094':

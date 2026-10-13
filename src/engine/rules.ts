@@ -435,8 +435,15 @@ function validateActivateEffect(
   if (def.cost?.restDon && activeDon < def.cost.restDon) {
     return { valid: false, reason: `Needs ${def.cost.restDon} active DON!!` }
   }
-  if (def.cost?.returnDon && player.donArea.length < def.cost.returnDon) {
-    return { valid: false, reason: `Needs ${def.cost.returnDon} DON!! to return` }
+  if (def.cost?.returnDon) {
+    // DON!!-X may return any DON on the field, attached ones included (CR 2-2-3)
+    const fieldDon =
+      player.donArea.length +
+      player.leader.attachedDon +
+      player.characters.reduce((s, c) => s + c.attachedDon, 0)
+    if (fieldDon < def.cost.returnDon) {
+      return { valid: false, reason: `Needs ${def.cost.returnDon} DON!! to return` }
+    }
   }
   if (def.cost?.restSelf && card.isRested) {
     return { valid: false, reason: 'Card must be active to rest as cost' }

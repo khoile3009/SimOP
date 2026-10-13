@@ -1,8 +1,22 @@
-import type { GameState, GameAction, GameResult, GameEvent, PlayerId, BattleState } from './types'
+import type {
+  GameState,
+  GameAction,
+  GameResult,
+  GameEvent,
+  GameCard,
+  PlayerId,
+  BattleState,
+} from './types'
 import { getCardById } from '@/data/cardService'
 import { validateAction } from './rules'
 import { getOpponent, executeEndPhase, autoAdvancePhases } from './turnManager'
-import { performMulligan, acceptHand, isMulliganComplete, startGame } from './gameSetup'
+import {
+  performMulligan,
+  acceptHand,
+  isMulliganComplete,
+  startGame,
+  createGameCard,
+} from './gameSetup'
 import { resolveDamage, dealLifeDamage, endOfBattleCleanup } from './battleManager'
 import {
   queueEffects,
@@ -192,7 +206,11 @@ function processPlayCard(
   const restedRule =
     cardData.cardType === 'Character' &&
     (getCardRules(player.leader.cardId)?.playsCharactersRested ?? false)
-  const playedCard = { ...card, turnPlayed: state.turnNumber, isRested: restedRule || card.isRested }
+  const playedCard = {
+    ...card,
+    turnPlayed: state.turnNumber,
+    isRested: restedRule || card.isRested,
+  }
   let newCharacters = player.characters
   let newStage = player.stage
   let newTrash = player.trash
@@ -555,6 +573,7 @@ function processActivateEffect(
   })
   let donDeck = player.donDeck
   const returnCost = def.cost?.returnDon ?? 0
+  let attachedShortfall = 0
   if (returnCost > 0) {
     const sorted = [...donArea].sort((a, b) => Number(b.isRested) - Number(a.isRested))
     const returned = new Set(sorted.slice(0, returnCost).map((d) => d.instanceId))
@@ -563,6 +582,8 @@ function processActivateEffect(
       ...donArea.filter((d) => returned.has(d.instanceId)).map((d) => ({ ...d, isRested: false })),
     ]
     donArea = donArea.filter((d) => !returned.has(d.instanceId))
+    // Cost area short: the rest comes off attached DON (characters first, leader last)
+    attachedShortfall = returnCost - returned.size
   }
   card = {
     ...card,
@@ -588,6 +609,27 @@ function processActivateEffect(
             : player.characters.map((c) => (c.instanceId === cardInstanceId ? card : c)),
       },
     },
+  }
+  if (attachedShortfall > 0) {
+    const p = newState.players[playerId]
+    let left = attachedShortfall
+    const fresh: GameCard[] = []
+    const strip = (c: GameCard): GameCard => {
+      if (left === 0 || c.attachedDon === 0) return c
+      const take = Math.min(left, c.attachedDon)
+      left -= take
+      for (let i = 0; i < take; i++) fresh.push(createGameCard('DON', playerId))
+      return { ...c, attachedDon: c.attachedDon - take }
+    }
+    const characters = p.characters.map(strip)
+    const leader = strip(p.leader)
+    newState = {
+      ...newState,
+      players: {
+        ...newState.players,
+        [playerId]: { ...p, characters, leader, donDeck: [...p.donDeck, ...fresh] },
+      },
+    }
   }
   if (returnCost > 0) {
     newState = emitEngineEvent(newState, { kind: 'donReturned', player: playerId })

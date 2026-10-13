@@ -1397,10 +1397,35 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
   'OP16-074': [
     {
       timing: 'onPlay',
-      ops: [{ op: 'oppReturnDon', count: 1 }],
+      ops: [
+        {
+          op: 'select',
+          bind: 'odon1',
+          filter: { owner: 'opponent', zone: 'don', includeAttached: true },
+          min: 1,
+          max: 1,
+          chooser: 'opponent',
+          prompt: 'Return 1 of your DON!!',
+        },
+        { op: 'returnDon', ref: 'odon1' },
+      ],
       condition: { leaderTypeIncludes: 'Impel Down' },
     },
-    { timing: 'onKo', ops: [{ op: 'oppReturnDon', count: 4 }] },
+    {
+      timing: 'onKo',
+      ops: [
+        {
+          op: 'select',
+          bind: 'odon2',
+          filter: { owner: 'opponent', zone: 'don', includeAttached: true },
+          min: 4,
+          max: 4,
+          chooser: 'opponent',
+          prompt: 'Return 4 of your DON!!',
+        },
+        { op: 'returnDon', ref: 'odon2' },
+      ],
+    },
   ],
   'OP16-075': [
     {

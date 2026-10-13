@@ -57,20 +57,30 @@ export default function ChoicePrompt({ gameState, onChoose }: ChoicePromptProps)
             const isSelected = selected.includes(id)
             const border = isSelected ? 'ring-2 ring-action-green' : 'ring-1 ring-glass-border'
             if (!card || card.cardId === 'DON') {
+              const attached = id.startsWith('attached:')
               return (
                 <button
                   key={id}
                   onClick={() => toggle(id)}
-                  className={`flex h-24 w-16 items-center justify-center rounded bg-ocean-800 text-xl text-don-gold ${border}`}
+                  className={`flex h-24 w-16 flex-col items-center justify-center rounded bg-ocean-800 text-xl text-don-gold ${border}`}
                 >
-                  ◆
+                  ◆{attached && <span className="text-[9px] text-text-muted">attached</span>}
                 </button>
               )
             }
             const data = getCardById(card.cardId)
             return (
-              <button key={id} onClick={() => toggle(id)} className={`w-20 overflow-hidden rounded ${border}`}>
-                <img src={getCardImageUrl(card.cardId)} alt={data?.name ?? ''} className="w-full" draggable={false} />
+              <button
+                key={id}
+                onClick={() => toggle(id)}
+                className={`w-20 overflow-hidden rounded ${border}`}
+              >
+                <img
+                  src={getCardImageUrl(card.cardId)}
+                  alt={data?.name ?? ''}
+                  className="w-full"
+                  draggable={false}
+                />
               </button>
             )
           })}
@@ -104,7 +114,15 @@ export default function ChoicePrompt({ gameState, onChoose }: ChoicePromptProps)
 function findInstance(state: GameState, instanceId: string): GameCard | null {
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
-    for (const zone of [[p.leader], p.characters, p.hand, p.trash, p.donArea, p.lifeCards, p.deck]) {
+    for (const zone of [
+      [p.leader],
+      p.characters,
+      p.hand,
+      p.trash,
+      p.donArea,
+      p.lifeCards,
+      p.deck,
+    ]) {
       const card = zone.find((c) => c.instanceId === instanceId)
       if (card) return card
     }

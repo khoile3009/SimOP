@@ -1537,23 +1537,53 @@ function executeOp(
       return advance(s)
     }
     case 'returnDon': {
-      const p = state.players[controller]
-      const ids = new Set(refs(op.ref))
-      const returned = p.donArea.filter((d) => ids.has(d.instanceId))
-      const donArea = p.donArea.filter((d) => !ids.has(d.instanceId))
-      let s: GameState = {
-        ...state,
-        players: {
-          ...state.players,
-          [controller]: {
-            ...p,
-            donArea,
-            donDeck: [...p.donDeck, ...returned.map((d) => ({ ...d, isRested: false }))],
-          },
-        },
+      const plain = new Set<string>()
+      const attachedByCarrier = new Map<string, number>()
+      for (const id of refs(op.ref)) {
+        if (id.startsWith('attached:')) {
+          const carrierId = id.split(':')[1]
+          attachedByCarrier.set(carrierId, (attachedByCarrier.get(carrierId) ?? 0) + 1)
+        } else {
+          plain.add(id)
+        }
       }
-      if (returned.length > 0) {
-        s = emitEngineEvent(s, { kind: 'donReturned', player: controller })
+      let s = state
+      const returnedFor: Record<PlayerId, number> = { player1: 0, player2: 0 }
+      for (const pid of ['player1', 'player2'] as PlayerId[]) {
+        const p = s.players[pid]
+        const returned = p.donArea.filter((d) => plain.has(d.instanceId))
+        if (returned.length === 0) continue
+        returnedFor[pid] += returned.length
+        s = {
+          ...s,
+          players: {
+            ...s.players,
+            [pid]: {
+              ...p,
+              donArea: p.donArea.filter((d) => !plain.has(d.instanceId)),
+              donDeck: [...p.donDeck, ...returned.map((d) => ({ ...d, isRested: false }))],
+            },
+          },
+        }
+      }
+      for (const [carrierId, n] of attachedByCarrier) {
+        const carrier = findFieldCard(s, carrierId)
+        if (!carrier) continue
+        const take = Math.min(n, carrier.attachedDon)
+        if (take === 0) continue
+        const owner = carrier.ownerId
+        s = updateFieldCard(s, carrierId, (c) => ({ ...c, attachedDon: c.attachedDon - take }))
+        const p = s.players[owner]
+        const fresh: GameCard[] = []
+        for (let i = 0; i < take; i++) fresh.push(createGameCard('DON', owner))
+        returnedFor[owner] += take
+        s = {
+          ...s,
+          players: { ...s.players, [owner]: { ...p, donDeck: [...p.donDeck, ...fresh] } },
+        }
+      }
+      for (const pid of ['player1', 'player2'] as PlayerId[]) {
+        if (returnedFor[pid] > 0) s = emitEngineEvent(s, { kind: 'donReturned', player: pid })
       }
       return advance(s)
     }
@@ -1650,8 +1680,25 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
         return player.hand
       case 'trash':
         return player.trash
-      case 'don':
-        return player.donArea
+      case 'don': {
+        if (!filter.includeAttached) return player.donArea
+        const attached: GameCard[] = []
+        for (const carrier of [player.leader, ...player.characters]) {
+          for (let i = 0; i < carrier.attachedDon; i++) {
+            attached.push({
+              instanceId: `attached:${carrier.instanceId}:${i}`,
+              cardId: 'DON',
+              ownerId: carrier.ownerId,
+              isRested: true,
+              modifiers: [],
+              attachedDon: 0,
+              activatedThisTurn: [],
+              turnPlayed: 0,
+            })
+          }
+        }
+        return [...player.donArea, ...attached]
+      }
       case 'life': {
         // "Add 1 card from your Life area" takes the top card; with lifeEnds
         // the printed "top or bottom" makes both end cards legal picks

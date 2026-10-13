@@ -1041,7 +1041,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 3,
           exact: true,
@@ -1089,7 +1089,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1131,7 +1131,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1213,7 +1213,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1272,7 +1272,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1308,7 +1308,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -2255,18 +2255,6 @@ export const COVERAGE_NOTES_OP07: Record<string, string> = {
     'SIMPLIFIED: the replacement covers opponent-effect K.O.s only (other removals go through)',
   'OP07-048': 'SIMPLIFIED: an unplayed revealed card stays on top (text says bottom)',
   'OP07-053': 'SIMPLIFIED: both cards go to the bottom (text allows top or bottom)',
-  'OP07-059':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP07-061':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP07-063':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP07-072':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP07-075':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP07-076':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
   'OP07-083':
     'SIMPLIFIED: with fewer than 4 Thriller Bark Pirates cards in the trash the cost clamps down',
   'OP07-090': 'SIMPLIFIED: the opponent hand reveal is not modeled',

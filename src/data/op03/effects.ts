@@ -1125,7 +1125,7 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1146,7 +1146,7 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1192,7 +1192,7 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1293,7 +1293,7 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1324,7 +1324,7 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1382,7 +1382,7 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1413,7 +1413,7 @@ export const OP03_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -2377,14 +2377,7 @@ export const KEYWORD_ONLY_OP03: string[] = [
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP03: Record<string, string> = {
   'OP03-058':
-    'SIMPLIFIED: DON!!-1 pays from the cost area only (attached DON need the class picker)',
-  'OP03-059': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP03-060': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP03-063': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP03-070': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP03-071': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP03-073': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
-  'OP03-074': 'SIMPLIFIED: DON!!-1 pays from the cost area only',
+    'SIMPLIFIED: the DON!!-1 cost auto-picks its DON: cost-area rested first, then active, then attached',
   'OP03-099':
     'SIMPLIFIED: the life scry is "may move either top card to the bottom, unseen" - the look itself is not modeled',
   'OP03-104':

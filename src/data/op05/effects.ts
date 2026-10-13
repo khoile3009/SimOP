@@ -1260,7 +1260,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b2',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1290,7 +1290,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1338,7 +1338,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -1366,7 +1366,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'b1',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 1,
           exact: true,
@@ -2181,7 +2181,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'select',
           bind: 'pay',
-          filter: { owner: 'self', zone: 'don' },
+          filter: { owner: 'self', zone: 'don', includeAttached: true },
           min: 0,
           max: 10,
           exact: true,
@@ -2273,20 +2273,10 @@ export const COVERAGE_NOTES_OP05: Record<string, string> = {
   'OP05-058': 'SIMPLIFIED: hands trash from the newest cards down to 5 (no choice of which)',
   'OP05-060':
     'SIMPLIFIED: the 0-or-3+ DON!! check gates activation (officially checked after paying the life)',
-  'OP05-073':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP05-075':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP05-077':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
-  'OP05-078':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
   'OP05-079': 'SIMPLIFIED: the opponent picks the 3 cards; bottom order is not chosen',
   'OP05-080':
     'SIMPLIFIED: the 20-card payment is mandatory when available and returns the oldest 20 trash cards',
   'OP05-096': 'SIMPLIFIED: the trigger offers the K.O. first, then the bounce',
   'OP05-100':
     'SIMPLIFIED: replacement covers K.O. only (not bounces or bottom-decking); life payment is the top card',
-  'OP05-119':
-    'SIMPLIFIED: DON!!-X pays from the cost area only (attached DON need the class picker)',
 }
