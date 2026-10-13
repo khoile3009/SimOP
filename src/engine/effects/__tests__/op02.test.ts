@@ -405,6 +405,65 @@ describe('forced DON returns', () => {
   })
 })
 
+describe('removal replacement window', () => {
+  it('Sabo can bounce himself to save a Character from an opponent bounce', () => {
+    let state = baseState()
+    // player1 plays Gum-Gum Rain (OP02-067): return a cost-4-or-less Character
+    const hand = withHand(state, 'player1', ['OP02-067'])
+    state = setDon(hand.state, 'player1', 2)
+    const target = createGameCard('OP01-025', 'player2')
+    const sabo = createGameCard('OP10-049', 'player2')
+    const p2 = state.players.player2
+    state = {
+      ...state,
+      players: { ...state.players, player2: { ...p2, characters: [target, sabo] } },
+    }
+
+    state = processAction(
+      state,
+      { type: 'PLAY_CARD', cardInstanceId: hand.cards[0].instanceId },
+      'player1',
+    ).state
+    // player1 picks the bounce target
+    state = choose(state, [target.instanceId])
+    // the removal window opens: player2 may return Sabo instead
+    expect(state.pendingChoice?.playerId).toBe('player2')
+    state = choose(state, [state.pendingChoice!.options[0]])
+
+    const after = state.players.player2
+    expect(after.characters.some((c) => c.instanceId === target.instanceId)).toBe(true) // saved
+    expect(after.characters.some((c) => c.instanceId === sabo.instanceId)).toBe(false)
+    expect(after.hand.some((c) => c.instanceId === sabo.instanceId)).toBe(true) // Sabo bounced himself
+  })
+
+  it('declining the guard completes the original removal to its real destination', () => {
+    let state = baseState()
+    const hand = withHand(state, 'player1', ['OP02-067'])
+    state = setDon(hand.state, 'player1', 2)
+    const target = createGameCard('OP01-025', 'player2')
+    const sabo = createGameCard('OP10-049', 'player2')
+    const p2 = state.players.player2
+    state = {
+      ...state,
+      players: { ...state.players, player2: { ...p2, characters: [target, sabo] } },
+    }
+
+    state = processAction(
+      state,
+      { type: 'PLAY_CARD', cardInstanceId: hand.cards[0].instanceId },
+      'player1',
+    ).state
+    state = choose(state, [target.instanceId])
+    expect(state.pendingChoice?.playerId).toBe('player2')
+    state = choose(state, []) // decline the save
+
+    const after = state.players.player2
+    expect(after.characters.some((c) => c.instanceId === sabo.instanceId)).toBe(true) // Sabo stays
+    expect(after.hand.some((c) => c.instanceId === target.instanceId)).toBe(true) // bounced to HAND
+    expect(after.trash.some((c) => c.instanceId === target.instanceId)).toBe(false) // not a K.O.
+  })
+})
+
 describe('stages as effect sources', () => {
   it('Land of Wano trashes a card to ready a DON', () => {
     let state = baseState()

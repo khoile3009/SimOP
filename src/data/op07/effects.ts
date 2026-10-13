@@ -471,6 +471,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
   'OP07-029': [
     {
       timing: 'replaceKo',
+      guardScope: 'removal',
       replaceWhen: 'oppEffect',
       oncePerTurn: true,
       ops: [
@@ -684,6 +685,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
   'OP07-042': [
     {
       timing: 'replaceKo',
+      guardScope: 'removal',
       replaceWhen: 'oppEffect',
       oncePerTurn: true,
       condition: { leaderTypeIncludes: 'The Seven Warlords of the Sea' },
@@ -2248,11 +2250,7 @@ export const KEYWORD_ONLY_OP07: string[] = ['OP07-084']
 export const COVERAGE_NOTES_OP07: Record<string, string> = {
   'OP07-001':
     'SIMPLIFIED: the moved DON!! are taken leader-first (the exact source cards are not chosen)',
-  'OP07-029':
-    'SIMPLIFIED: the replacement covers opponent-effect K.O.s only (other removals go through)',
   'OP07-031': 'SIMPLIFIED: cost rests also count as "rested by your effect"',
-  'OP07-042':
-    'SIMPLIFIED: the replacement covers opponent-effect K.O.s only (other removals go through)',
   'OP07-048': 'SIMPLIFIED: an unplayed revealed card stays on top (text says bottom)',
   'OP07-053': 'SIMPLIFIED: both cards go to the bottom (text allows top or bottom)',
   'OP07-083':

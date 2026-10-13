@@ -293,6 +293,7 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
   'OP16-014': [
     {
       timing: 'guardKo',
+      guardScope: 'removal',
       replaceWhen: 'oppEffect',
       guard: { owner: 'self', zone: 'characters', nameNot: 'Marco' },
       ops: [
@@ -2509,8 +2510,6 @@ export const COVERAGE_NOTES_OP16: Record<string, string> = {
     'SIMPLIFIED: the two Rush targets are offered as a modal; declining Luffy rolls to the Whitebeard pick',
   'OP16-008':
     'SIMPLIFIED: the 10000-power trash cost matches exact printed power via a floor+cap pair',
-  'OP16-014':
-    'SIMPLIFIED: the guard covers opponent-effect removals; Marco K.O.s himself and his revival can chain',
   'OP16-015': 'SIMPLIFIED: both power sets read as set-to-7000 of effective power',
   'OP16-019': "SIMPLIFIED: 8000-power is read from the hand card's printed power",
   'OP16-033': 'SIMPLIFIED: the save cost rests 2 DON!! (text allows any 2 of your cards)',

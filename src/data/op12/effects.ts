@@ -1227,6 +1227,7 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
   'OP12-070': [
     {
       timing: 'replaceKo',
+      guardScope: 'removal',
       replaceWhen: 'oppEffect',
       ops: [
         {
@@ -1729,6 +1730,7 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
   'OP12-102': [
     {
       timing: 'guardKo',
+      guardScope: 'removal',
       replaceWhen: 'oppEffect',
       guard: { owner: 'self', zone: 'characters', costAtMost: 6 },
       ops: [
@@ -2118,23 +2120,19 @@ export const COVERAGE_NOTES_OP12: Record<string, string> = {
   'OP12-016': 'SIMPLIFIED: the counter buff may target any leader, not only Rayleigh',
   'OP12-019': 'SIMPLIFIED: the counter buff may target any leader, not only Rayleigh',
   'OP12-020': 'SIMPLIFIED: the leader untaps at the end of any battle against a Character',
-  'OP12-027': 'SIMPLIFIED: the guard covers opponent-effect K.O.s only',
   'OP12-037':
     'SIMPLIFIED: rests up to 2 Characters only (the Characters-or-DON mixed total is not modeled)',
   'OP12-040':
     'SIMPLIFIED: any of your own hand-trash effects count (the Navy-source check is not modeled; costs count too)',
   'OP12-041': 'SIMPLIFIED: the activated Event resolves its [Main] text at base cost 3 or less',
   'OP12-061': 'SIMPLIFIED: the guard pays by taking your top life card to hand',
-  'OP12-070':
-    'SIMPLIFIED: the replacement covers opponent-effect K.O.s only (other removals go through)',
   'OP12-081':
     'SIMPLIFIED: the attack draw fires on any attack; the two play-listeners carry separate once-per-turn marks',
   'OP12-096':
     'SIMPLIFIED: the cost-6 upgrade is reached by declining the cost-4 pick with an 8-cost Character out',
   'OP12-099':
     'SIMPLIFIED: the two life-removal listeners share the effect via the draw restriction, not a shared mark',
-  'OP12-102':
-    'SIMPLIFIED: the aura ignores the base-cost-2 qualifier on "no other Shirahoshi"; the guard covers opponent-effect K.O.s only',
+  'OP12-102': 'SIMPLIFIED: the aura ignores the base-cost-2 qualifier on "no other Shirahoshi"',
   'OP12-090': 'SIMPLIFIED: the top-deck trash payment is mandatory on attack',
   'OP12-119':
     "SIMPLIFIED: the self cost boost reads as a +2 modifier until the opponent's next End Phase",

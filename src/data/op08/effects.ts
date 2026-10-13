@@ -832,7 +832,15 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
       ],
     },
   ],
-  'OP08-045': [{ timing: 'replaceKo', ops: [{ op: 'koSelfNoReplace' }, { op: 'draw', count: 1 }] }],
+  'OP08-045': [
+    { timing: 'replaceKo', ops: [{ op: 'koSelfNoReplace' }, { op: 'draw', count: 1 }] },
+    {
+      timing: 'replaceKo',
+      guardScope: 'removal',
+      replaceWhen: 'oppEffect',
+      ops: [{ op: 'koSelfNoReplace' }, { op: 'draw', count: 1 }],
+    },
+  ],
   'OP08-046': [
     {
       timing: 'onEvent',
@@ -2400,8 +2408,6 @@ export const COVERAGE_NOTES_OP08: Record<string, string> = {
   'OP08-002': 'SIMPLIFIED: the kept card goes to the deck bottom (text allows top or bottom)',
   'OP08-043':
     'SIMPLIFIED: the attack tax (attack allowed by trashing 2) is modeled as a hard attack lock',
-  'OP08-045':
-    'SIMPLIFIED: the replacement rewrites K.O.s only (bounces and bottom-decking go through)',
   'OP08-050': 'SIMPLIFIED: both cards go to the bottom (text allows top or bottom)',
   'OP08-052': 'SIMPLIFIED: an unplayed revealed card stays on top (text allows top or bottom)',
   'OP08-054': 'SIMPLIFIED: an unplayed revealed card stays on top (text allows top or bottom)',

@@ -265,6 +265,7 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
   'OP17-015': [
     {
       timing: 'guardKo',
+      guardScope: 'removal',
       replaceWhen: 'oppEffect',
       guard: { owner: 'self', zone: 'characters', nameNot: 'Marco' },
       ops: [
@@ -1001,6 +1002,7 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
   'OP17-043': [
     {
       timing: 'replaceKo',
+      guardScope: 'removal',
       ops: [
         {
           op: 'select',
@@ -1051,6 +1053,7 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
   'OP17-045': [
     {
       timing: 'guardKo',
+      guardScope: 'removal',
       replaceWhen: 'oppEffect',
       guard: { owner: 'self', zone: 'characters', nameNot: 'Kyo' },
       ops: [
@@ -2276,6 +2279,7 @@ export const OP17_EFFECTS: Record<string, EffectDef[]> = {
   'OP17-095': [
     {
       timing: 'guardKo',
+      guardScope: 'removal',
       replaceWhen: 'oppEffect',
       guard: { owner: 'self', zone: 'characters', nameNot: 'Roronoa Zoro' },
       ops: [
@@ -3005,20 +3009,16 @@ export const KEYWORD_ONLY_OP17: string[] = []
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP17: Record<string, string> = {
   'OP17-005': 'SIMPLIFIED: the monocolored-leader qualifier on the power set is not checked',
-  'OP17-015': 'SIMPLIFIED: the guard covers opponent-effect removals; the revival can chain',
   'OP17-018': 'SIMPLIFIED: the counter checks a Whitebeard character at 8000+, not two',
   'OP17-020':
     'SIMPLIFIED: the either-or activation cost always rests a DON!! (the hand-trash mode is dropped)',
   'OP17-021': 'SIMPLIFIED: the save cost rests a DON!! (text allows any of your cards)',
-  'OP17-023': 'SIMPLIFIED: the guard covers K.O.s only',
   'OP17-034':
     'SIMPLIFIED: the opponent-leader 6000-power check reads any opponent character presence',
   'OP17-038': 'SIMPLIFIED: the rest-4-cards payment rests DON!! only',
   'OP17-039': 'SIMPLIFIED: a missed reveal leaves the card on top, publicly known',
   'OP17-040':
     'SIMPLIFIED: fires when the leader is attacked (the leader-attacking half is not an engine event)',
-  'OP17-043': 'SIMPLIFIED: the save covers K.O.s only (text covers any removal)',
-  'OP17-045': 'SIMPLIFIED: the guard covers opponent-effect K.O.s only',
   'OP17-049':
     'SIMPLIFIED: the opponent chooses by trashing 2 or declining (which hands Linlin the draw)',
   'OP17-050':
@@ -3026,7 +3026,6 @@ export const COVERAGE_NOTES_OP17: Record<string, string> = {
   'OP17-063': 'SIMPLIFIED: the hand-counter aura on counterless Characters is not modeled',
   'OP17-085': 'SIMPLIFIED: the character play lock lands after Brogy; hand first, then trash',
   'OP17-092': 'SIMPLIFIED: the character play lock lands after Dorry; hand first, then trash',
-  'OP17-095': 'SIMPLIFIED: the guard covers opponent-effect K.O.s only',
   'OP17-099':
     "SIMPLIFIED: the opponent chooses by trashing 1 or declining, which triggers Linlin's trash-and-ramp",
   'OP17-112': 'SIMPLIFIED: the power set reads as a +4000 aura on 4000-base Trigger characters',

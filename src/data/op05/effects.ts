@@ -1862,6 +1862,7 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
   'OP05-100': [
     {
       timing: 'replaceKo',
+      guardScope: 'removal',
       oncePerTurn: true,
       condition: { noCharacterNamedAnywhere: 'Monkey.D.Luffy', minLifeSelf: 1 },
       ops: [
@@ -2277,6 +2278,4 @@ export const COVERAGE_NOTES_OP05: Record<string, string> = {
   'OP05-080':
     'SIMPLIFIED: the 20-card payment is mandatory when available and returns the oldest 20 trash cards',
   'OP05-096': 'SIMPLIFIED: the trigger offers the K.O. first, then the bounce',
-  'OP05-100':
-    'SIMPLIFIED: replacement covers K.O. only (not bounces or bottom-decking); life payment is the top card',
 }

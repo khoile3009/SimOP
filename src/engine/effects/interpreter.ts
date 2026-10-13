@@ -228,7 +228,12 @@ export function runStack(state: GameState, events: GameEvent[]): GameState {
       s = { ...s, stack: s.stack.slice(0, -1) }
       continue
     }
+    // advance() must bump THIS frame even when the op pushes new frames on top
+    // (guard windows, event listeners) - record where it lives
+    const prevIndex = activeFrameIndex
+    activeFrameIndex = s.stack.length - 1
     s = executeOp(s, frame, def.ops[frame.pc], events)
+    activeFrameIndex = prevIndex
   }
   return s
 }
@@ -243,14 +248,22 @@ export function applyChoice(state: GameState, instanceIds: string[]): GameState 
   return { ...state, stack, pendingChoice: null }
 }
 
+/** The stack index of the frame whose op is currently executing (set by runStack).
+ * Ops can push frames ABOVE this one (guard windows via koById/removeByEffect,
+ * event listeners via emitEngineEvent); advance must still bump the op's OWN
+ * frame, or the pushed frame silently skips its first op. */
+let activeFrameIndex = -1
+
 function advance(state: GameState, popFrame = false): GameState {
   const stack = [...state.stack]
+  const i =
+    activeFrameIndex >= 0 && activeFrameIndex < stack.length ? activeFrameIndex : stack.length - 1
   if (popFrame) {
-    stack.pop()
+    stack.splice(i, 1)
   } else {
-    const top = { ...stack[stack.length - 1] }
-    top.pc += 1
-    stack[stack.length - 1] = top
+    const own = { ...stack[i] }
+    own.pc += 1
+    stack[i] = own
   }
   return { ...state, stack }
 }
@@ -353,31 +366,11 @@ function executeOp(
     case 'fieldToLife': {
       let s = state
       for (const id of refs(op.ref)) {
-        if (removalBlocked(s, id, controller, events)) continue
-        const card = findFieldCard(s, id)
-        if (!card) continue
-        const owner = card.ownerId
-        const removed = removeFromField(s, id, 'trash')
-        if (removed === s) continue
-        // Redirect from trash to the top of the owner's life stack
-        const p = removed.players[owner]
-        const idx = p.trash.findIndex((c) => c.instanceId === id)
-        if (idx < 0) {
-          s = removed
-          continue
-        }
-        const trash = [...p.trash]
-        const [moved] = trash.splice(idx, 1)
-        // Printed "face-up" placements stay public knowledge (GameCard.revealed)
-        const placed = { ...moved, revealed: op.faceUp === true }
-        const lifeCards = op.bottom ? [...p.lifeCards, placed] : [placed, ...p.lifeCards]
-        s = {
-          ...removed,
-          players: {
-            ...removed.players,
-            [owner]: { ...p, trash, lifeCards },
-          },
-        }
+        s = removeByEffect(s, id, 'life', events, {
+          controller,
+          faceUp: op.faceUp,
+          bottom: op.bottom,
+        })
       }
       return advance(s)
     }
@@ -653,10 +646,23 @@ function executeOp(
 
     case 'guardResolve': {
       if (refs(op.choiceRef).length > 0) return advance(state) // guard paid: target lives
+      // Declined: complete the suspended removal. A window opened by removeByEffect
+      // carries the original destination in $-bindings; without one it was a K.O.
+      const dest = refs('$dest')[0]
+      const remover = (refs('$remover')[0] as PlayerId | undefined) ?? controller
       let s = state
       for (const id of refs(op.targetRef)) {
         const card = findFieldCard(s, id)
         if (!card) continue
+        if (dest === 'hand' || dest === 'deckBottom' || dest === 'life') {
+          const removed =
+            dest === 'life'
+              ? moveFieldCardToLife(s, id, refs('$faceUp').length > 0, refs('$bottom').length > 0)
+              : removeFromField(s, id, dest)
+          if (removed === s) continue
+          s = emitEngineEvent(removed, { kind: 'charRemovedByEffect', player: remover })
+          continue
+        }
         const removed = removeFromField(s, id, 'trash')
         if (removed === s) continue
         s = removed
@@ -704,10 +710,7 @@ function executeOp(
           if (op.costAtMost !== undefined && getEffectiveFieldCost(s, c) > op.costAtMost) continue
           if (op.rested !== undefined && c.isRested !== op.rested) continue
           if (op.dest === 'trash') s = koById(s, c.instanceId, events, { controller })
-          else {
-            if (removalBlocked(s, c.instanceId, controller, events)) continue
-            s = removeFromField(s, c.instanceId, 'deckBottom')
-          }
+          else s = removeByEffect(s, c.instanceId, 'deckBottom', events, { controller })
         }
       }
       return advance(s)
@@ -1258,8 +1261,7 @@ function executeOp(
       let s = state
       const before = charCount(s)
       for (const id of refs(op.ref)) {
-        if (removalBlocked(s, id, controller, events)) continue
-        s = removeFromField(s, id, 'deckBottom')
+        s = removeByEffect(s, id, 'deckBottom', events, { controller })
       }
       if (charCount(s) < before) {
         s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
@@ -1271,8 +1273,7 @@ function executeOp(
       let s = state
       const before = charCount(s)
       for (const id of refs(op.ref)) {
-        if (removalBlocked(s, id, controller, events)) continue
-        s = removeFromField(s, id, 'hand')
+        s = removeByEffect(s, id, 'hand', events, { controller })
       }
       if (charCount(s) < before) {
         s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
@@ -2022,6 +2023,97 @@ export function removeFromField(
     return { ...state, players: { ...state.players, [pid]: next } }
   }
   return state
+}
+
+/** Move a field card into its owner's Life stack (fieldToLife and guard declines). */
+export function moveFieldCardToLife(
+  state: GameState,
+  instanceId: string,
+  faceUp: boolean,
+  bottom: boolean,
+): GameState {
+  const card = findFieldCard(state, instanceId)
+  if (!card) return state
+  const owner = card.ownerId
+  const removed = removeFromField(state, instanceId, 'trash')
+  if (removed === state) return state
+  const p = removed.players[owner]
+  const idx = p.trash.findIndex((c) => c.instanceId === instanceId)
+  if (idx < 0) return removed
+  const trash = [...p.trash]
+  const [moved] = trash.splice(idx, 1)
+  // Printed "face-up" placements stay public knowledge (GameCard.revealed)
+  const placed = { ...moved, revealed: faceUp }
+  const lifeCards = bottom ? [...p.lifeCards, placed] : [placed, ...p.lifeCards]
+  return { ...removed, players: { ...removed.players, [owner]: { ...p, trash, lifeCards } } }
+}
+
+/** Remove a field card by effect (bounce, bottom-deck, into Life), opening the
+ * "would be removed from the field" replacement window first: guardKo/replaceKo
+ * defs with guardScope 'removal' run INSTEAD, and their guardResolve completes
+ * the original removal on decline (the frame carries it in $-bindings). */
+export function removeByEffect(
+  state: GameState,
+  instanceId: string,
+  dest: 'hand' | 'deckBottom' | 'life',
+  events: GameEvent[],
+  opts: { controller: PlayerId; faceUp?: boolean; bottom?: boolean },
+): GameState {
+  const card = findFieldCard(state, instanceId)
+  if (!card) return state
+  if (removalBlocked(state, instanceId, opts.controller, events)) return state
+  const owner = card.ownerId
+
+  const stuff = (framed: GameState, extra: Record<string, string[]>): GameState => {
+    const stack = [...framed.stack]
+    const top = { ...stack[stack.length - 1] }
+    top.bindings = {
+      ...top.bindings,
+      $dest: [dest],
+      $remover: [opts.controller],
+      ...(opts.faceUp ? { $faceUp: ['1'] } : {}),
+      ...(opts.bottom ? { $bottom: ['1'] } : {}),
+      ...extra,
+    }
+    stack[stack.length - 1] = top
+    return { ...framed, stack }
+  }
+
+  const defs = getEffectDefs(card.cardId)
+  for (let i = 0; i < defs.length; i++) {
+    if (defs[i].guardScope !== 'removal' || defs[i].timing !== 'replaceKo') continue
+    if (!defMatches(state, owner, card, 'replaceKo', i)) continue
+    if (!replaceWindowOpen(defs[i].replaceWhen, opts, owner)) continue
+    const marked = markOncePerTurn(state, card, defs[i].oncePerTurn, `t${i}`)
+    if (!marked) continue
+    events.push({
+      type: 'KO_REPLACED',
+      playerId: owner,
+      description: `${getCardById(card.cardId)?.name ?? 'Character'}'s effect replaced the removal`,
+    })
+    return stuff(pushFrame(marked, card, owner, 'replaceKo', i), {})
+  }
+
+  const p = state.players[owner]
+  for (const guard of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
+    if (guard.instanceId === instanceId) continue
+    const gDefs = getEffectDefs(guard.cardId)
+    for (let i = 0; i < gDefs.length; i++) {
+      const gd = gDefs[i]
+      if (gd.timing !== 'guardKo' || !gd.guard || gd.guardScope !== 'removal') continue
+      if (!replaceWindowOpen(gd.replaceWhen, opts, owner)) continue
+      if (!defMatches(state, owner, guard, 'guardKo', i)) continue
+      if (!guardTargetMatches(state, card, gd.guard)) continue
+      const marked = markOncePerTurn(state, guard, gd.oncePerTurn, `t${i}`)
+      if (!marked) continue
+      return stuff(pushFrame(marked, guard, owner, 'guardKo', i), { target: [instanceId] })
+    }
+  }
+
+  if (dest === 'life') {
+    return moveFieldCardToLife(state, instanceId, opts.faceUp === true, opts.bottom === true)
+  }
+  return removeFromField(state, instanceId, dest)
 }
 
 /** K.O. a character (or stage) by instance id: field -> trash, then queue its
