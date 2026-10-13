@@ -1,5 +1,12 @@
 import type { GameState, GameCard, GameEvent, PlayerId, EffectFrame, Modifier } from '../types'
-import type { CardDataFilter, EffectOp, EffectTiming, EngineEventKind, SelectFilter } from './ast'
+import type {
+  CardDataFilter,
+  EffectDef,
+  EffectOp,
+  EffectTiming,
+  EngineEventKind,
+  SelectFilter,
+} from './ast'
 import { getEffectDefs } from './registry'
 import { recordEffectFired } from './telemetry'
 import {
@@ -32,6 +39,18 @@ export interface EngineEvent {
   fromHand?: boolean
   /** lifeDamageDealt: the attacking card's instance */
   sourceInstanceId?: string
+  /** charRemovedByEffect/characterKoed: the removed card's owner */
+  cardOwner?: PlayerId
+  /** The controller of the effect that caused the event */
+  byController?: PlayerId
+  /** characterKoed: the K.O. came from battle */
+  byBattle?: boolean
+  /** donReturned: how many returned in this batch */
+  count?: number
+  /** attackDeclared */
+  attackerIsLeader?: boolean
+  /** attackDeclared */
+  targetIsLeader?: boolean
 }
 
 /**
@@ -61,14 +80,16 @@ export function queueEffects(
   card: GameCard,
   timing: EffectTiming,
   controller: PlayerId,
+  defFilter?: (def: EffectDef) => boolean,
 ): GameState {
   const defs = getEffectDefs(card.cardId)
   const frames: EffectFrame[] = []
   let s = state
   for (let i = 0; i < defs.length; i++) {
     if (!defMatches(s, controller, card, timing, i)) continue
+    if (defFilter && !defFilter(defs[i])) continue
     if (defs[i].oncePerTurn) {
-      const key = `t${i}`
+      const key = defs[i].oncePerTurnKey ?? `t${i}`
       const live = findFieldCard(s, card.instanceId)
       if (live) {
         if (live.activatedThisTurn.includes(key)) continue
@@ -101,8 +122,34 @@ export function emitEngineEvent(state: GameState, ev: EngineEvent): GameState {
       for (let i = 0; i < defs.length; i++) {
         const def = defs[i]
         if (def.timing !== 'onEvent' || !def.on || def.on.kind !== ev.kind) continue
-        const expected = def.on.who === 'self' ? pid : getOpponent(pid)
-        if (ev.player !== expected) continue
+        const q = def.on
+        const expected = q.who === 'self' ? pid : getOpponent(pid)
+        if (!q.anyPlayer && ev.player !== expected) continue
+        if (q.minCount !== undefined && (ev.count ?? 0) < q.minCount) continue
+        if (q.byOwnEffect && ev.byController !== pid) continue
+        if (q.byOppEffect && ev.byController !== getOpponent(pid)) continue
+        if (q.byEffect && ev.byBattle) continue
+        if (
+          q.removedTypeIncludes &&
+          (!ev.cardId || !cardTypes(ev.cardId).includes(q.removedTypeIncludes))
+        ) {
+          continue
+        }
+        if (
+          q.removedTypeContains &&
+          (!ev.cardId || !cardTypes(ev.cardId).some((t) => t.includes(q.removedTypeContains ?? '')))
+        ) {
+          continue
+        }
+        if (q.removedOwn && ev.cardOwner !== pid) continue
+        if (
+          q.basePowerAtLeast !== undefined &&
+          (!ev.cardId || (getCardById(ev.cardId)?.power ?? 0) < q.basePowerAtLeast)
+        ) {
+          continue
+        }
+        if (q.attackerIsLeader !== undefined && ev.attackerIsLeader !== q.attackerIsLeader) continue
+        if (q.targetIsLeader !== undefined && ev.targetIsLeader !== q.targetIsLeader) continue
         if (def.on.fromHand && !ev.fromHand) continue
         if (def.on.fromHand === false && ev.fromHand) continue
         if (
@@ -115,7 +162,7 @@ export function emitEngineEvent(state: GameState, ev: EngineEvent): GameState {
         if (def.on.noBaseEffect && (!ev.cardId || getCardById(ev.cardId)?.effectText)) continue
         if (def.on.sourceIsSelf && ev.sourceInstanceId !== card.instanceId) continue
         if (!defMatches(s, pid, card, 'onEvent', i)) continue
-        const marked = markOncePerTurn(s, card, def.oncePerTurn, `t${i}`)
+        const marked = markOncePerTurn(s, card, def.oncePerTurn, def.oncePerTurnKey ?? `t${i}`)
         if (!marked) continue
         s = marked
         frames.push(makeFrame(card, pid, 'onEvent', i))
@@ -136,7 +183,12 @@ export function queueEndOfTurnEffects(state: GameState): GameState {
     const defs = getEffectDefs(card.cardId)
     for (let i = 0; i < defs.length; i++) {
       if (!defMatches(s, pid, card, 'endOfTurn', i)) continue
-      const marked = markOncePerTurn(s, card, defs[i].oncePerTurn, `t${i}`)
+      const marked = markOncePerTurn(
+        s,
+        card,
+        defs[i].oncePerTurn,
+        defs[i].oncePerTurnKey ?? `t${i}`,
+      )
       if (!marked) continue
       s = marked
       frames.push(makeFrame(card, pid, 'endOfTurn', i))
@@ -155,7 +207,12 @@ export function queueStartOfTurnEffects(state: GameState): GameState {
     const defs = getEffectDefs(card.cardId)
     for (let i = 0; i < defs.length; i++) {
       if (!defMatches(s, pid, card, 'startOfTurn', i)) continue
-      const marked = markOncePerTurn(s, card, defs[i].oncePerTurn, `t${i}`)
+      const marked = markOncePerTurn(
+        s,
+        card,
+        defs[i].oncePerTurn,
+        defs[i].oncePerTurnKey ?? `t${i}`,
+      )
       if (!marked) continue
       s = marked
       frames.push(makeFrame(card, pid, 'startOfTurn', i))
@@ -304,6 +361,7 @@ function executeOp(
           min: Math.min(op.min, options.length),
           max: op.max,
           exact: op.exact,
+          constraint: op.constraint,
           bind: op.bind,
         },
       }
@@ -660,7 +718,13 @@ function executeOp(
               ? moveFieldCardToLife(s, id, refs('$faceUp').length > 0, refs('$bottom').length > 0)
               : removeFromField(s, id, dest)
           if (removed === s) continue
-          s = emitEngineEvent(removed, { kind: 'charRemovedByEffect', player: remover })
+          s = emitEngineEvent(removed, {
+            kind: 'charRemovedByEffect',
+            player: remover,
+            cardId: card.cardId,
+            cardOwner: card.ownerId,
+            byController: remover,
+          })
           continue
         }
         const removed = removeFromField(s, id, 'trash')
@@ -671,8 +735,26 @@ function executeOp(
           playerId: card.ownerId,
           description: `${getCardById(card.cardId)?.name ?? 'Character'} was KO'd`,
         })
-        s = queueEffects(s, card, 'onKo', card.ownerId)
-        s = emitEngineEvent(s, { kind: 'characterKoed', player: card.ownerId })
+        s = queueEffects(s, card, 'onKo', card.ownerId, (d) =>
+          d.koCause === 'oppEffect' ? remover !== card.ownerId : true,
+        )
+        s = emitEngineEvent(s, {
+          kind: 'characterKoed',
+          player: card.ownerId,
+          cardId: card.cardId,
+          cardOwner: card.ownerId,
+          byBattle: false,
+          byController: remover,
+        })
+        if (remover !== undefined) {
+          s = emitEngineEvent(s, {
+            kind: 'charRemovedByEffect',
+            player: remover,
+            cardId: card.cardId,
+            cardOwner: card.ownerId,
+            byController: remover,
+          })
+        }
       }
       return advance(s, true) // guard declined: stop this frame
     }
@@ -967,12 +1049,7 @@ function executeOp(
 
     case 'ko': {
       let s = state
-      const before = refs(op.ref).filter((id) => findFieldCard(s, id)).length
       for (const id of refs(op.ref)) s = koById(s, id, events, { controller })
-      const after = refs(op.ref).filter((id) => findFieldCard(s, id)).length
-      if (after < before) {
-        s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
-      }
       return advance(s)
     }
 
@@ -1259,24 +1336,16 @@ function executeOp(
 
     case 'bottomDeckFromField': {
       let s = state
-      const before = charCount(s)
       for (const id of refs(op.ref)) {
         s = removeByEffect(s, id, 'deckBottom', events, { controller })
-      }
-      if (charCount(s) < before) {
-        s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
       }
       return advance(s)
     }
 
     case 'returnToHand': {
       let s = state
-      const before = charCount(s)
       for (const id of refs(op.ref)) {
         s = removeByEffect(s, id, 'hand', events, { controller })
-      }
-      if (charCount(s) < before) {
-        s = emitEngineEvent(s, { kind: 'charRemovedByEffect', player: controller })
       }
       return advance(s)
     }
@@ -1495,6 +1564,21 @@ function executeOp(
           s = updateFieldCard(s, id, (c) => ({ ...c, modifiers: [...c.modifiers, modifier] }))
         }
       }
+      // Printed "place it at the bottom of your deck" for a declined play
+      if (op.unplayedTo === 'bottom' && frame.bindings[bind].length === 0 && top) {
+        const sp = s.players[controller]
+        if (sp.deck[0]?.instanceId === top.instanceId) {
+          const deck = [...sp.deck]
+          const [moved] = deck.splice(0, 1)
+          s = {
+            ...s,
+            players: {
+              ...s.players,
+              [controller]: { ...sp, deck: [...deck, { ...moved, revealed: false }] },
+            },
+          }
+        }
+      }
       return advance(s)
     }
 
@@ -1584,7 +1668,14 @@ function executeOp(
         }
       }
       for (const pid of ['player1', 'player2'] as PlayerId[]) {
-        if (returnedFor[pid] > 0) s = emitEngineEvent(s, { kind: 'donReturned', player: pid })
+        if (returnedFor[pid] > 0) {
+          s = emitEngineEvent(s, {
+            kind: 'donReturned',
+            player: pid,
+            count: returnedFor[pid],
+            byController: controller,
+          })
+        }
       }
       return advance(s)
     }
@@ -2084,7 +2175,12 @@ export function removeByEffect(
     if (defs[i].guardScope !== 'removal' || defs[i].timing !== 'replaceKo') continue
     if (!defMatches(state, owner, card, 'replaceKo', i)) continue
     if (!replaceWindowOpen(defs[i].replaceWhen, opts, owner)) continue
-    const marked = markOncePerTurn(state, card, defs[i].oncePerTurn, `t${i}`)
+    const marked = markOncePerTurn(
+      state,
+      card,
+      defs[i].oncePerTurn,
+      defs[i].oncePerTurnKey ?? `t${i}`,
+    )
     if (!marked) continue
     events.push({
       type: 'KO_REPLACED',
@@ -2104,16 +2200,24 @@ export function removeByEffect(
       if (!replaceWindowOpen(gd.replaceWhen, opts, owner)) continue
       if (!defMatches(state, owner, guard, 'guardKo', i)) continue
       if (!guardTargetMatches(state, card, gd.guard)) continue
-      const marked = markOncePerTurn(state, guard, gd.oncePerTurn, `t${i}`)
+      const marked = markOncePerTurn(state, guard, gd.oncePerTurn, gd.oncePerTurnKey ?? `t${i}`)
       if (!marked) continue
       return stuff(pushFrame(marked, guard, owner, 'guardKo', i), { target: [instanceId] })
     }
   }
 
-  if (dest === 'life') {
-    return moveFieldCardToLife(state, instanceId, opts.faceUp === true, opts.bottom === true)
-  }
-  return removeFromField(state, instanceId, dest)
+  const removed =
+    dest === 'life'
+      ? moveFieldCardToLife(state, instanceId, opts.faceUp === true, opts.bottom === true)
+      : removeFromField(state, instanceId, dest)
+  if (removed === state) return state
+  return emitEngineEvent(removed, {
+    kind: 'charRemovedByEffect',
+    player: opts.controller,
+    cardId: card.cardId,
+    cardOwner: owner,
+    byController: opts.controller,
+  })
 }
 
 /** K.O. a character (or stage) by instance id: field -> trash, then queue its
@@ -2152,7 +2256,12 @@ export function koById(
   for (let i = 0; i < defs.length; i++) {
     if (!defMatches(state, owner, card, 'replaceKo', i)) continue
     if (!replaceWindowOpen(defs[i].replaceWhen, opts, owner)) continue
-    const marked = markOncePerTurn(state, card, defs[i].oncePerTurn, `t${i}`)
+    const marked = markOncePerTurn(
+      state,
+      card,
+      defs[i].oncePerTurn,
+      defs[i].oncePerTurnKey ?? `t${i}`,
+    )
     if (!marked) continue
     events.push({
       type: 'KO_REPLACED',
@@ -2175,7 +2284,7 @@ export function koById(
       if (!replaceWindowOpen(gd.replaceWhen, opts, owner)) continue
       if (!defMatches(state, owner, guard, 'guardKo', i)) continue
       if (!guardTargetMatches(state, card, gd.guard)) continue
-      const marked = markOncePerTurn(state, guard, gd.oncePerTurn, `t${i}`)
+      const marked = markOncePerTurn(state, guard, gd.oncePerTurn, gd.oncePerTurnKey ?? `t${i}`)
       if (!marked) continue
       const framed = pushFrame(marked, guard, owner, 'guardKo', i)
       const stack = [...framed.stack]
@@ -2200,9 +2309,32 @@ export function koById(
     ? s
     : { ...s, turnFlags: { ...s.turnFlags, [koFlagOwner]: [...flags, 'oppCharKoed'] } }
   // [On K.O.] activates on the field but resolves from the trash (CR 10-2-17);
-  // listeners land on top of the stack so the turn player's resolve first
-  const withOnKo = queueEffects(flagged, card, 'onKo', owner)
-  return emitEngineEvent(withOnKo, { kind: 'characterKoed', player: owner })
+  // listeners land on top of the stack so the turn player's resolve first.
+  // koCause-gated defs only fire when the K.O. cause matches.
+  const withOnKo = queueEffects(flagged, card, 'onKo', owner, (d) =>
+    d.koCause === 'oppEffect'
+      ? !opts.byBattle && opts.controller !== undefined && opts.controller !== owner
+      : true,
+  )
+  let evd = emitEngineEvent(withOnKo, {
+    kind: 'characterKoed',
+    player: owner,
+    cardId: card.cardId,
+    cardOwner: owner,
+    byBattle: opts.byBattle === true,
+    byController: opts.controller,
+  })
+  // An effect K.O. is also a removal-by-effect (CR 10-1-3)
+  if (!opts.byBattle && opts.controller !== undefined) {
+    evd = emitEngineEvent(evd, {
+      kind: 'charRemovedByEffect',
+      player: opts.controller,
+      cardId: card.cardId,
+      cardOwner: owner,
+      byController: opts.controller,
+    })
+  }
+  return evd
 }
 
 /** Whether a replacement window applies given how the K.O. arrived. */

@@ -1077,7 +1077,7 @@ export const OP04_EFFECTS: Record<string, EffectDef[]> = {
   'OP04-058': [
     {
       timing: 'onEvent',
-      on: { kind: 'donReturned', who: 'self' },
+      on: { kind: 'donReturned', who: 'self', byOwnEffect: true },
       oncePerTurn: true,
       condition: { opponentsTurn: true },
       ops: [{ op: 'addDon', count: 1, rested: false }],
@@ -2475,8 +2475,6 @@ export const COVERAGE_NOTES_OP04: Record<string, string> = {
   'OP04-040': 'SIMPLIFIED: with a cost-8 Character the life-add is auto-chosen over the draw',
   'OP04-043':
     'SIMPLIFIED: the bounce goes to the hand only ("or the bottom of their deck" not offered)',
-  'OP04-058':
-    'SIMPLIFIED: fires on any DON!! leaving your field (the engine does not track WHOSE effect caused it)',
   'OP04-073':
     'SIMPLIFIED: trigger plays this card without the DON cost printed on similar cards (none printed here)',
   'OP04-090':

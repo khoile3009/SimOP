@@ -1012,7 +1012,13 @@ export const OP08_EFFECTS: Record<string, EffectDef[]> = {
   'OP08-056': [
     {
       timing: 'onEvent',
-      on: { kind: 'charRemovedByEffect', who: 'self' },
+      on: {
+        kind: 'charRemovedByEffect',
+        who: 'self',
+        anyPlayer: true,
+        removedOwn: true,
+        removedTypeContains: 'Whitebeard Pirates',
+      },
       condition: { yourTurn: true },
       oncePerTurn: true,
       ops: [
@@ -2411,8 +2417,6 @@ export const COVERAGE_NOTES_OP08: Record<string, string> = {
   'OP08-050': 'SIMPLIFIED: both cards go to the bottom (text allows top or bottom)',
   'OP08-052': 'SIMPLIFIED: an unplayed revealed card stays on top (text allows top or bottom)',
   'OP08-054': 'SIMPLIFIED: an unplayed revealed card stays on top (text allows top or bottom)',
-  'OP08-056':
-    "SIMPLIFIED: listens for your own effect removals only, regardless of the removed card's type",
   'OP08-057':
     'SIMPLIFIED: modes are offered cost-down first; declining it rolls into the draw mode',
   'OP08-074': 'SIMPLIFIED: the end-of-turn DON!! return takes cost-area DON only, rested first',

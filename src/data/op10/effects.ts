@@ -794,16 +794,23 @@ export const OP10_EFFECTS: Record<string, EffectDef[]> = {
   'OP10-042': [
     {
       timing: 'onEvent',
-      on: { kind: 'charRemovedByEffect', who: 'opponent' },
+      on: {
+        kind: 'charRemovedByEffect',
+        who: 'opponent',
+        removedOwn: true,
+        removedTypeIncludes: 'Dressrosa',
+      },
       condition: { opponentsTurn: true, maxHandSelf: 5 },
       oncePerTurn: true,
+      oncePerTurnKey: 'dressrosaDraw',
       ops: [{ op: 'draw', count: 1 }],
     },
     {
       timing: 'onEvent',
-      on: { kind: 'characterKoed', who: 'self' },
+      on: { kind: 'characterKoed', who: 'self', removedTypeIncludes: 'Dressrosa' },
       condition: { opponentsTurn: true, maxHandSelf: 5 },
       oncePerTurn: true,
+      oncePerTurnKey: 'dressrosaDraw',
       ops: [{ op: 'draw', count: 1 }],
     },
   ],
@@ -2509,8 +2516,6 @@ export const COVERAGE_NOTES_OP10: Record<string, string> = {
   'OP10-030':
     'SIMPLIFIED: the "no more DON refreshes via Character effects this turn" rider is a once-per-turn mark instead',
   'OP10-034': 'SIMPLIFIED: the saved life card goes to hand hidden, as damage would',
-  'OP10-042':
-    'SIMPLIFIED: the removal listeners do not check that the removed card was Dressrosa-typed; two once-per-turn marks',
   'OP10-058':
     'SIMPLIFIED: the two plays are separate picks; the rested rider applies to the second (cost 4 or less) pick',
   'OP10-108':

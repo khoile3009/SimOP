@@ -1399,7 +1399,8 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
   ],
   'OP12-081': [
     {
-      timing: 'whenAttacking',
+      timing: 'onEvent',
+      on: { kind: 'attackDeclared', who: 'self', sourceIsSelf: true, targetIsLeader: true },
       condition: { minSelfCharsCostAtLeast: { cost: 8, count: 2 } },
       ops: [{ op: 'draw', count: 1 }],
     },
@@ -1407,12 +1408,14 @@ export const OP12_EFFECTS: Record<string, EffectDef[]> = {
       timing: 'onEvent',
       on: { kind: 'characterPlayed', who: 'opponent', minCost: 8 },
       oncePerTurn: true,
+      oncePerTurnKey: 'koalaPunish',
       ops: [{ op: 'lifeTopToHand', count: 1, who: 'opponent' }],
     },
     {
       timing: 'onEvent',
       on: { kind: 'characterPlayed', who: 'opponent', fromHand: false },
       oncePerTurn: true,
+      oncePerTurnKey: 'koalaPunish',
       ops: [{ op: 'lifeTopToHand', count: 1, who: 'opponent' }],
     },
   ],
@@ -2126,8 +2129,6 @@ export const COVERAGE_NOTES_OP12: Record<string, string> = {
     'SIMPLIFIED: any of your own hand-trash effects count (the Navy-source check is not modeled; costs count too)',
   'OP12-041': 'SIMPLIFIED: the activated Event resolves its [Main] text at base cost 3 or less',
   'OP12-061': 'SIMPLIFIED: the guard pays by taking your top life card to hand',
-  'OP12-081':
-    'SIMPLIFIED: the attack draw fires on any attack; the two play-listeners carry separate once-per-turn marks',
   'OP12-096':
     'SIMPLIFIED: the cost-6 upgrade is reached by declining the cost-4 pick with an 8-cost Character out',
   'OP12-099':

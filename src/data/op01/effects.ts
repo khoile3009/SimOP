@@ -2012,10 +2012,7 @@ export const KEYWORD_ONLY: string[] = ['OP01-025', 'OP01-100', 'OP01-075', 'OP01
 export const COVERAGE_NOTES: Record<string, string> = {
   'OP01-061':
     'SIMPLIFIED: "add up to 1 DON!!" always adds it (declining is never right in this pool)',
-  'OP01-062':
-    'SIMPLIFIED: "you may draw 1" always draws (skipped when the deck is empty); "activate an Event" counts Main and Counter plays, not Trigger activations',
-  'OP01-004':
-    'SIMPLIFIED: "opponent activates an Event" counts Main and Counter plays, not Trigger activations',
+  'OP01-062': 'SIMPLIFIED: "you may draw 1" always draws (skipped when the deck is empty)',
   'OP01-073':
     'SIMPLIFIED: "top or bottom in any order" implemented as choose-a-subset-for-bottom (order preserved)',
   'OP01-077':

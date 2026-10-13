@@ -258,8 +258,9 @@ export const OP09_EFFECTS: Record<string, EffectDef[]> = {
           bind: 'b1',
           filter: { owner: 'opponent', zone: 'characters', powerAtMost: 4000 },
           min: 0,
-          max: 1,
-          prompt: 'K.O. up to 1',
+          max: 2,
+          constraint: { totalPowerAtMost: 4000 },
+          prompt: 'K.O. up to 2 (total power 4000-)',
         },
         { op: 'ko', ref: 'b1' },
       ],
@@ -907,6 +908,7 @@ export const OP09_EFFECTS: Record<string, EffectDef[]> = {
   'OP09-052': [
     {
       timing: 'onKo',
+      koCause: 'oppEffect',
       condition: { opponentsTurn: true },
       ops: [
         {
@@ -1046,7 +1048,7 @@ export const OP09_EFFECTS: Record<string, EffectDef[]> = {
   'OP09-061': [
     {
       timing: 'onEvent',
-      on: { kind: 'donReturned', who: 'self' },
+      on: { kind: 'donReturned', who: 'self', minCount: 2 },
       condition: { yourTurn: true },
       oncePerTurn: true,
       ops: [
@@ -2173,11 +2175,7 @@ export const COVERAGE_NOTES_OP09: Record<string, string> = {
     'SIMPLIFIED: guards Bonk Punch against any non-battle K.O. (not only effects that name him)',
   'OP09-014':
     'SIMPLIFIED: the lock is a flag the blocker check reads; only currently-granted Blocker is seen at select time',
-  'OP09-018':
-    'SIMPLIFIED: K.O.s a single target with 4000 power or less (the 2-target total-power split is not modeled)',
   'OP09-044': 'SIMPLIFIED: the hand trash happens after the search resolves',
-  'OP09-052': "SIMPLIFIED: revives on any K.O. during the opponent's turn (battle K.O.s included)",
-  'OP09-061': 'SIMPLIFIED: the listener fires on any DON!! return, not only 2-or-more at once',
   'OP09-068':
     "SIMPLIFIED: Blocker lasts through the opponent's next turn via a turn-anchored modifier",
   'OP09-084': 'SIMPLIFIED: the mode choice offers Double Attack or Blocker (Banish is dropped)',

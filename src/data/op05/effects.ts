@@ -137,8 +137,9 @@ export const OP05_EFFECTS: Record<string, EffectDef[]> = {
           bind: 'b1',
           filter: { owner: 'opponent', zone: 'characters', powerAtMost: 4000 },
           min: 0,
-          max: 1,
-          prompt: 'K.O. up to 1',
+          max: 2,
+          constraint: { totalPowerAtMost: 4000 },
+          prompt: 'K.O. up to 2 (total power 4000-)',
         },
         { op: 'ko', ref: 'b1' },
       ],
@@ -2263,8 +2264,6 @@ export const KEYWORD_ONLY_OP05: string[] = ['OP05-013', 'OP05-024', 'OP05-052', 
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP05: Record<string, string> = {
   'OP05-001': 'SIMPLIFIED: once-per-turn is consumed when the save window opens, even if declined',
-  'OP05-007':
-    'SIMPLIFIED: K.O.s a single target with 4000 power or less (the 2-target total-power split is not modeled)',
   'OP05-032':
     'SIMPLIFIED: replacement once-per-turn is consumed when the window opens, even if declined',
   'OP05-040': 'SIMPLIFIED: the refresh-lock reads printed cost; the wipe K.O.s by effective cost',

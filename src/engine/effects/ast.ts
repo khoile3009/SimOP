@@ -58,6 +58,8 @@ export type EngineEventKind =
   /** A card went from a player's hand to the trash via an effect op; emitted
    * once per card; `player` is the hand's owner (Kuzan leader) */
   | 'handTrashed'
+  /** An attack was declared; `player` is the ATTACKER's owner */
+  | 'attackDeclared'
   /** A player's life count reached 0 (Enel) */
   | 'lifeZero'
   /** A card left a player's Life area (damage or effects); `player` is the life's owner */
@@ -78,6 +80,28 @@ export interface EventQuery {
   /** lifeDamageDealt: the damage came from THIS card's attack.
    * attacked: THIS card is the attack's target. */
   sourceIsSelf?: boolean
+  /** Skip the who check: either player's event matches ("when a card is removed from your or your opponent's Life") */
+  anyPlayer?: boolean
+  /** donReturned: at least this many DON!! returned at once (OP09 Luffy) */
+  minCount?: number
+  /** The event was caused by the LISTENER's own effect (Crocodile's DON recycling) */
+  byOwnEffect?: boolean
+  /** The event was caused by the listener's OPPONENT's effect */
+  byOppEffect?: boolean
+  /** characterKoed: the K.O. came from an effect, not battle */
+  byEffect?: boolean
+  /** charRemovedByEffect/characterKoed: the removed card has this type */
+  removedTypeIncludes?: string
+  /** Substring variant of removedTypeIncludes ("a type including 'Roger Pirates'") */
+  removedTypeContains?: string
+  /** charRemovedByEffect/characterKoed: the removed card belonged to the listener's controller */
+  removedOwn?: boolean
+  /** charRemovedByEffect/characterKoed: the removed card's printed power is at least this */
+  basePowerAtLeast?: number
+  /** attackDeclared: the attacker is a Leader */
+  attackerIsLeader?: boolean
+  /** attackDeclared: the attack targets a Leader */
+  targetIsLeader?: boolean
 }
 
 /** Predicates over game state, evaluated from the effect controller's seat. */
@@ -173,6 +197,8 @@ export interface Cond {
   leaderTypeIncludesAny?: string[]
   /** At least `count` of your characters carry any of `types` (Kuja, Foxy) */
   minSelfCharsTypedAny?: { types: string[]; count: number }
+  /** At least `count` DIFFERENTLY-NAMED characters of this type (OP16 Impel Down) */
+  minSelfCharsTypedDistinct?: { type: string; count: number }
   minOppCharacters?: number
   /** The opponent's rested cards across leader, characters, stage and DON!! */
   minOppRestedAny?: number
@@ -382,6 +408,8 @@ export type EffectOp =
       chooser?: 'controller' | 'opponent'
       /** Bind every matching card with no prompt ("all of your opponent's Characters") */
       selectAll?: boolean
+      /** Set-level bounds ("with a total cost of 4 or less", "with different card names") */
+      constraint?: { totalCostAtMost?: number; totalPowerAtMost?: number; distinctNames?: boolean }
       prompt: string
     }
   /** Skip the rest of this effect when a binding is empty - "You may X: Y" costs */
@@ -532,7 +560,13 @@ export type EffectOp =
   /** Same, but filtered by printed data instead of a name (Oden's [On K.O.]) */
   | { op: 'searchDeck'; filter: CardDataFilter; upTo: number; to: 'hand' | 'play' }
   /** Reveal top card; if it matches, may play it; otherwise it stays on top */
-  | { op: 'revealTopMayPlay'; filter: CardDataFilter; rested?: boolean; keyword?: string }
+  | {
+      op: 'revealTopMayPlay'
+      filter: CardDataFilter
+      rested?: boolean
+      keyword?: string
+      unplayedTo?: 'bottom'
+    }
   /** Reveal the TOP LIFE card; if it matches, play it (Law leader) */
   | { op: 'revealLifeTopMayPlay'; filter: CardDataFilter }
   | { op: 'addDon'; count: number; rested: boolean; who?: 'self' | 'opponent' } // from DON!! deck to cost area
@@ -644,6 +678,10 @@ export interface EffectDef {
   /** Mandatory activation cost, paid on activation ([Activate: Main] only).
    * returnDon is DON!!-X: that many cost-area DON go back to the DON!! deck. */
   cost?: { restDon?: number; restSelf?: boolean; returnDon?: number }
+  /** Two defs printed as ONE ability share a once-per-turn mark through this key */
+  oncePerTurnKey?: string
+  /** onKo defs: only K.O.s with this cause fire ("K.O.'d by your opponent's effect") */
+  koCause?: 'oppEffect'
   /** For timing 'guardKo': which dying characters this card may save */
   guard?: SelectFilter
   ops: EffectOp[]

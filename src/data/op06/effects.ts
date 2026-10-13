@@ -101,11 +101,13 @@ export const OP06_EFFECTS: Record<string, EffectDef[]> = {
     {
       timing: 'whenAttacking',
       oncePerTurn: true,
+      oncePerTurnKey: 'becomeLeaderPower',
       ops: [{ op: 'basePowerToOppLeader', duration: 'untilYourNextTurn' }],
     },
     {
       timing: 'onBlock',
       oncePerTurn: true,
+      oncePerTurnKey: 'becomeLeaderPower',
       ops: [{ op: 'basePowerToOppLeader', duration: 'untilYourNextTurn' }],
     },
   ],
@@ -848,6 +850,12 @@ export const OP06_EFFECTS: Record<string, EffectDef[]> = {
       condition: { yourTurn: true, leaderTypeIncludes: 'East Blue' },
       ops: [{ op: 'millSelf', count: 4 }],
     },
+    {
+      timing: 'onEvent',
+      on: { kind: 'blockerActivated', who: 'opponent' },
+      condition: { yourTurn: true, leaderTypeIncludes: 'East Blue' },
+      ops: [{ op: 'millSelf', count: 4 }],
+    },
   ],
   'OP06-050': [
     {
@@ -1106,6 +1114,7 @@ export const OP06_EFFECTS: Record<string, EffectDef[]> = {
           },
           min: 0,
           max: 4,
+          constraint: { distinctNames: true },
           prompt: 'Play from trash',
         },
         { op: 'playCards', ref: 'b3' },
@@ -2257,6 +2266,7 @@ export const OP06_EFFECTS: Record<string, EffectDef[]> = {
         {
           op: 'revealTopMayPlay',
           filter: { cardType: 'Character', costAtMost: 9, nameNot: 'Sanji' },
+          unplayedTo: 'bottom',
         },
       ],
     },
@@ -2325,15 +2335,11 @@ export const KEYWORD_ONLY_OP06: string[] = ['OP06-032', 'OP06-087']
 
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP06: Record<string, string> = {
-  'OP06-009':
-    'SIMPLIFIED: the shared once-per-turn is tracked per timing (attack and block each mark their own)',
   'OP06-035':
     'SIMPLIFIED: rests up to 2 Characters only (the Characters-or-DON mixed total is not modeled)',
-  'OP06-048':
-    'SIMPLIFIED: fires on opponent Events only (Blocker activation is not an engine event) and the mill is mandatory',
+  'OP06-048': 'SIMPLIFIED: the "you may" mill auto-accepts',
   'OP06-051': 'SIMPLIFIED: trashing exactly 2 is all-or-nothing',
   'OP06-057': 'SIMPLIFIED: an unplayed revealed card stays on top (text allows top or bottom)',
-  'OP06-062': 'SIMPLIFIED: the different-names rule on the mass play is not enforced',
   'OP06-074': 'SIMPLIFIED: negation covers printed keywords, statics and effect defs',
   'OP06-086':
     'SIMPLIFIED: the cost-4 pick plays active and the cost-2 pick plays rested (text lets you choose which)',
@@ -2346,5 +2352,4 @@ export const COVERAGE_NOTES_OP06: Record<string, string> = {
   'OP06-115': "SIMPLIFIED: the trigger's life add is mandatory when at 0 Life",
   'OP06-116':
     'SIMPLIFIED: modes are offered K.O. first; the damage mode is reachable only by declining it',
-  'OP06-119': 'SIMPLIFIED: an unplayed revealed card stays on top (text says bottom)',
 }

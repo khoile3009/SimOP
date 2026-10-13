@@ -30,6 +30,15 @@ export function evalCond(
   if (cond.anyOf !== undefined) {
     if (!cond.anyOf.some((c) => evalCond(state, controller, source, c))) return false
   }
+  if (cond.minSelfCharsTypedDistinct !== undefined) {
+    const q = cond.minSelfCharsTypedDistinct
+    const names = new Set(
+      state.players[controller].characters
+        .filter((c) => cardTypes(c.cardId).includes(q.type))
+        .map((c) => getCardById(c.cardId)?.name ?? c.cardId),
+    )
+    if (names.size < q.count) return false
+  }
   if (cond.charTypedCostAtLeast !== undefined) {
     const q = cond.charTypedCostAtLeast
     const found = state.players[controller].characters.some(
@@ -509,6 +518,7 @@ export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
   'anyCharacterCostAtLeast',
   'anyOf',
   'charTypedCostAtLeast',
+  'minSelfCharsTypedDistinct',
   'lacksCharTypedCostAtLeast',
   'charDisadvantageAtLeast',
   'atMostLifeOfOpp',

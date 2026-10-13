@@ -454,6 +454,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
   'OP11-024': [
     {
       timing: 'onKo',
+      koCause: 'oppEffect',
       condition: { opponentsTurn: true },
       ops: [
         {
@@ -653,6 +654,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
   'OP11-035': [
     {
       timing: 'onKo',
+      koCause: 'oppEffect',
       condition: { opponentsTurn: true },
       ops: [
         {
@@ -830,14 +832,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
   'OP11-041': [
     {
       timing: 'onEvent',
-      on: { kind: 'lifeRemoved', who: 'self' },
-      condition: { yourTurn: true, maxHandSelf: 7 },
-      oncePerTurn: true,
-      ops: [{ op: 'draw', count: 1 }],
-    },
-    {
-      timing: 'onEvent',
-      on: { kind: 'lifeRemoved', who: 'opponent' },
+      on: { kind: 'lifeRemoved', who: 'self', anyPlayer: true },
       condition: { yourTurn: true, maxHandSelf: 7 },
       oncePerTurn: true,
       ops: [{ op: 'draw', count: 1 }],
@@ -911,7 +906,6 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
           filter: { owner: 'self', zone: 'hand' },
           min: 0,
           max: 1,
-          selectAll: true,
           prompt: 'You may trash 1',
         },
         { op: 'abortIfEmpty', ref: 'b1' },
@@ -922,6 +916,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
           filter: { owner: 'self', zone: 'characters', typeIncludes: 'GERMA 66' },
           min: 0,
           max: 5,
+          selectAll: true,
           prompt: '+1000 power',
         },
         { op: 'powerMod', ref: 'b2', amount: 1000, duration: 'turn' },
@@ -1025,6 +1020,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
   'OP11-051': [
     {
       timing: 'onKo',
+      koCause: 'oppEffect',
       condition: { opponentsTurn: true },
       ops: [
         {
@@ -1811,6 +1807,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
       on: { kind: 'eventActivated', who: 'opponent' },
       condition: { yourTurn: true, minLifeOpp: 2 },
       oncePerTurn: true,
+      oncePerTurnKey: 'camie',
       ops: [
         { op: 'trashLifeTop', owner: 'self', count: 1 },
         { op: 'trashLifeTop', owner: 'opponent', count: 1 },
@@ -1821,6 +1818,7 @@ export const OP11_EFFECTS: Record<string, EffectDef[]> = {
       on: { kind: 'triggerActivated', who: 'opponent' },
       condition: { yourTurn: true, minLifeOpp: 2 },
       oncePerTurn: true,
+      oncePerTurnKey: 'camie',
       ops: [
         { op: 'trashLifeTop', owner: 'self', count: 1 },
         { op: 'trashLifeTop', owner: 'opponent', count: 1 },
@@ -2256,12 +2254,10 @@ export const KEYWORD_ONLY_OP11: string[] = ['OP11-090']
 export const COVERAGE_NOTES_OP11: Record<string, string> = {
   'OP11-005':
     'SIMPLIFIED: protected from ALL effect K.O.s (the Special-attribute source carve-out is not modeled)',
-  'OP11-024': "SIMPLIFIED: revives on any K.O. during the opponent's turn (battle K.O.s included)",
   'OP11-034': 'SIMPLIFIED: the rest lock blocks effect rests from both sides',
-  'OP11-035': "SIMPLIFIED: revives on any K.O. during the opponent's turn (battle K.O.s included)",
   'OP11-040': 'SIMPLIFIED: unchosen cards go to the deck bottom (text allows top or bottom)',
-  'OP11-041': 'SIMPLIFIED: the two life-removal listeners carry separate once-per-turn marks',
-  'OP11-051': "SIMPLIFIED: revives on any K.O. during the opponent's turn (battle K.O.s included)",
+  'OP11-051':
+    'SIMPLIFIED: the revival search plays the pick directly (bottom order of the rest is fixed)',
   'OP11-062':
     'SIMPLIFIED: the cost-guess engine: a guess only hits when the top card is already known via a peek',
   'OP11-066':
@@ -2274,5 +2270,4 @@ export const COVERAGE_NOTES_OP11: Record<string, string> = {
   'OP11-088':
     'SIMPLIFIED: fires only when Shu himself is attacked; the Slash-attribute check is not modeled',
   'OP11-091': 'SIMPLIFIED: the opponent picks the 3 Events; bottom order is not chosen',
-  'OP11-102': 'SIMPLIFIED: the Event and Trigger listeners carry separate once-per-turn marks',
 }

@@ -378,6 +378,15 @@ function processDeclareAttack(
     kind: 'attacked',
     player: opponentId,
     sourceInstanceId: targetId,
+    targetIsLeader: state.players[opponentId].leader.instanceId === targetId,
+  })
+  // Attack-side listeners ("when your Leader attacks") hear the declaration too
+  newState = emitEngineEvent(newState, {
+    kind: 'attackDeclared',
+    player: playerId,
+    sourceInstanceId: attackerId,
+    attackerIsLeader: newLeader.instanceId === attackerId,
+    targetIsLeader: state.players[opponentId].leader.instanceId === targetId,
   })
   // [When Attacking] effects fire in the attack step, before blocks (CR 7-1-1-3)
   const attacker =
@@ -632,7 +641,12 @@ function processActivateEffect(
     }
   }
   if (returnCost > 0) {
-    newState = emitEngineEvent(newState, { kind: 'donReturned', player: playerId })
+    newState = emitEngineEvent(newState, {
+      kind: 'donReturned',
+      player: playerId,
+      count: returnCost,
+      byController: playerId,
+    })
   }
 
   events.push({
@@ -751,6 +765,9 @@ function processActivateTrigger(
       }
       newState = queueEffects(newState, card, 'trigger', playerId)
       newState = emitEngineEvent(newState, { kind: 'triggerActivated', player: playerId })
+      if (getCardById(card.cardId)?.cardType === 'Event') {
+        newState = emitEngineEvent(newState, { kind: 'eventActivated', player: playerId })
+      }
       newState = runStack(newState, events)
     }
   }

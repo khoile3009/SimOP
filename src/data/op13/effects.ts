@@ -68,13 +68,15 @@ export const OP13_EFFECTS: Record<string, EffectDef[]> = {
       on: { kind: 'lifeRemoved', who: 'self' },
       donRequired: 1,
       oncePerTurn: true,
+      oncePerTurnKey: 'aceDraw',
       ops: [{ op: 'draw', count: 1 }],
     },
     {
       timing: 'onEvent',
-      on: { kind: 'characterKoed', who: 'self' },
+      on: { kind: 'characterKoed', who: 'self', basePowerAtLeast: 6000 },
       donRequired: 1,
       oncePerTurn: true,
+      oncePerTurnKey: 'aceDraw',
       ops: [{ op: 'draw', count: 1 }],
     },
   ],
@@ -1429,7 +1431,13 @@ export const OP13_EFFECTS: Record<string, EffectDef[]> = {
   'OP13-078': [
     {
       timing: 'onEvent',
-      on: { kind: 'charRemovedByEffect', who: 'opponent' },
+      on: {
+        kind: 'charRemovedByEffect',
+        who: 'opponent',
+        byOppEffect: true,
+        removedOwn: true,
+        removedTypeContains: 'Roger Pirates',
+      },
       oncePerTurn: true,
       ops: [{ op: 'addDon', count: 1, rested: true }],
     },
@@ -1517,7 +1525,6 @@ export const OP13_EFFECTS: Record<string, EffectDef[]> = {
           filter: { owner: 'self', zone: 'hand' },
           min: 1,
           max: 1,
-          selectAll: true,
           prompt: 'Trash 1',
         },
         { op: 'trashCards', ref: 'pay' },
@@ -1527,6 +1534,7 @@ export const OP13_EFFECTS: Record<string, EffectDef[]> = {
           filter: { owner: 'self', zone: 'characters' },
           min: 0,
           max: 5,
+          selectAll: true,
           prompt: 'Trash all your Characters',
         },
         { op: 'trashFromField', ref: 'all' },
@@ -1543,6 +1551,7 @@ export const OP13_EFFECTS: Record<string, EffectDef[]> = {
           },
           min: 0,
           max: 5,
+          constraint: { distinctNames: true },
           prompt: 'Play Five Elders from trash',
         },
         { op: 'playCards', ref: 'b1' },
@@ -2262,8 +2271,7 @@ export const KEYWORD_ONLY_OP13: string[] = []
 
 /** The coverage ledger: every deviation from the printed text, with the reason. */
 export const COVERAGE_NOTES_OP13: Record<string, string> = {
-  'OP13-002':
-    'SIMPLIFIED: the damage/K.O. draw is two listeners with separate marks; the 6000+ base power filter on the K.O. side is not modeled',
+  'OP13-002': 'SIMPLIFIED: the draw also fires on life removed by effects, not only damage',
   'OP13-007': 'SIMPLIFIED: the active DON!! moves to one chosen card before the trash',
   'OP13-024':
     'SIMPLIFIED: the DON!! refresh happens immediately instead of at the end of the turn; the Music type is not in the pool',
@@ -2272,10 +2280,8 @@ export const COVERAGE_NOTES_OP13: Record<string, string> = {
   'OP13-064':
     'SIMPLIFIED: the self-negation aura on non-Roger crews is not modeled; buffs run until your next Refresh',
   'OP13-066': 'SIMPLIFIED: the end-of-turn DON!! arrives immediately',
-  'OP13-078': 'SIMPLIFIED: the Roger Pirates type check on the removed card is not modeled',
   'OP13-079':
     "SIMPLIFIED: the draw happens before the trash cost; Imu's opening Stage comes from the deck at game start",
-  'OP13-082': 'SIMPLIFIED: the different-names rule on the mass play is not enforced',
   'OP13-105': 'SIMPLIFIED: the full life reorder is modeled as the top-to-bottom life scry',
   'OP13-109':
     'SIMPLIFIED: the save confirm uses the top life card; with no face-down life the flip is skipped',

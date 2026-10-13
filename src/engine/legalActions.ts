@@ -1,6 +1,6 @@
 import type { GameState, GameAction, PlayerId, GameCard } from './types'
 import { getCardById } from '@/data/cardService'
-import { validateAction } from './rules'
+import { validateAction, choiceSetSatisfies } from './rules'
 import { getOpponent } from './turnManager'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
@@ -36,9 +36,7 @@ export function whoActs(state: GameState): PlayerId | null {
 export function legalActions(state: GameState): GameAction[] {
   const actor = whoActs(state)
   if (!actor) return []
-  return generateCandidates(state, actor).filter(
-    (a) => validateAction(state, a, actor).valid,
-  )
+  return generateCandidates(state, actor).filter((a) => validateAction(state, a, actor).valid)
 }
 
 function generateCandidates(state: GameState, actor: PlayerId): GameAction[] {
@@ -80,11 +78,19 @@ function mainPhaseOptions(state: GameState, actor: PlayerId): GameAction[] {
   }
 
   // Activated abilities on the leader, characters, and stage
-  for (const card of [player.leader, ...player.characters, ...(player.stage ? [player.stage] : [])]) {
+  for (const card of [
+    player.leader,
+    ...player.characters,
+    ...(player.stage ? [player.stage] : []),
+  ]) {
     const defs = getEffectDefs(card.cardId)
     for (let i = 0; i < defs.length; i++) {
       if (defs[i].timing !== 'activateMain') continue
-      actions.push({ type: 'ACTIVATE_EFFECT', cardInstanceId: card.instanceId, effectId: String(i) })
+      actions.push({
+        type: 'ACTIVATE_EFFECT',
+        cardInstanceId: card.instanceId,
+        effectId: String(i),
+      })
     }
   }
 
@@ -96,10 +102,7 @@ function mainPhaseOptions(state: GameState, actor: PlayerId): GameAction[] {
   }
 
   const attackers = [player.leader, ...player.characters].filter((a) => !a.isRested)
-  const targets = [
-    opponent.leader,
-    ...opponent.characters.filter((c) => c.isRested),
-  ]
+  const targets = [opponent.leader, ...opponent.characters.filter((c) => c.isRested)]
   for (const attacker of attackers) {
     for (const target of targets) {
       actions.push({
@@ -128,13 +131,12 @@ function blockOptions(state: GameState, actor: PlayerId): GameAction[] {
 
 /** Enumerate CHOOSE actions: every legal subset of the options within [min, max]. */
 function chooseOptions(state: GameState): GameAction[] {
-  const { options, min, max, exact } = state.pendingChoice!
+  const { options, min, max, exact, constraint } = state.pendingChoice!
   const actions: GameAction[] = []
-  const sizeOk = (n: number) =>
-    n >= min && n <= max && (!exact || n === min || n === max)
+  const sizeOk = (n: number) => n >= min && n <= max && (!exact || n === min || n === max)
   const subset: string[] = []
   const build = (start: number) => {
-    if (sizeOk(subset.length)) {
+    if (sizeOk(subset.length) && (!constraint || choiceSetSatisfies(state, subset, constraint))) {
       actions.push({ type: 'CHOOSE', instanceIds: [...subset] })
     }
     if (subset.length >= max || actions.length > 200) return

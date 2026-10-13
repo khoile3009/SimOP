@@ -749,7 +749,10 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
         },
         { op: 'abortIfEmpty', ref: 'pay' },
         { op: 'rest', ref: 'pay' },
-        { op: 'requireCond', cond: { minSelfCharsTypedAny: { types: ['Impel Down'], count: 5 } } },
+        {
+          op: 'requireCond',
+          cond: { minSelfCharsTypedDistinct: { type: 'Impel Down', count: 5 } },
+        },
         {
           op: 'select',
           bind: 'L',
@@ -765,6 +768,7 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
           filter: { owner: 'self', zone: 'characters', rested: true },
           min: 0,
           max: 5,
+          selectAll: true,
           prompt: 'Set all Characters active',
         },
         { op: 'setActive', ref: 'cs' },
@@ -860,9 +864,10 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
   'OP16-041': [
     {
       timing: 'onEvent',
-      on: { kind: 'characterKoed', who: 'self' },
+      on: { kind: 'characterKoed', who: 'self', removedTypeIncludes: 'Impel Down' },
       donRequired: 1,
       oncePerTurn: true,
+      oncePerTurnKey: 'buggyPrisoner',
       ops: [
         {
           op: 'select',
@@ -877,9 +882,16 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
     },
     {
       timing: 'onEvent',
-      on: { kind: 'charRemovedByEffect', who: 'opponent' },
+      on: {
+        kind: 'charRemovedByEffect',
+        who: 'opponent',
+        anyPlayer: true,
+        removedOwn: true,
+        removedTypeIncludes: 'Impel Down',
+      },
       donRequired: 1,
       oncePerTurn: true,
+      oncePerTurnKey: 'buggyPrisoner',
       ops: [
         {
           op: 'select',
@@ -1194,6 +1206,7 @@ export const OP16_EFFECTS: Record<string, EffectDef[]> = {
           filter: { owner: 'self', zone: 'hand', cardType: 'Character', typeIncludes: 'Admiral' },
           min: 0,
           max: 3,
+          constraint: { distinctNames: true },
           prompt: 'Play up to 3 Admirals',
         },
         { op: 'playCards', ref: 'b1' },
@@ -2513,14 +2526,10 @@ export const COVERAGE_NOTES_OP16: Record<string, string> = {
   'OP16-015': 'SIMPLIFIED: both power sets read as set-to-7000 of effective power',
   'OP16-019': "SIMPLIFIED: 8000-power is read from the hand card's printed power",
   'OP16-033': 'SIMPLIFIED: the save cost rests 2 DON!! (text allows any 2 of your cards)',
-  'OP16-038':
-    'SIMPLIFIED: the 5-different-names check counts Impel Down Characters without name dedup',
-  'OP16-041':
-    'SIMPLIFIED: two removal listeners with separate once-per-turn marks; the Impel Down type check is not modeled',
   'OP16-058': 'SIMPLIFIED: the power set reads effective power',
   'OP16-059': 'SIMPLIFIED: both plays enter active',
   'OP16-060':
-    'SIMPLIFIED: the 8-DON payment takes rested first; the different-names rule is not enforced',
+    'SIMPLIFIED: the DON!!-8 cost auto-picks its DON: cost-area rested first, then active, then attached',
   'OP16-079':
     'SIMPLIFIED: the from-trash Rush grant is not modeled as a leader listener (black Yamato plays grant it themselves where printed)',
   'OP16-082': 'SIMPLIFIED: the unchosen searched cards are trashed per print',

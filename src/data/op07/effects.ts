@@ -790,6 +790,7 @@ export const OP07_EFFECTS: Record<string, EffectDef[]> = {
             costAtMost: 4,
           },
           rested: true,
+          unplayedTo: 'bottom',
         },
       ],
     },
@@ -2251,7 +2252,6 @@ export const COVERAGE_NOTES_OP07: Record<string, string> = {
   'OP07-001':
     'SIMPLIFIED: the moved DON!! are taken leader-first (the exact source cards are not chosen)',
   'OP07-031': 'SIMPLIFIED: cost rests also count as "rested by your effect"',
-  'OP07-048': 'SIMPLIFIED: an unplayed revealed card stays on top (text says bottom)',
   'OP07-053': 'SIMPLIFIED: both cards go to the bottom (text allows top or bottom)',
   'OP07-083':
     'SIMPLIFIED: with fewer than 4 Thriller Bark Pirates cards in the trash the cost clamps down',

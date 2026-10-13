@@ -1,4 +1,4 @@
-import type { GameState, GameAction, PlayerId } from './types'
+import type { GameState, GameAction, GameCard, PlayerId } from './types'
 import { MAX_CHARACTERS } from './constants'
 import { getCardById } from '@/data/cardService'
 import { getOpponent } from './turnManager'
@@ -395,7 +395,56 @@ function validateChoose(
   for (const id of instanceIds) {
     if (!choice.options.includes(id)) return { valid: false, reason: 'Not a valid option' }
   }
+  if (choice.constraint && !choiceSetSatisfies(state, instanceIds, choice.constraint)) {
+    return { valid: false, reason: 'Selection breaks the printed total/name bounds' }
+  }
   return { valid: true }
+}
+
+/** Set-level select bounds: total cost/power and different-names rules. */
+export function choiceSetSatisfies(
+  state: GameState,
+  instanceIds: string[],
+  c: { totalCostAtMost?: number; totalPowerAtMost?: number; distinctNames?: boolean },
+): boolean {
+  const cards = instanceIds.map((id) => locateAnywhere(state, id)).filter((x) => x !== null)
+  if (c.totalCostAtMost !== undefined) {
+    const total = cards.reduce(
+      (sum, card) =>
+        sum +
+        (card.onField
+          ? getEffectiveFieldCost(state, card.card)
+          : (getCardById(card.card.cardId)?.cost ?? 0)),
+      0,
+    )
+    if (total > c.totalCostAtMost) return false
+  }
+  if (c.totalPowerAtMost !== undefined) {
+    const total = cards.reduce((sum, card) => sum + getEffectivePower(state, card.card), 0)
+    if (total > c.totalPowerAtMost) return false
+  }
+  if (c.distinctNames) {
+    const names = cards.map((card) => getCardById(card.card.cardId)?.name ?? card.card.cardId)
+    if (new Set(names).size !== names.length) return false
+  }
+  return true
+}
+
+function locateAnywhere(
+  state: GameState,
+  instanceId: string,
+): { card: GameCard; onField: boolean } | null {
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    const p = state.players[pid]
+    for (const c of [p.leader, ...p.characters, ...(p.stage ? [p.stage] : [])]) {
+      if (c.instanceId === instanceId) return { card: c, onField: true }
+    }
+    for (const zone of [p.hand, p.trash, p.deck, p.lifeCards, p.donArea]) {
+      const c = zone.find((x) => x.instanceId === instanceId)
+      if (c) return { card: c, onField: false }
+    }
+  }
+  return null
 }
 
 function validateActivateEffect(

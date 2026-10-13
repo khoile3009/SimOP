@@ -151,6 +151,8 @@ export interface PendingChoice {
   max: number
   /** All-or-nothing choices (e.g. paying a DON!!-X cost): only sizes min and max are legal */
   exact?: boolean
+  /** Set-level bounds: the chosen cards together must satisfy these */
+  constraint?: { totalCostAtMost?: number; totalPowerAtMost?: number; distinctNames?: boolean }
   bind: string
 }
 
