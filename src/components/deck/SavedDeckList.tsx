@@ -2,6 +2,7 @@ import type { Deck } from '@/engine/types'
 import { getCardById } from '@/data/cardService'
 import { getTotalCards } from '@/stores/deckStore'
 import { DECK_SIZE } from '@/engine/constants'
+import Button from '@/components/common/Button'
 
 interface SavedDeckListProps {
   decks: Deck[]
@@ -11,28 +12,28 @@ interface SavedDeckListProps {
   onNew: () => void
 }
 
-export default function SavedDeckList({ decks, onLoad, onDelete, onDuplicate, onNew }: SavedDeckListProps) {
+export default function SavedDeckList({
+  decks,
+  onLoad,
+  onDelete,
+  onDuplicate,
+  onNew,
+}: SavedDeckListProps) {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">Your Decks</h2>
-        <button
-          onClick={onNew}
-          className="rounded bg-action-green px-4 py-2 text-sm font-medium text-white hover:bg-green-600"
-        >
+        <Button variant="success" onClick={onNew}>
           + New Deck
-        </button>
+        </Button>
       </div>
 
       {decks.length === 0 ? (
         <div className="glass-panel flex flex-1 flex-col items-center justify-center gap-3 p-8">
           <p className="text-text-muted">No decks yet.</p>
-          <button
-            onClick={onNew}
-            className="rounded bg-info-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
-          >
+          <Button variant="primary" onClick={onNew}>
             Create Your First Deck
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

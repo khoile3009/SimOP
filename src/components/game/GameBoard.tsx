@@ -28,7 +28,10 @@ function EvalBar({ p1 }: { p1: number }) {
       title={`Player 1 win probability: ${Math.round(p1 * 100)}%`}
     >
       <div style={{ height: `${(1 - p1) * 100}%` }} />
-      <div className="w-full bg-don-gold transition-all duration-300" style={{ height: `${p1 * 100}%` }} />
+      <div
+        className="w-full bg-don-gold transition-all duration-300"
+        style={{ height: `${p1 * 100}%` }}
+      />
     </div>
   )
 }
@@ -103,7 +106,6 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
     }
     return true
   }, [])
-
 
   const arrowLineRef = useRef<SVGLineElement | null>(null)
   const attackStartPointerRef = useRef<{ x: number; y: number } | null>(null)
@@ -271,12 +273,13 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
       }
 
       // Character/Leader → attack target = declare attack
-      if (data.zone === 'character' && typeof over.id === 'string' && over.id.startsWith('attack-target-')) {
+      if (
+        data.zone === 'character' &&
+        typeof over.id === 'string' &&
+        over.id.startsWith('attack-target-')
+      ) {
         const targetId = (over.id as string).slice('attack-target-'.length)
-        dispatch(
-          { type: 'DECLARE_ATTACK', attackerId: data.card.instanceId, targetId },
-          current,
-        )
+        dispatch({ type: 'DECLARE_ATTACK', attackerId: data.card.instanceId, targetId }, current)
       }
     },
     [current, dispatch],
@@ -321,41 +324,41 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
               </p>
             ) : (
               <>
-            <div className="flex items-center gap-1.5">
-              {gameState.players[pid].hand.map((card) => {
-                const data = getCardById(card.cardId)
-                return (
-                  <div key={card.instanceId} className="w-16 overflow-hidden rounded">
-                    <img
-                      src={getCardImageUrl(card.cardId)}
-                      alt={data?.name ?? ''}
-                      className="w-full"
-                      draggable={false}
-                    />
+                <div className="flex items-center gap-1.5">
+                  {gameState.players[pid].hand.map((card) => {
+                    const data = getCardById(card.cardId)
+                    return (
+                      <div key={card.instanceId} className="w-16 overflow-hidden rounded">
+                        <img
+                          src={getCardImageUrl(card.cardId)}
+                          alt={data?.name ?? ''}
+                          className="w-full"
+                          draggable={false}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+                {gameState.mulliganState[pid] === 'pending' ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => dispatch({ type: 'MULLIGAN', accept: true }, pid)}
+                      className="rounded bg-action-green px-4 py-1.5 text-sm font-medium text-white hover:bg-green-600"
+                    >
+                      Keep Hand
+                    </button>
+                    <button
+                      onClick={() => dispatch({ type: 'MULLIGAN', accept: false }, pid)}
+                      className="rounded bg-ocean-700 px-4 py-1.5 text-sm font-medium hover:bg-ocean-600"
+                    >
+                      Mulligan
+                    </button>
                   </div>
-                )
-              })}
-            </div>
-            {gameState.mulliganState[pid] === 'pending' ? (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => dispatch({ type: 'MULLIGAN', accept: true }, pid)}
-                  className="rounded bg-action-green px-4 py-1.5 text-sm font-medium text-white hover:bg-green-600"
-                >
-                  Keep Hand
-                </button>
-                <button
-                  onClick={() => dispatch({ type: 'MULLIGAN', accept: false }, pid)}
-                  className="rounded bg-ocean-700 px-4 py-1.5 text-sm font-medium hover:bg-ocean-600"
-                >
-                  Mulligan
-                </button>
-              </div>
-            ) : (
-              <p className="text-sm text-text-muted">
-                {gameState.mulliganState[pid] === 'accepted' ? 'Kept hand' : 'Mulliganed'}
-              </p>
-            )}
+                ) : (
+                  <p className="text-sm text-text-muted">
+                    {gameState.mulliganState[pid] === 'accepted' ? 'Kept hand' : 'Mulliganed'}
+                  </p>
+                )}
               </>
             )}
           </div>
@@ -384,7 +387,11 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
   const handPickOwner = choiceSurface?.kind === 'hand' ? choiceSurface.owner : null
   const handPick =
     handPickOwner && pc
-      ? { eligible: pc.options, selectedIds: choicePicks, onToggle: (id: string) => choiceClick(id) }
+      ? {
+          eligible: pc.options,
+          selectedIds: choicePicks,
+          onToggle: (id: string) => choiceClick(id),
+        }
       : undefined
   const choiceStrip =
     pc && choiceSurface && choiceSurface.kind !== 'sheet'
@@ -417,7 +424,13 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
             (c) => c.instanceId === a.cardInstanceId,
           )
           const data = card ? getCardById(card.cardId) : null
-          return [{ cardInstanceId: a.cardInstanceId, name: data?.name ?? 'Event', cost: data?.cost ?? 0 }]
+          return [
+            {
+              cardInstanceId: a.cardInstanceId,
+              name: data?.name ?? 'Event',
+              cost: data?.cost ?? 0,
+            },
+          ]
         })
       : []
   const activatables =
@@ -462,159 +475,180 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-    <div className="flex flex-1 overflow-hidden">
-    {analyze && <EvalBar p1={evaluateState(gameState, 'player1')} />}
-    <div className="flex flex-1 flex-col gap-1 overflow-hidden p-2">
-      {/* Opponent hand (hidden when an AI holds it) */}
-      <HandZone
-        cards={gameState.players[opponent].hand}
-        flipped
-        faceDown={opponent === aiPlayer}
-        selectedId={null}
-        onSelect={() => {}}
-        counterMode={isCounterStep && defenderPlayer === opponent && humanControls(opponent) ? {
-          selectedIds: counterSelection,
-          onToggle: handleToggleCounter,
-        } : undefined}
-        pickMode={handPickOwner === opponent ? handPick : undefined}
-      />
+      <div className="flex flex-1 overflow-hidden">
+        {analyze && <EvalBar p1={evaluateState(gameState, 'player1')} />}
+        <div className="flex flex-1 flex-col justify-center gap-1.5 overflow-hidden px-4 py-2">
+          {/* Opponent hand (hidden when an AI holds it) */}
+          <HandZone
+            cards={gameState.players[opponent].hand}
+            flipped
+            faceDown={opponent === aiPlayer}
+            selectedId={null}
+            onSelect={() => {}}
+            counterMode={
+              isCounterStep && defenderPlayer === opponent && humanControls(opponent)
+                ? {
+                    selectedIds: counterSelection,
+                    onToggle: handleToggleCounter,
+                  }
+                : undefined
+            }
+            pickMode={handPickOwner === opponent ? handPick : undefined}
+          />
 
-      {/* Opponent side */}
-      <PlayerSide
-        player={gameState.players[opponent]}
-        isActive={false}
-        selectedId={null}
-        donAttachCount={0}
-        onSelectCard={(id) => handleSelectOpponentCard(id)}
-        onClickDon={() => {}}
-        attackTargets
-        choice={choiceHighlight}
-      />
+          {/* Opponent side */}
+          <PlayerSide
+            player={gameState.players[opponent]}
+            isActive={false}
+            selectedId={null}
+            donAttachCount={0}
+            onSelectCard={(id) => handleSelectOpponentCard(id)}
+            onClickDon={() => {}}
+            attackTargets
+            choice={choiceHighlight}
+          />
 
-      {/* Phase bar */}
-      <div className="flex items-center gap-3" style={{ minHeight: 40 }}>
-        <PhaseBar
-          phase={gameState.phase}
-          turnNumber={gameState.turnNumber}
-          currentPlayer={gameState.currentPlayer}
-        />
-        {attackingFrom && (
-          <span className="rounded bg-life-red/20 px-3 py-1 text-xs font-medium text-life-red">
-            Select target...
-          </span>
-        )}
-        {error && <span className="text-xs text-life-red">{error}</span>}
+          {/* Phase bar */}
+          <div className="flex items-center gap-3" style={{ minHeight: 40 }}>
+            <PhaseBar
+              phase={gameState.phase}
+              turnNumber={gameState.turnNumber}
+              currentPlayer={gameState.currentPlayer}
+            />
+            {attackingFrom && (
+              <span className="rounded bg-life-red/20 px-3 py-1 text-xs font-medium text-life-red">
+                Select target...
+              </span>
+            )}
+            {error && <span className="text-xs text-life-red">{error}</span>}
+          </div>
+
+          {/* Current player side */}
+          <PlayerSide
+            player={gameState.players[current]}
+            isActive={true}
+            selectedId={selectedId}
+            donAttachCount={donAttachCount}
+            onSelectCard={(id, zone) => handleSelectCard(id, zone)}
+            onClickDon={handleDonClick}
+            cardActions={cardActions}
+            choice={choiceHighlight}
+          />
+
+          {/* Current player hand */}
+          <HandZone
+            cards={gameState.players[current].hand}
+            selectedId={selectedId}
+            onSelect={(id) => handleSelectCard(id, 'hand')}
+            cardActions={cardActions}
+            counterMode={
+              isCounterStep && defenderPlayer === current
+                ? {
+                    selectedIds: counterSelection,
+                    onToggle: handleToggleCounter,
+                  }
+                : undefined
+            }
+            pickMode={handPickOwner === current ? handPick : undefined}
+          />
+
+          {/* Controls */}
+          <ControlsBar
+            gameState={gameState}
+            choice={choiceStrip}
+            canEndTurn={
+              !gameState.battle &&
+              !gameState.pendingChoice &&
+              !gameState.pendingTrigger &&
+              gameState.currentPlayer === current &&
+              humanControls(current)
+            }
+            onEndTurn={() => dispatch({ type: 'END_TURN' }, current)}
+            onDeclineBlock={() =>
+              dispatch({ type: 'DECLINE_BLOCK' }, gameState.battle?.defenderPlayer ?? opponent)
+            }
+            onActivateBlocker={(blockerId) =>
+              dispatch(
+                { type: 'ACTIVATE_BLOCKER', blockerId },
+                gameState.battle?.defenderPlayer ?? opponent,
+              )
+            }
+            blockerIds={blockerIds}
+            activatables={activatables}
+            onActivateEffect={(cardInstanceId, effectId) =>
+              dispatch({ type: 'ACTIVATE_EFFECT', cardInstanceId, effectId }, current)
+            }
+            counterEvents={counterEvents}
+            onPlayCounterEvent={(cardInstanceId) =>
+              dispatch(
+                { type: 'PLAY_COUNTER_EVENT', cardInstanceId },
+                gameState.battle!.defenderPlayer,
+              )
+            }
+            onPassCounter={handlePassCounter}
+            onUseCounter={handleUseCounter}
+            counterTotal={counterTotal}
+            counterCount={counterSelection.length}
+          />
+
+          {/* Hidden-zone choices get the bottom sheet; board/hand choices pick in place */}
+          {showChoice && choiceSurface?.kind === 'sheet' && (
+            <ChoicePrompt
+              gameState={gameState}
+              onChoose={(instanceIds) =>
+                dispatch({ type: 'CHOOSE', instanceIds }, gameState.pendingChoice!.playerId)
+              }
+            />
+          )}
+          {showTrigger && (
+            <TriggerPrompt
+              gameState={gameState}
+              onResolve={(activate) =>
+                dispatch(
+                  { type: 'ACTIVATE_TRIGGER', accept: activate },
+                  gameState.pendingTrigger!.playerId,
+                )
+              }
+            />
+          )}
+
+          {/* Card inspect modal */}
+          {inspecting && <CardDetail card={inspecting} onClose={() => setInspecting(null)} />}
+
+          {/* Game over */}
+          {gameState.winner && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+              <div className="glass-panel p-8 text-center">
+                <h2 className="mb-2 text-2xl font-bold text-don-gold">
+                  {gameState.winner === 'player1' ? 'Player 1' : 'Player 2'} Wins!
+                </h2>
+                <p className="text-text-secondary">Turn {gameState.turnNumber}</p>
+              </div>
+            </div>
+          )}
+        </div>
+        {analyze && <AnalyzePanel />}
       </div>
 
-      {/* Current player side */}
-      <PlayerSide
-        player={gameState.players[current]}
-        isActive={true}
-        selectedId={selectedId}
-        donAttachCount={donAttachCount}
-        onSelectCard={(id, zone) => handleSelectCard(id, zone)}
-        onClickDon={handleDonClick}
-        cardActions={cardActions}
-        choice={choiceHighlight}
-      />
-
-      {/* Current player hand */}
-      <HandZone
-        cards={gameState.players[current].hand}
-        selectedId={selectedId}
-        onSelect={(id) => handleSelectCard(id, 'hand')}
-        cardActions={cardActions}
-        counterMode={isCounterStep && defenderPlayer === current ? {
-          selectedIds: counterSelection,
-          onToggle: handleToggleCounter,
-        } : undefined}
-        pickMode={handPickOwner === current ? handPick : undefined}
-      />
-
-      {/* Controls */}
-      <ControlsBar
-        gameState={gameState}
-        choice={choiceStrip}
-        canEndTurn={
-          !gameState.battle &&
-          !gameState.pendingChoice &&
-          !gameState.pendingTrigger &&
-          gameState.currentPlayer === current &&
-          humanControls(current)
-        }
-        onEndTurn={() => dispatch({ type: 'END_TURN' }, current)}
-        onDeclineBlock={() => dispatch({ type: 'DECLINE_BLOCK' }, gameState.battle?.defenderPlayer ?? opponent)}
-        onActivateBlocker={(blockerId) =>
-          dispatch({ type: 'ACTIVATE_BLOCKER', blockerId }, gameState.battle?.defenderPlayer ?? opponent)
-        }
-        blockerIds={blockerIds}
-        activatables={activatables}
-        onActivateEffect={(cardInstanceId, effectId) =>
-          dispatch({ type: 'ACTIVATE_EFFECT', cardInstanceId, effectId }, current)
-        }
-        counterEvents={counterEvents}
-        onPlayCounterEvent={(cardInstanceId) =>
-          dispatch({ type: 'PLAY_COUNTER_EVENT', cardInstanceId }, gameState.battle!.defenderPlayer)
-        }
-        onPassCounter={handlePassCounter}
-        onUseCounter={handleUseCounter}
-        counterTotal={counterTotal}
-        counterCount={counterSelection.length}
-      />
-
-      {/* Hidden-zone choices get the bottom sheet; board/hand choices pick in place */}
-      {showChoice && choiceSurface?.kind === 'sheet' && (
-        <ChoicePrompt
-          gameState={gameState}
-          onChoose={(instanceIds) =>
-            dispatch({ type: 'CHOOSE', instanceIds }, gameState.pendingChoice!.playerId)
-          }
-        />
-      )}
-      {showTrigger && (
-        <TriggerPrompt
-          gameState={gameState}
-          onResolve={(activate) =>
-            dispatch({ type: 'ACTIVATE_TRIGGER', accept: activate }, gameState.pendingTrigger!.playerId)
-          }
+      {/* Attack arrow overlay */}
+      {attackArrowSource && (
+        <AttackArrow
+          sourceX={attackArrowSource.x}
+          sourceY={attackArrowSource.y}
+          lineRef={arrowLineRef}
         />
       )}
 
-      {/* Card inspect modal */}
-      {inspecting && <CardDetail card={inspecting} onClose={() => setInspecting(null)} />}
-
-      {/* Game over */}
-      {gameState.winner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="glass-panel p-8 text-center">
-            <h2 className="mb-2 text-2xl font-bold text-don-gold">
-              {gameState.winner === 'player1' ? 'Player 1' : 'Player 2'} Wins!
-            </h2>
-            <p className="text-text-secondary">
-              Turn {gameState.turnNumber}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-    {analyze && <AnalyzePanel />}
-    </div>
-
-    {/* Attack arrow overlay */}
-    {attackArrowSource && (
-      <AttackArrow sourceX={attackArrowSource.x} sourceY={attackArrowSource.y} lineRef={arrowLineRef} />
-    )}
-
-    <DragOverlay dropAnimation={null}>
-      {draggingCard ? (
-        <img
-          src={getCardImageUrl(draggingCard.cardId)}
-          alt=""
-          className="w-14 rounded opacity-80 shadow-lg"
-          draggable={false}
-        />
-      ) : null}
-    </DragOverlay>
+      <DragOverlay dropAnimation={null}>
+        {draggingCard ? (
+          <img
+            src={getCardImageUrl(draggingCard.cardId)}
+            alt=""
+            className="w-14 rounded opacity-80 shadow-lg"
+            draggable={false}
+          />
+        ) : null}
+      </DragOverlay>
     </DndContext>
   )
 }

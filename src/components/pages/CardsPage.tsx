@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import type { CardData } from '@/engine/types'
+import PageShell from '@/components/common/PageShell'
 import { getAllCards } from '@/data/cardService'
 import { useIncrementalList } from '@/hooks/useIncrementalList'
 import FilterBar, { type Filters } from '@/components/cards/FilterBar'
@@ -31,14 +31,7 @@ export default function CardsPage() {
   const { visible, hasMore, sentinelRef } = useIncrementalList(filtered, 72)
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-6">
-      <div className="flex items-center gap-4">
-        <Link to="/" className="text-text-secondary hover:text-text-primary">
-          &larr; Home
-        </Link>
-        <h1 className="text-2xl font-bold">Card Library</h1>
-      </div>
-
+    <PageShell title="Card Library" subtitle="Every card in the pool, with full rules text.">
       <FilterBar filters={filters} onChange={setFilters} totalResults={filtered.length} />
 
       <div className="flex-1 overflow-y-auto">
@@ -47,6 +40,6 @@ export default function CardsPage() {
       </div>
 
       {selected && <CardDetail card={selected} onClose={() => setSelected(null)} />}
-    </div>
+    </PageShell>
   )
 }

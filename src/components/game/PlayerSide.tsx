@@ -37,7 +37,13 @@ export default function PlayerSide({
   const maxLife = leaderData?.life ?? 5
 
   return (
-    <div className={`flex items-end gap-3 rounded-lg px-3 py-2 ${isActive ? 'bg-ocean-900/50' : 'opacity-80'}`}>
+    <div
+      className={`flex items-end gap-3 rounded-xl border px-3 py-2 transition-colors ${
+        isActive
+          ? 'border-don-gold/25 bg-ocean-900/60 shadow-[inset_0_0_40px_rgba(226,178,58,0.04)]'
+          : 'border-glass-border bg-ocean-900/25'
+      }`}
+    >
       {/* Life */}
       <LifeZone lifeCards={player.lifeCards} maxLife={maxLife} />
 

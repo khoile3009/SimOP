@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { PlayerId } from '@/engine/types'
+import { Wordmark } from '@/components/common/PageShell'
+import Button from '@/components/common/Button'
 import { legalActions, whoActs } from '@/engine/legalActions'
 import { useGameStore } from '@/stores/gameStore'
 import { RandomAgent, GreedyAgent, type Agent } from '@/ai/agents'
@@ -54,20 +56,17 @@ export default function WatchPage() {
     setRunning(true)
   }
 
-  const score = useMemo(
-    () => (gameState ? evaluateState(gameState, 'player1') : 0.5),
-    [gameState],
-  )
+  const score = useMemo(() => (gameState ? evaluateState(gameState, 'player1') : 0.5), [gameState])
 
   const acting = gameState ? whoActs(gameState) : null
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-3 px-4 py-2">
-        <Link to="/" className="text-xs text-text-secondary hover:text-text-primary">
-          &larr; Home
+    <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex flex-wrap items-center gap-3 border-b border-glass-border bg-ocean-950/80 px-4 py-2 backdrop-blur-md">
+        <Link to="/" className="text-sm text-text-primary transition-opacity hover:opacity-80">
+          <Wordmark />
         </Link>
-        <span className="text-sm font-bold text-text-primary">Bot vs Bot</span>
+        <span className="ui-label">Bot vs Bot</span>
 
         {(['player1', 'player2'] as PlayerId[]).map((pid) => (
           <label key={pid} className="flex items-center gap-1 text-xs text-text-secondary">
@@ -83,27 +82,17 @@ export default function WatchPage() {
           </label>
         ))}
 
-        <button
-          onClick={start}
-          className="glass-panel px-3 py-1 text-xs text-action-green hover:text-text-primary"
-        >
+        <Button size="sm" variant="success" onClick={start}>
           New match
-        </button>
+        </Button>
         {gameState && !gameState.winner && (
           <>
-            <button
-              onClick={() => setRunning((r) => !r)}
-              className="glass-panel px-3 py-1 text-xs text-don-gold hover:text-text-primary"
-            >
+            <Button size="sm" variant="gold" onClick={() => setRunning((r) => !r)}>
               {running ? 'Pause' : 'Play'}
-            </button>
-            <button
-              onClick={stepOnce}
-              disabled={running}
-              className="glass-panel px-3 py-1 text-xs text-text-secondary hover:text-text-primary disabled:opacity-40"
-            >
+            </Button>
+            <Button size="sm" variant="ghost" onClick={stepOnce} disabled={running}>
               Step
-            </button>
+            </Button>
           </>
         )}
         <label className="flex items-center gap-1 text-xs text-text-secondary">
@@ -132,7 +121,10 @@ export default function WatchPage() {
       </div>
 
       {gameState && (
-        <div className="flex items-center gap-2 px-4 pb-1" title="Player 1 win probability (hand-tuned eval)">
+        <div
+          className="flex items-center gap-2 px-4 pb-1"
+          title="Player 1 win probability (hand-tuned eval)"
+        >
           <span className="w-8 text-right text-[10px] text-text-secondary">P1</span>
           <div className="h-2 flex-1 overflow-hidden rounded bg-ocean-800/60">
             <div
@@ -152,8 +144,11 @@ export default function WatchPage() {
           <GameBoard spectator />
         </div>
       ) : (
-        <div className="flex flex-1 items-center justify-center text-text-secondary">
-          Pick agents and start a match to watch the bots play.
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-text-secondary">
+          <p className="font-display text-2xl font-bold tracking-wide text-text-primary">
+            Spectator mode
+          </p>
+          <p className="text-sm">Pick agents above and start a match to watch the bots play.</p>
         </div>
       )}
     </div>

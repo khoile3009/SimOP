@@ -4,9 +4,12 @@ import type { Deck } from '@/engine/types'
 import { legalActions, whoActs } from '@/engine/legalActions'
 import { useGameStore } from '@/stores/gameStore'
 import { useDeckStore } from '@/stores/deckStore'
+import { getCardById } from '@/data/cardService'
 import type { Agent } from '@/ai/agents'
 import { AGENT_FACTORIES } from '@/sim/benchmark'
 import GameBoard from '@/components/game/GameBoard'
+import PageShell, { Wordmark } from '@/components/common/PageShell'
+import Button from '@/components/common/Button'
 
 // Fallback test deck if user has no saved decks
 function makeQuickDeck(): Deck {
@@ -59,6 +62,12 @@ function useAiDriver() {
   }, [gameState, aiPlayer, dispatch])
 }
 
+const DIFFICULTIES = [
+  { value: 'greedy', label: 'Greedy', hint: 'Easy · instant moves' },
+  { value: 'planner', label: 'Planner', hint: 'Medium · plans whole turns' },
+  { value: 'mcts', label: 'MCTS', hint: 'Hard · tree search' },
+] as const
+
 export default function PlayPage() {
   const { gameState, aiPlayer, analyze, toggleAnalyze, startNewGame, aiKind, setAiKind } =
     useGameStore()
@@ -67,24 +76,19 @@ export default function PlayPage() {
 
   if (gameState) {
     return (
-      <div className="flex flex-1 flex-col">
-        <div className="flex items-center gap-4 px-4 pt-2">
-          <Link to="/" className="text-xs text-text-secondary hover:text-text-primary">
-            &larr; Home
+      <div className="flex min-h-screen flex-1 flex-col">
+        <div className="flex h-11 items-center gap-4 border-b border-glass-border bg-ocean-950/80 px-4 backdrop-blur-md">
+          <Link to="/" className="text-sm text-text-primary transition-opacity hover:opacity-80">
+            <Wordmark />
           </Link>
-          {aiPlayer && (
-            <span className="text-xs text-text-muted">
-              You are Player 1 &middot; AI plays Player 2
-            </span>
-          )}
-          <button
-            onClick={toggleAnalyze}
-            className={`rounded px-3 py-0.5 text-xs font-medium ${
-              analyze ? 'bg-info-blue text-white' : 'bg-ocean-700 text-text-secondary hover:text-text-primary'
-            }`}
-          >
-            {analyze ? 'Analyze: on' : 'Analyze'}
-          </button>
+          <span className="ui-label">
+            {aiPlayer ? 'You are Player 1 · AI plays Player 2' : 'Hotseat match'}
+          </span>
+          <div className="ml-auto">
+            <Button size="sm" variant={analyze ? 'primary' : 'ghost'} onClick={toggleAnalyze}>
+              {analyze ? 'Analyze: on' : 'Analyze'}
+            </Button>
+          </div>
         </div>
         <GameBoard />
       </div>
@@ -94,86 +98,81 @@ export default function PlayPage() {
   // Game setup screen
   const validDecks = savedDecks.filter((d) => d.leader && d.cards.length > 0)
 
-  const startButtons = (deck: Deck) => (
-    <div className="flex gap-2">
-      <button
-        onClick={() => startNewGame(deck, deck, 'player2')}
-        className="rounded bg-action-green px-4 py-1.5 text-sm font-medium text-white hover:bg-green-600"
-      >
-        vs AI
-      </button>
-      <button
-        onClick={() => startNewGame(deck, deck)}
-        className="rounded bg-ocean-700 px-4 py-1.5 text-sm font-medium hover:bg-ocean-600"
-      >
-        Hotseat
-      </button>
-    </div>
-  )
-
-  return (
-    <div className="flex flex-1 flex-col p-6">
-      <div className="mb-6 flex items-center gap-4">
-        <Link to="/" className="text-text-secondary hover:text-text-primary">
-          &larr; Home
-        </Link>
-        <h1 className="text-2xl font-bold">Play</h1>
-      </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center gap-6">
-        <p className="text-text-secondary">
-          Play against the AI, or control both sides in hotseat mode.
-        </p>
-
-        <label className="flex items-center gap-2 text-sm text-text-secondary">
-          AI difficulty
-          <select
-            id="ai-difficulty"
-            value={aiKind}
-            onChange={(e) => setAiKind(e.target.value as 'greedy' | 'planner' | 'mcts')}
-            className="rounded bg-ocean-700 px-2 py-1 text-sm text-text-primary"
-          >
-            <option value="greedy">Greedy (easy)</option>
-            <option value="planner">Planner (medium)</option>
-            <option value="mcts">MCTS (hard)</option>
-          </select>
-        </label>
-
-        {validDecks.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {validDecks.map((deck) => (
-              <div
-                key={deck.id}
-                className="glass-panel flex items-center justify-between gap-6 px-6 py-3"
-              >
-                <div>
-                  <p className="font-medium">{deck.name}</p>
-                  <p className="text-sm text-text-muted">
-                    {deck.cards.reduce((s, c) => s + c.qty, 0)} cards
-                  </p>
-                </div>
-                {startButtons(deck)}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-text-muted">
-            No saved decks.{' '}
-            <Link to="/deck-builder" className="text-info-blue hover:underline">
-              Build one
-            </Link>{' '}
-            or use the quick start deck.
+  const DeckRow = ({ deck, hint }: { deck: Deck; hint?: string }) => {
+    const leader = getCardById(deck.leader)
+    return (
+      <div className="glass-panel flex items-center gap-4 px-5 py-4">
+        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md bg-ocean-800">
+          <span className="font-display text-sm font-bold text-don-gold">
+            {(leader?.name ?? '?').slice(0, 2)}
+          </span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold">{deck.name}</p>
+          <p className="truncate text-sm text-text-muted">
+            {hint ??
+              `${leader?.name ?? deck.leader} · ${leader?.color.join('/') ?? ''} · ${deck.cards.reduce((s, c) => s + c.qty, 0)} cards`}
           </p>
-        )}
-
-        <div className="glass-panel flex items-center justify-between gap-6 px-6 py-3">
-          <div>
-            <p className="font-medium">Quick Start</p>
-            <p className="text-sm text-text-muted">Red Zoro mirror</p>
-          </div>
-          {startButtons(makeQuickDeck())}
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="success" size="md" onClick={() => startNewGame(deck, deck, 'player2')}>
+            vs AI
+          </Button>
+          <Button variant="subtle" size="md" onClick={() => startNewGame(deck, deck)}>
+            Hotseat
+          </Button>
         </div>
       </div>
-    </div>
+    )
+  }
+
+  return (
+    <PageShell title="Play" subtitle="Face the AI, or drive both sides in a hotseat match.">
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6">
+        <section className="flex flex-col gap-2">
+          <span className="ui-label">AI difficulty</span>
+          <div className="grid grid-cols-3 gap-2">
+            {DIFFICULTIES.map((d) => (
+              <button
+                key={d.value}
+                onClick={() => setAiKind(d.value)}
+                className={`glass-panel flex flex-col gap-0.5 px-4 py-3 text-left transition-all ${
+                  aiKind === d.value
+                    ? 'border-info-blue ring-1 ring-info-blue'
+                    : 'hover:border-glass-border-hover'
+                }`}
+              >
+                <span className="font-semibold">{d.label}</span>
+                <span className="text-xs text-text-muted">{d.hint}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <span className="ui-label">Your decks</span>
+          {validDecks.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {validDecks.map((deck) => (
+                <DeckRow key={deck.id} deck={deck} />
+              ))}
+            </div>
+          ) : (
+            <div className="glass-panel px-5 py-4 text-sm text-text-muted">
+              No saved decks yet —{' '}
+              <Link to="/deck-builder" className="text-info-blue hover:underline">
+                build one
+              </Link>{' '}
+              or jump in with the quick start deck below.
+            </div>
+          )}
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <span className="ui-label">Quick start</span>
+          <DeckRow deck={makeQuickDeck()} hint="Red Zoro mirror · ready to go" />
+        </section>
+      </div>
+    </PageShell>
   )
 }

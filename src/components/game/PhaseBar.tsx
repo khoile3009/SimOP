@@ -27,9 +27,9 @@ export default function PhaseBar({ phase, turnNumber, currentPlayer }: PhaseBarP
         return (
           <span
             key={p.key}
-            className={`rounded-full px-3 py-0.5 text-xs font-medium transition-colors ${
+            className={`rounded-full px-3 py-0.5 text-xs font-semibold tracking-wide transition-colors ${
               isActive
-                ? 'bg-info-blue text-white'
+                ? 'bg-don-gold text-ocean-950 shadow-[0_0_12px_rgba(226,178,58,0.35)]'
                 : isPast
                   ? 'text-text-muted'
                   : 'text-text-muted/50'
@@ -39,10 +39,14 @@ export default function PhaseBar({ phase, turnNumber, currentPlayer }: PhaseBarP
           </span>
         )
       })}
-      <span className="ml-auto text-xs text-text-muted">
-        Turn {turnNumber}
-      </span>
-      <span className="text-xs font-medium text-don-gold">
+      <span className="ml-auto text-xs tabular-nums text-text-muted">Turn {turnNumber}</span>
+      <span
+        className={`rounded px-2 py-0.5 text-xs font-bold ${
+          currentPlayer === 'player1'
+            ? 'bg-info-blue/20 text-info-blue'
+            : 'bg-life-red/20 text-life-red'
+        }`}
+      >
         {currentPlayer === 'player1' ? 'P1' : 'P2'}
       </span>
     </div>
