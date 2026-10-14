@@ -11,18 +11,23 @@ import { getBaseDeck } from '@/sim/baseDecks'
 import { GreedyAgent } from '@/ai/agents'
 import { MctsAgent } from '@/ai/mcts'
 import { HAND_WEIGHTS, makeEval, type EvalFn, type Weights } from '@/ai/evaluate'
+import { makeMlpEval, type MlpModel } from '@/ai/mlpEval'
 
 const gamesGreedy = Number(process.argv[2] ?? 60)
 const gamesMcts = Number(process.argv[3] ?? 16)
 const weightsFile = process.argv[4]
 const oldWeightsFile = process.argv[5]
 
-const loadWeights = (spec: string): Weights =>
-  spec === 'hand' ? HAND_WEIGHTS : (JSON.parse(readFileSync(spec, 'utf8')).weights as Weights)
+const loadEval = (spec: string): EvalFn => {
+  if (spec === 'hand') return makeEval(HAND_WEIGHTS)
+  const json = JSON.parse(readFileSync(spec, 'utf8'))
+  if (json.kind === 'mlp') return makeMlpEval(json as MlpModel)
+  return makeEval(json.weights as Weights)
+}
 
-const NEW = weightsFile ? makeEval(loadWeights(weightsFile)) : makeEval(HAND_WEIGHTS)
+const NEW = weightsFile ? loadEval(weightsFile) : makeEval(HAND_WEIGHTS)
 const OLD = oldWeightsFile
-  ? makeEval(loadWeights(oldWeightsFile))
+  ? loadEval(oldWeightsFile)
   : weightsFile
     ? makeEval(HAND_WEIGHTS)
     : makeEval({ ...HAND_WEIGHTS, defenseShortfallDiff: 0 })
