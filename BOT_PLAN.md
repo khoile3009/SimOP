@@ -88,15 +88,27 @@ verifyBudget 1200 (analyzer keeps the richer defaults). Worst deck ~30s/game ->
 ~5s; strength re-gated at planner 73% vs greedy. Profiler:
 scripts/profile-planner.ts.
 
-**P2 — gen-3 learned eval (recipe)**
-1. Data: MCTS-vs-MCTS self-play (not greedy/random), mid-turn afterstates.
-2. Targets, two candidate losses (run both, same gate):
-   a. Pairwise ranking: (chosen, rejected) sibling afterstates from the actual
-      decision points, RankNet loss on score differences.
-   b. Search bootstrap: regress toward MCTS root value of the position (Veness).
-3. Gate unchanged and non-negotiable: cross-deck ladder win rate with greedy AND
-   mcts consumers; prediction metrics are reported but never decide adoption.
-4. Counter-economy features from P0 ride along as inputs.
+**P2 — gen-3 learned eval — iteration 1 RUN, NOT ADOPTED (Oct 2026)**
+Pipeline shipped and exercised end to end (~1.5h: 480 MCTS self-play games on
+the base decks via scripts/gendata3.ts -> 158k pairs + 64k boot rows ->
+scripts/train-gen3.ts -> gates). Both variants rejected by the ladder:
+- RANK (same-parent pairs, RankNet): test pair-accuracy 58.2% vs 57.6% hand,
+  but gate 24% greedy / 35% MCTS - REJECTED HARD. Diagnosis: same-parent pairs
+  teach an ACTION-STYLE prior, not state value (it learned negative hand-count
+  and active-units weights = "search likes developing"), which as an absolute
+  eval rewards dumping cards.
+- BOOT (regress toward MCTS root values, Veness): test CE 0.566 vs 0.571 hand,
+  gate 46% greedy / 44% MCTS - parity-minus, NOT adopted. Expected ceiling:
+  the label search was GUIDED BY the hand eval, so one pass is a single policy-
+  iteration step off its own teacher.
+Hand weights (with P0's counter economy) remain the champion. Gen-3.1 options,
+in order of promise:
+1. Deeper label searches (1000+ iterations for labeling only; fewer games) so
+   boot targets genuinely exceed the teacher, then ITERATE the loop (regenerate
+   with the trained eval guiding the search).
+2. Cross-parent pairs (compare afterstates from different positions, margin-
+   weighted by search-value gap) to fix rank's style contamination.
+3. Blend: boot loss + a small outcome-anchored term for absolute calibration.
 
 **P3 — honest-information search**
 - IS-MCTS / multiple-observer variant over the existing determinizer (stop averaging
