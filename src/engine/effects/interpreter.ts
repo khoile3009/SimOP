@@ -576,7 +576,10 @@ function executeOp(
           [pid]: {
             ...p,
             hand: [],
-            deck: shuffle([...p.deck, ...p.hand.map((c) => ({ ...c, revealed: false }))]),
+            deck: shuffle([
+              ...p.deck.map((c) => ({ ...c, seenByOwner: false })),
+              ...p.hand.map((c) => ({ ...c, revealed: false, seenByOwner: false })),
+            ]),
           },
         },
       }
@@ -1090,7 +1093,9 @@ function executeOp(
           [controller]: {
             ...p,
             trash: p.trash.slice(take),
-            deck: shuffle([...p.deck, ...moved]),
+            deck: shuffle(
+              [...p.deck, ...moved].map((c) => ({ ...c, seenByOwner: false, revealed: false })),
+            ),
           },
         },
       })
@@ -1491,7 +1496,7 @@ function executeOp(
             ...s,
             players: {
               ...s.players,
-              [pid]: { ...p, hand, deck: [{ ...card, revealed: false }, ...p.deck] },
+              [pid]: { ...p, hand, deck: [{ ...card, revealed: false, seenByOwner: true }, ...p.deck] },
             },
           }
           break
@@ -1679,7 +1684,19 @@ function executeOp(
           },
         }
       }
-      return advance(moveDeckTopToBottom(state, controller, frame.bindings[bind]))
+      {
+        // Everything looked at is known - the kept cards stay on top, seen
+        const looked = new Set(top.map((c) => c.instanceId))
+        const p2 = state.players[controller]
+        const deck = p2.deck.map((c) =>
+          looked.has(c.instanceId) ? { ...c, seenByOwner: true } : c,
+        )
+        const s2 = {
+          ...state,
+          players: { ...state.players, [controller]: { ...p2, deck } },
+        }
+        return advance(moveDeckTopToBottom(s2, controller, frame.bindings[bind]))
+      }
     }
 
     case 'searchDeckByName': {
@@ -2677,7 +2694,11 @@ function moveHandToDeckBottom(state: GameState, playerId: PlayerId, instanceId: 
     ...state,
     players: {
       ...state.players,
-      [playerId]: { ...p, hand, deck: [...p.deck, { ...card, revealed: false }] },
+      [playerId]: {
+        ...p,
+        hand,
+        deck: [...p.deck, { ...card, revealed: false, seenByOwner: true }],
+      },
     },
   }
 }
@@ -2690,7 +2711,8 @@ function moveDeckTopToBottom(
   if (instanceIds.length === 0) return state
   const ids = new Set(instanceIds)
   const p = state.players[playerId]
-  const moved = p.deck.filter((c) => ids.has(c.instanceId))
+  // The owner looked at these before bottoming them: positional knowledge
+  const moved = p.deck.filter((c) => ids.has(c.instanceId)).map((c) => ({ ...c, seenByOwner: true }))
   const deck = [...p.deck.filter((c) => !ids.has(c.instanceId)), ...moved]
   return { ...state, players: { ...state.players, [playerId]: { ...p, deck } } }
 }
@@ -2721,9 +2743,11 @@ function deckToHand(state: GameState, playerId: PlayerId, instanceId: string): G
 
 function shuffleDeck(state: GameState, playerId: PlayerId): GameState {
   const p = state.players[playerId]
+  // A shuffle erases everyone's positional knowledge of the deck
+  const deck = shuffle(p.deck.map((c) => (c.seenByOwner ? { ...c, seenByOwner: false } : c)))
   return {
     ...state,
-    players: { ...state.players, [playerId]: { ...p, deck: shuffle([...p.deck]) } },
+    players: { ...state.players, [playerId]: { ...p, deck } },
   }
 }
 

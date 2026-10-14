@@ -55,6 +55,10 @@ export interface GameCard {
   turnPlayed: number
   /** In a hidden zone (hand): this card is public knowledge (reveals, bounces, life hits) */
   revealed?: boolean
+  /** The OWNER has seen this card in a hidden zone (searched/scried cards sent
+   * to the deck bottom or top, hand cards placed back). Private knowledge:
+   * determinize pins these for the owner's view only; cleared on shuffles. */
+  seenByOwner?: boolean
 }
 
 export interface PlayerState {
