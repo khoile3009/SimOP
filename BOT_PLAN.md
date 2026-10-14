@@ -132,10 +132,20 @@ feature. Conclusion: the target is now right; the FUNCTION CLASS is the
 bottleneck. Next steps, in order:
 1. Keep mining nonlinear hand features from play observations (cheap, 2-for-2
    adoption rate; each also enriches any future learned model's inputs).
-2. Small MLP over the feature vector (eval path step 3) trained on the
-   gen-3.1 corpus (search targets + outcome anchor) - the first capacity step,
-   same gate. The data pipeline and gates are ready; this is now the only
-   untested lever on the eval side.
+2. Small MLP over the feature vector - RUN, REJECTED (Oct 2026): 16 tanh
+   hidden units, AdamW + early stopping (the corpus overfits in ~2 epochs -
+   rows within a game are correlated), best val CE 0.5583 vs hand 0.5701.
+   Gate: 45% greedy / 39% MCTS - the same parity-minus shape as every linear
+   fit. CONCLUSION UPDATE after five rejected learned evals: with these 20
+   aggregate features, capacity does not help - the inputs are information-
+   saturated. The eval improves when a NEW feature adds information (3
+   adoptions, all hand-designed from play observations), not when weights or
+   function class change over the same features. Remaining learned-eval levers,
+   both expensive: a 10-50x corpus (the overfitting ceiling is data-bound too),
+   or genuinely richer inputs (per-card board representation / embeddings).
+   The practical loop stays: watch games -> name the missing concept -> add the
+   feature -> gate. Trainer/runtime kept (scripts/train-mlp.ts,
+   src/ai/mlpEval.ts, weights archived) for when either lever is funded.
 
 **P3 — honest-information search**
 - IS-MCTS / multiple-observer variant over the existing determinizer (stop averaging
