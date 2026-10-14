@@ -213,11 +213,14 @@ Backlog (feature ideas):
 - [x]: UI/UX streamlining phase 1 — "the board is the picker": field-zone effect choices highlight eligible cards in place (green ring, dim ineligible) with the prompt/confirm in the ControlsBar strip; hand-zone choices reuse the counter-step hand toggles (HandZone pickMode); hidden-zone choices (deck/trash/life/DON) use a non-dimming bottom sheet instead of a full-screen modal. Triggers keep a small centered prompt. Remaining ideas: single-click plays, hover previews instead of Inspect.
 - [x]: M2 analyzer shipped: chess-style eval bar + Analyze toggle, eval-history sparkline, and whole-turn line recommendations (src/ai/turnSearch.ts) — beam search generates candidate lines, then each is ADVERSARIALLY VERIFIED (minimax over every defender option at every response node, so counter allocation across the turn is priced in; diverged tails repaired greedily). Published value = worst case; "if they X → n%" branch annotations on the top line. Lethal badges: GUARANTEED (closed-form defense-capacity certificate vs any possible hand — ignores life triggers, noted in tooltip) vs LETHAL (through best defense with their revealed hand).
 - [x]: M3 shipped: determinization (src/ai/determinize.ts — hidden pools resampled uniformly, incl. own life per CR 3-10-2), MctsAgent (src/ai/mcts.ts — perfect-info UCT with eval leaves, tree crosses turn boundaries and searches its own defense) beating the acceptance gate: mcts 73% > planner 50% > greedy 27% on the 30-game ladder (mcts vs planner 20-10). Analyzer Honest mode: 10 sampled worlds, lines ranked by world-frequency with avg value and "lethal in X% of worlds". AI difficulty select in /play (greedy/planner/mcts).
-- [ ]: PERF: TurnPlannerAgent has pathological cases on the full-fidelity pool
-  (observed Oct 2026 during gen-2 data generation: some planner games take
-  minutes; greedy is unaffected). Likely the whole-turn beam meeting the larger
-  action space (owner-'any' targets, attached-DON options, constraint selects).
-  Profile turnSearch before trusting the Analyze panel on newer sets.
+- [x]: PERF: TurnPlannerAgent pathology FIXED (Oct 2026, BOT_PLAN P1). Root causes
+  were eval waste, not the action space: the beam sort re-ran the eval inside its
+  comparator, identical states were re-evaluated across beam/verifier/repairs
+  (now a per-search WeakMap memo), and beam interrupt resolution used the raw
+  eval. Planner also got its own budgets (maxExpansions 6000, verifyBudget 1200;
+  the analyzer keeps the richer defaults). Black trash mirror: ~30s/game ->
+  ~5s/game; strength gate re-passed (planner 73% vs greedy, 179ms/game on the
+  benchmark mirror). Profiler kept at scripts/profile-planner.ts.
 - [ ]: M3 leftovers: click-through board preview per line step; honest-information MCTS variant (determinized root voting) for a fair hidden-info bot; knowledge tracking for determinize (cards seen via searches/bottom-decking are currently resampled uniformly).
 - [ ]: Class-based DON picker (design approved — v1 grouped-modal variant): DON are fungible within a class (zone, carrier, state incl. rested/frozen), so selection = count per class, never "which physical DON". Design draft with interactive prototype + engine mapping: https://claude.ai/artifact/VQkJ7FGmdYNLnapQ4J6xaS
   Build when an effect must touch attached DON (restand/attach manipulation in later sets, or full-fidelity DON!!-X — current OP01 DON!!-X pays from the cost area only, which is fine for now). Engine diff when built: grouped PendingChoice shape ({key, carrierUid?, capacity}), CHOOSE as count-vector, returnDon/restand ops accept {class: count}, legalActions emits canonical count-vectors (also shrinks bot action space). Card-target choices keep the flat instanceId shape.

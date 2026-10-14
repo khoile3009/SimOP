@@ -104,7 +104,70 @@ winner, Zhang–Buro chance bucketing, PIMC strategy-fusion pathology, Suphx ora
   mill, black trash-count) so ladders are comparable across engine versions.
 - Best-response exploiter runs against any candidate agent before adoption.
 
-## 4. Non-goals (for now)
+## 4. Long-term program: the improvement loop
+
+The workstreams above are the current queue; this is the standing machinery that
+keeps the agent improving indefinitely. The principle throughout: **every change
+passes the same decision gate** (seat-swapped cross-deck ladder, greedy + MCTS
+consumers), because both failed eval generations looked great on every other metric.
+
+### 4.1 The agent league (regression protection)
+
+Freeze each adopted agent as a named snapshot - eval weights + search config,
+e.g. `v1-hand/mcts300` - in `src/ai/league/`. A candidate is adopted only when it
+beats a quorum of the league, not just the latest member; this prevents cycling
+(A beats B, B beats C, C beats A) and silent regressions against older styles.
+Keep a persistent ladder result file so strength over time is a chart, not an
+anecdote. Elo over league members once there are 4+.
+
+### 4.2 Eval evolution path (each step gated)
+
+1. hand weights + counter economy (P0, in progress)
+2. gen-3 linear: pairwise ranking / search-bootstrap targets (P2)
+3. small MLP over the same feature vector (NNUE-style: cheap, search-friendly)
+   - only after gen-3 proves the *training target* is right; capacity never
+     fixes a wrong target
+4. learned card/state embeddings (replaces hand-crafted features last, not first)
+
+### 4.3 Search evolution path
+
+1. budget-tuned perfect-info UCT (today) with the P1 budgets
+2. honest IS-MCTS: root-world voting over determinizations (TODO leftover),
+   then multiple-observer trees
+3. chance-node bucketing for draw/reveal events (Zhang-Buro)
+4. policy priors from the eval (progressive bias / implicit minimax) - turns
+   eval quality directly into search speed
+5. fixed time-per-move budgets for the UI tiers (difficulty = milliseconds,
+   not algorithm identity)
+
+### 4.4 Knowledge and inference
+
+- Knowledge tracking: cards seen via searches/bottom-decks pinned in the
+  determinizer (today they are resampled - a known honesty gap).
+- Opponent range modeling: infer archetype from revealed cards + leader, weight
+  determinized worlds accordingly (full pool makes uniform sampling very wrong).
+
+### 4.5 Benchmark and data infrastructure
+
+- Fixed meta pool: 8-12 versioned benchmark decks across archetypes (Enel 6-DON
+  ramp, Brook mill, black trash-count, red aggro, yellow life-tempo...) so every
+  ladder is comparable across engine versions. Auto decks drift as sets land;
+  the benchmark pool must not.
+- Exploitability probe before adoption: tune a best-response agent against the
+  candidate (ByteRL lesson: ladder win rate is not robustness).
+- Data flywheel: every ladder/fleet run can log (chosen, rejected) afterstate
+  pairs - the gen-3 corpus grows as a side effect of routine testing.
+- Human leg: occasional play sessions against the current bot, with notes -
+  the counter-economy insight came from play, not from the fleet.
+
+### 4.6 Per-set-release ritual (keeps the bot current with the card pool)
+
+ingest -> certify (coverage/defLint/deffire/fleet) -> refresh benchmark ladder ->
+retrain eval if adopted-eval is learned (features are set-agnostic; weights drift
+with the meta; a genuinely new MECHANIC may need a new feature - calibration drop
+is the signal) -> league gate -> snapshot.
+
+## 5. Non-goals (for now)
 
 - Deep RL from scratch (PPO-class agents underperform search+eval at this scale and
   are unstable in multi-agent CCG settings per the CTU study).
