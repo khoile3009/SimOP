@@ -71,16 +71,22 @@ winner, Zhang–Buro chance bucketing, PIMC strategy-fusion pathology, Suphx ora
 
 ## 3. Workstreams
 
-**P0 — counter economy + eval hygiene (hand weights, no training)**
-1. Defense-coverage feature + threat-conditional counter weighting (§1).
-2. Spend-order tie-break for hand-cost choices.
-3. Gate: ladder vs current hand weights (greedy, planner, mcts legs), 300+ games.
+**P0 — counter economy + eval hygiene — DONE (Oct 2026, ADOPTED)**
+Shipped as `defenseShortfall(side, attacker)` in evaluate.ts: demand = the
+attacker's counterPressure, supply = hand counters + 2k per live blocker, minus
+life the side can tank (down to 2); weight `defenseShortfallDiff: 0.08` on top
+of the flat counterHandDiff (which already gives every agent the 0-counter-first
+spend-order tie-break). Gate (scripts/gate-eval.ts, base-deck pairs,
+seat-swapped): greedy 147-153 (49%, parity) and **MCTS 43-29 (60%)** — the
+deep-search consumer improves, the exact property gen-1/gen-2 lacked.
 
-**P1 — planner performance (blocker for everything else)**
-- TurnPlannerAgent is pathologically slow on the full-fidelity pool (minutes/game;
-  TODO entry exists). Profile `turnSearch.ts` (suspects: adversarial verification
-  breadth × 2,278-card effect surface, re-evaluation without caching). Analyze mode
-  and gendata both depend on it.
+**P1 — planner performance — DONE (Oct 2026)**
+Eval waste, not action-space size: the beam sort re-ran the eval in its
+comparator, identical states were re-evaluated (per-search WeakMap memo now),
+and beam interrupts used the raw eval. Planner budgets: maxExpansions 6000,
+verifyBudget 1200 (analyzer keeps the richer defaults). Worst deck ~30s/game ->
+~5s; strength re-gated at planner 73% vs greedy. Profiler:
+scripts/profile-planner.ts.
 
 **P2 — gen-3 learned eval (recipe)**
 1. Data: MCTS-vs-MCTS self-play (not greedy/random), mid-turn afterstates.
