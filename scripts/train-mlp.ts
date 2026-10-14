@@ -30,7 +30,7 @@ interface BootRow {
   w?: number
 }
 
-const files = readdirSync('data').filter((f) => /^gen3-\d+\.jsonl$/.test(f))
+const files = readdirSync('data').filter((f) => /^(gen3-\d+|flywheel)\.jsonl$/.test(f))
 const rows: BootRow[] = []
 for (const f of files) {
   for (const line of readFileSync(`data/${f}`, 'utf8').split('\n')) {

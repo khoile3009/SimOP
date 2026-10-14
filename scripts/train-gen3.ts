@@ -35,7 +35,7 @@ interface BootRow {
   w?: number
 }
 
-const files = readdirSync('data').filter((f) => /^gen3-\d+\.jsonl$/.test(f))
+const files = readdirSync('data').filter((f) => /^(gen3-\d+|flywheel)\.jsonl$/.test(f))
 const pairs: PairRow[] = []
 const boots: BootRow[] = []
 for (const f of files) {

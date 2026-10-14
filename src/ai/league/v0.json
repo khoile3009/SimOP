@@ -1,0 +1,21 @@
+{
+  "id": "v0-2026-09-hand-baseline",
+  "frozen": "2026-10-14",
+  "notes": "The pre-counter-economy hand eval (linear life 0.5, no shortfall) that carried OP01-OP17 development.",
+  "weights": {
+    "lifeDiff": 0.5,
+    "lifeZero": 1.5,
+    "handCountDiff": 0.07,
+    "counterHandDiff": 0.05,
+    "donDiff": 0.05,
+    "activeUnitsDiff": 0.04,
+    "boardCountDiff": 0.08,
+    "freePlusDiff": 0.16,
+    "freeParDiff": 0.1,
+    "rentedDiff": 0.05,
+    "smallDiff": 0.015,
+    "counterPressureDiff": 0.04,
+    "tradeCoverageDiff": 0.05,
+    "blockersDiff": 0.07
+  }
+}
