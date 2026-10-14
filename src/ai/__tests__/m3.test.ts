@@ -46,7 +46,9 @@ describe('determinize', () => {
       state.players.player1.hand.map((c) => c.instanceId),
     )
     // Both life stacks are hidden - even the viewer's own (CR 3-10-2)
-    const ownIds = new Set([...state.players.player1.deck, ...state.players.player1.lifeCards].map((c) => c.instanceId))
+    const ownIds = new Set(
+      [...state.players.player1.deck, ...state.players.player1.lifeCards].map((c) => c.instanceId),
+    )
     for (const card of world.players.player1.lifeCards) {
       expect(ownIds.has(card.instanceId)).toBe(true)
     }

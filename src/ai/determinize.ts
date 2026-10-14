@@ -12,11 +12,7 @@ import { getOpponent } from '@/engine/turnManager'
  * retained (e.g. cards seen during a search and sent to the deck bottom) -
  * uniform-given-counts is the honest baseline until knowledge tracking exists.
  */
-export function determinize(
-  state: GameState,
-  viewer: PlayerId,
-  rand: () => number,
-): GameState {
+export function determinize(state: GameState, viewer: PlayerId, rand: () => number): GameState {
   const opp = getOpponent(viewer)
 
   // Viewer: hand/field/trash known; own deck + own life form one hidden pool

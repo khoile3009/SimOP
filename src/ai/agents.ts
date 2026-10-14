@@ -75,7 +75,10 @@ export function rolloutInterrupts(
     const actor = whoActs(s)
     if (actor === null || actor === me) return s
     const isInterrupt =
-      s.battle !== null || s.pendingTrigger !== null || s.pendingChoice !== null || s.phase === 'SETUP'
+      s.battle !== null ||
+      s.pendingTrigger !== null ||
+      s.pendingChoice !== null ||
+      s.phase === 'SETUP'
     if (!isInterrupt) return s
 
     const options = legalActions(s)

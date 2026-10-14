@@ -96,7 +96,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { donAttachCount, gameState } = get()
 
     // If in DON attach mode and clicking a card, attach DON
-    if (donAttachCount > 0 && target?.type === 'card' && (target.zone === 'character' || target.zone === 'leader')) {
+    if (
+      donAttachCount > 0 &&
+      target?.type === 'card' &&
+      (target.zone === 'character' || target.zone === 'leader')
+    ) {
       if (gameState) {
         const result = processAction(
           gameState,

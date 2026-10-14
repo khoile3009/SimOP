@@ -157,9 +157,10 @@ export const useDeckStore = create<DeckStore>((set, get) => ({
 
     const updated = { ...deck, updatedAt: Date.now() }
     const existing = savedDecks.findIndex((d) => d.id === deck.id)
-    const newDecks = existing >= 0
-      ? savedDecks.map((d) => (d.id === deck.id ? updated : d))
-      : [...savedDecks, updated]
+    const newDecks =
+      existing >= 0
+        ? savedDecks.map((d) => (d.id === deck.id ? updated : d))
+        : [...savedDecks, updated]
 
     saveToStorage(newDecks)
     set({ deck: updated, savedDecks: newDecks })

@@ -369,11 +369,7 @@ interface Threat {
 }
 
 /** Leader attacks in the line, with attacker power measured at declaration. */
-function collectLeaderThreats(
-  root: GameState,
-  player: PlayerId,
-  actions: GameAction[],
-): Threat[] {
+function collectLeaderThreats(root: GameState, player: PlayerId, actions: GameAction[]): Threat[] {
   const opp = getOpponent(player)
   const threats: Threat[] = []
   let s = root
@@ -387,7 +383,10 @@ function collectLeaderThreats(
     const result = processAction(s, action, player)
     if (result.error) break
     s = result.state
-    if (action.type === 'DECLARE_ATTACK' && action.targetId === root.players[opp].leader.instanceId) {
+    if (
+      action.type === 'DECLARE_ATTACK' &&
+      action.targetId === root.players[opp].leader.instanceId
+    ) {
       const mine = s.players[player]
       const attacker =
         mine.leader.instanceId === action.attackerId
@@ -411,7 +410,11 @@ function endTurnState(root: GameState, player: PlayerId): GameState | null {
 
 /** Cheap structural signature for deduping commuting action orders. */
 function signature(state: GameState): string {
-  const parts: string[] = [state.phase, state.battle?.step ?? '-', state.pendingChoice?.prompt ?? '-']
+  const parts: string[] = [
+    state.phase,
+    state.battle?.step ?? '-',
+    state.pendingChoice?.prompt ?? '-',
+  ]
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
     const chars = p.characters
@@ -463,7 +466,15 @@ export function describeAction(state: GameState, action: GameAction): string {
 function findAnywhere(state: GameState, instanceId: string): GameCard | null {
   for (const pid of ['player1', 'player2'] as PlayerId[]) {
     const p = state.players[pid]
-    for (const zone of [[p.leader], p.characters, p.hand, p.trash, p.donArea, p.lifeCards, p.deck]) {
+    for (const zone of [
+      [p.leader],
+      p.characters,
+      p.hand,
+      p.trash,
+      p.donArea,
+      p.lifeCards,
+      p.deck,
+    ]) {
       const card = zone.find((c) => c.instanceId === instanceId)
       if (card) return card
     }
