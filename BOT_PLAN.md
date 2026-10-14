@@ -5,6 +5,55 @@ Brainstormed Oct 2026, after full card coverage (OP01–OP17, EB01–EB04, PRB01
 seat-swapped). Two learned-eval generations were built and rejected by the decision
 gate (see TODO.md M4); hand weights in `src/ai/evaluate.ts` are active.
 
+## 0. The queue (updated Oct 2026, after the first full improvement cycle)
+
+State: hand eval + three adopted nonlinear features is the champion; five
+learned evals rejected by the gate; planner fast; base decks frozen; honest
+PIMC agent built but budget-tuning. The loops that provably work: (a) play
+observation -> named concept -> feature -> gate (2-for-2 today, ~1h each),
+(b) search/infra engineering validated by the ladder.
+
+**Next up (agent)**
+1. P3 finish: honest-agent verdict from scripts/tune-honest.ts.
+   A) a config clears planner -> ship as the fair "Hard" in /play (label the
+      omniscient MCTS for what it is), add 'honest' to /watch.
+   B) all configs trail planner -> implement Multiple-Observer IS-MCTS (ONE
+      tree, a fresh determinization per iteration; information-set nodes keyed
+      by the actor's view) - the known upgrade over PIMC voting, same hook.
+2. Knowledge tracking in determinize.ts: pin cards seen via searches /
+   bottom-decks (today they resample uniformly). Improves the honest agent,
+   Honest-mode analyzer, and any future belief modeling, and it is pure
+   engineering.
+3. Feature mining cadence: a play session per week-ish; every bot misjudgment
+   becomes a FEATURE_IDEAS entry below, best one gets implemented + gated.
+4. League bootstrap (4.1): freeze champion-v1 (hand+P0b eval, mcts300) in
+   src/ai/league/; persistent ladder-results file; future adoptions must beat
+   a league quorum, not just the latest.
+5. Data flywheel (4.5): ladder/gate runs append gen3-format rows passively, so
+   the corpus grows 10-50x without dedicated compute - reopens the learned-eval
+   question for free later.
+
+**Next up (app)**
+6. ST-set ingestion (true netdecks need starter staples; same ritual as EB/PRB,
+   one session) -> regenerate base decks from real lists.
+7. UX: one-tap confirm for single-option effect choices (fleet: 60% of choices),
+   the approved DON class picker, trash-pile modal, drag-to-attack arrow.
+8. Difficulty tiers as time budgets per move, not algorithm names.
+
+**Funded-when-wanted (research-grade)**
+9. Rich-input learned eval: per-card board representation (the effect-AST gives
+   free card features), set-of-cards encoder, trained on the flywheel corpus -
+   the only remaining path to a learned eval that can out-know the features.
+10. Opponent range modeling: archetype inference from revealed cards weighting
+    determinizations.
+11. M7 online multiplayer (actions are already serializable).
+
+**FEATURE_IDEAS (from play observations - the proven loop)**
+- Double Attack-aware lifeDanger (2-life hits deserve defense a bucket earlier).
+- Trigger-equity when taking hits (life with triggers is worth MORE to take).
+- Rested-blocker tempo: a blocker that rested this turn is exposed next turn.
+- Don-curve stall: holding 2+ unspent DON at end of turn is usually a leak.
+
 ## 1. The counter-economy problem (first priority)
 
 Observation (from play-testing): playing a 2000-counter card to the board removes it
