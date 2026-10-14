@@ -46,6 +46,40 @@ import { OP16_EFFECTS, OP16_STATICS, KEYWORD_ONLY_OP16, COVERAGE_NOTES_OP16 } fr
 import op17Cards from './op17/cards.json'
 import op17Attrs from './op17/battleAttributes.json'
 import { OP17_EFFECTS, OP17_STATICS, KEYWORD_ONLY_OP17, COVERAGE_NOTES_OP17 } from './op17/effects'
+import op14Cards from './op14/cards.json'
+import op14Attrs from './op14/battleAttributes.json'
+import { OP14_EFFECTS, OP14_STATICS, KEYWORD_ONLY_OP14, COVERAGE_NOTES_OP14 } from './op14/effects'
+import prb01Cards from './prb01/cards.json'
+import prb01Attrs from './prb01/battleAttributes.json'
+import {
+  PRB01_EFFECTS,
+  PRB01_STATICS,
+  KEYWORD_ONLY_PRB01,
+  COVERAGE_NOTES_PRB01,
+} from './prb01/effects'
+import prb02Cards from './prb02/cards.json'
+import prb02Attrs from './prb02/battleAttributes.json'
+import {
+  PRB02_EFFECTS,
+  PRB02_STATICS,
+  KEYWORD_ONLY_PRB02,
+  COVERAGE_NOTES_PRB02,
+} from './prb02/effects'
+import eb04Cards from './eb04/cards.json'
+import eb04Attrs from './eb04/battleAttributes.json'
+import { EB04_EFFECTS, EB04_STATICS, KEYWORD_ONLY_EB04, COVERAGE_NOTES_EB04 } from './eb04/effects'
+import eb03Cards from './eb03/cards.json'
+import eb03Attrs from './eb03/battleAttributes.json'
+import { EB03_EFFECTS, EB03_STATICS, KEYWORD_ONLY_EB03, COVERAGE_NOTES_EB03 } from './eb03/effects'
+import eb02Cards from './eb02/cards.json'
+import eb02Attrs from './eb02/battleAttributes.json'
+import { EB02_EFFECTS, EB02_STATICS, KEYWORD_ONLY_EB02, COVERAGE_NOTES_EB02 } from './eb02/effects'
+import eb01Cards from './eb01/cards.json'
+import eb01Attrs from './eb01/battleAttributes.json'
+import { EB01_EFFECTS, EB01_STATICS, KEYWORD_ONLY_EB01, COVERAGE_NOTES_EB01 } from './eb01/effects'
+import op15Cards from './op15/cards.json'
+import op15Attrs from './op15/battleAttributes.json'
+import { OP15_EFFECTS, OP15_STATICS, KEYWORD_ONLY_OP15, COVERAGE_NOTES_OP15 } from './op15/effects'
 
 /**
  * The set manifest: registering a set here is the ONLY wiring step after
@@ -61,6 +95,8 @@ export interface SetModule {
   statics: Record<string, StaticDef[]>
   keywordOnly: string[]
   notes: Record<string, string>
+  /** Functional reprints: new card id -> donor id whose defs/statics/rules apply */
+  reprints?: Record<string, string>
 }
 
 export const SET_MODULES: SetModule[] = [
@@ -180,6 +216,78 @@ export const SET_MODULES: SetModule[] = [
     statics: OP13_STATICS,
     keywordOnly: KEYWORD_ONLY_OP13,
     notes: COVERAGE_NOTES_OP13,
+  },
+  {
+    code: 'OP14',
+    cards: op14Cards as CardData[],
+    battleAttributes: op14Attrs,
+    effects: OP14_EFFECTS,
+    statics: OP14_STATICS,
+    keywordOnly: KEYWORD_ONLY_OP14,
+    notes: COVERAGE_NOTES_OP14,
+  },
+  {
+    code: 'OP15',
+    cards: op15Cards as CardData[],
+    battleAttributes: op15Attrs,
+    effects: OP15_EFFECTS,
+    statics: OP15_STATICS,
+    keywordOnly: KEYWORD_ONLY_OP15,
+    notes: COVERAGE_NOTES_OP15,
+  },
+  {
+    code: 'EB01',
+    cards: eb01Cards as CardData[],
+    battleAttributes: eb01Attrs,
+    effects: EB01_EFFECTS,
+    statics: EB01_STATICS,
+    keywordOnly: KEYWORD_ONLY_EB01,
+    notes: COVERAGE_NOTES_EB01,
+  },
+  {
+    code: 'EB02',
+    cards: eb02Cards as CardData[],
+    battleAttributes: eb02Attrs,
+    effects: EB02_EFFECTS,
+    statics: EB02_STATICS,
+    keywordOnly: KEYWORD_ONLY_EB02,
+    notes: COVERAGE_NOTES_EB02,
+  },
+  {
+    code: 'EB03',
+    cards: eb03Cards as CardData[],
+    battleAttributes: eb03Attrs,
+    effects: EB03_EFFECTS,
+    statics: EB03_STATICS,
+    keywordOnly: KEYWORD_ONLY_EB03,
+    notes: COVERAGE_NOTES_EB03,
+  },
+  {
+    code: 'EB04',
+    cards: eb04Cards as CardData[],
+    battleAttributes: eb04Attrs,
+    effects: EB04_EFFECTS,
+    statics: EB04_STATICS,
+    keywordOnly: KEYWORD_ONLY_EB04,
+    notes: COVERAGE_NOTES_EB04,
+  },
+  {
+    code: 'PRB01',
+    cards: prb01Cards as CardData[],
+    battleAttributes: prb01Attrs,
+    effects: PRB01_EFFECTS,
+    statics: PRB01_STATICS,
+    keywordOnly: KEYWORD_ONLY_PRB01,
+    notes: COVERAGE_NOTES_PRB01,
+  },
+  {
+    code: 'PRB02',
+    cards: prb02Cards as CardData[],
+    battleAttributes: prb02Attrs,
+    effects: PRB02_EFFECTS,
+    statics: PRB02_STATICS,
+    keywordOnly: KEYWORD_ONLY_PRB02,
+    notes: COVERAGE_NOTES_PRB02,
   },
   {
     code: 'OP16',

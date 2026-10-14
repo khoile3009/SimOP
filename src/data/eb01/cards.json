@@ -1,0 +1,1251 @@
+[
+  {
+    "id": "EB01-001",
+    "name": "Kouzuki Oden",
+    "cardType": "Leader",
+    "color": [
+      "Green",
+      "Red"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 4,
+    "attribute": [
+      "Land of Wano",
+      "Kouzuki Clan"
+    ],
+    "effectText": "All of your [Land of Wano] type Character cards without a Counter have a +1000 Counter, according to the rules.[DON!! x1] [When Attacking] If you have a [Land of Wano] type Character with a cost of 5 or more, this Leader gains +1000 power until the start of your next turn.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-002",
+    "name": "Izo",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 5,
+    "power": 7000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "Whitebeard Pirates"
+    ],
+    "effectText": "[On Play] Give up to 1 rested DON!! card to your Leader or 1 of your Characters.[On Your Opponent's Attack] [Once Per Turn] You may trash 1 card from your hand: If your Leader has the [Land of Wano] or [Whitebeard Pirates] type, give up to 1 of your opponent's Leader or Character cards -2000 power during this turn.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-003",
+    "name": "Kid & Killer",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Kid Pirates",
+      "Supernovas"
+    ],
+    "effectText": "[Rush] (This card can attack on the turn in which it is played.)[When Attacking] If your opponent has 2 or less Life cards, this Character gains +2000 power during this turn.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-004",
+    "name": "Koza",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Alabasta"
+    ],
+    "effectText": "[When Attacking] You may give your 1 active Leader -5000 power during this turn: Give up to 1 of your opponent's Characters -3000 power during this turn.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-005",
+    "name": "Doma",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Whitebeard Pirates Allies"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-006",
+    "name": "Tony Tony.Chopper",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal",
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)[DON!! x2][When Attacking] Give up to 1 of your opponent's Characters -3000 power during this turn.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-007",
+    "name": "Yamato",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 5,
+    "power": 5000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Land of Wano"
+    ],
+    "effectText": "[Activate:Main] [Once Per Turn] Give up to 1 rested DON!! card to your Leader or 1 of your Characters.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-008",
+    "name": "LittleOars Jr.",
+    "cardType": "Character",
+    "color": [
+      "Red"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Giant",
+      "Whitebeard Pirates Allies"
+    ],
+    "effectText": "[Once Per Turn] If this Character would be K.O.'d by an effect, you may trash 1 Event or Stage card from your hand instead.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-009",
+    "name": "Just Shut Up and Come with Us!!!!",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Drum Kingdom"
+    ],
+    "effectText": "[Counter] Look at 5 cards from the top of your deck and play up to 1 [Animal] type Character card with a cost of 3 or less. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-010",
+    "name": "There's No Way You Could Defeat Me!!",
+    "cardType": "Event",
+    "color": [
+      "Red"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Water Seven"
+    ],
+    "effectText": "[Counter] K.O. up to 1 of your opponent's Characters with 6000 base power or less.",
+    "triggerText": "K.O. up to 1 of your opponent's Characters with 5000 base power or less.",
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-011",
+    "name": "Mini-Merry",
+    "cardType": "Stage",
+    "color": [
+      "Red"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Activate:Main] You may rest this card and place 1 of your Characters with 1000 base power at the bottom of your deck: Draw 1 card.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-012",
+    "name": "Cavendish",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Beautiful Pirates",
+      "Supernovas"
+    ],
+    "effectText": "[On Play]/[When Attacking] If your Leader has the [Supernovas] type and you have no other [Cavendish] Characters, set up to 2 of your DON!! cards as active.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-013",
+    "name": "Kouzuki Hiyori",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Land of Wano",
+      "Kouzuki Clan"
+    ],
+    "effectText": "[Activate:Main] You may trash this Character: Play up to 1 [Land of Wano] type Character card with a cost of 5 or less other than [Kouzuki Hiyori] from your hand. Then, draw 1 card.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-014",
+    "name": "Sanji",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "FILM",
+      "Straw Hat Crew"
+    ],
+    "effectText": "[DON!! x1] [Your Turn] This Character gains +1000 power for every 3 of your rested DON!! cards.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-015",
+    "name": "Scratchmen Apoo",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": 1000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "On-Air Pirates",
+      "Supernovas"
+    ],
+    "effectText": "[On Play] Rest up to 1 of your opponent's Characters with a cost of 2 or less.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-016",
+    "name": "Bingoh",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Land of Wano"
+    ],
+    "effectText": "[Activate:Main] You may rest this Character: K.O. up to 1 of your opponent's rested Characters with a cost of 1 or less.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-017",
+    "name": "Blueno",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "FILM",
+      "CP0"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-018",
+    "name": "Mountain God",
+    "cardType": "Character",
+    "color": [
+      "Green"
+    ],
+    "cost": 5,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal",
+      "Land of Wano"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-019",
+    "name": "Off-White",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Donquixote Pirates",
+      "The Seven Warlords of the Sea"
+    ],
+    "effectText": "[Counter] Up to 1 of your Leader or Character cards gains +4000 power during this battle. Then, look at 3 cards from the top of your deck; reveal up to 1 [Donquixote Pirates] type Character card and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-020",
+    "name": "Chambres",
+    "cardType": "Event",
+    "color": [
+      "Green"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Heart Pirates",
+      "Supernovas"
+    ],
+    "effectText": "[Main] If your Leader has the [Supernovas] type, return 1 of your Characters to the owner's hand, and play up to 1 Character card with a cost of 2 or less from your hand that is a different color than the returned Character.",
+    "triggerText": "Activate this card's [Main] effect.",
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-021",
+    "name": "Hannyabal",
+    "cardType": "Leader",
+    "color": [
+      "Blue",
+      "Purple"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 4,
+    "attribute": [
+      "Impel Down"
+    ],
+    "effectText": "[End of Your Turn] You may return 1 of your [Impel Down] type Characters with a cost of 2 or more to the owner's hand: Add up to 1 DON!! card from your DON!! deck and set it as active.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-022",
+    "name": "Inazuma",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 6,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Revolutionary Army",
+      "Impel Down"
+    ],
+    "effectText": "[End of Your Turn] If you have 2 or less cards in your hand, draw 2 cards.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-023",
+    "name": "Edward Weevil",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "The Seven Warlords of the Sea"
+    ],
+    "effectText": "[On Play] Draw 1 card.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-024",
+    "name": "Hamlet",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal Kingdom Pirates",
+      "SMILE"
+    ],
+    "effectText": "If you have 4 or less cards in your hand, all of your [SMILE] type Characters gain +1000 power.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-025",
+    "name": "Fourtricks",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal Kingdom Pirates",
+      "SMILE"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-026",
+    "name": "Prince Bellett",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 2,
+    "power": 2000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Impel Down"
+    ],
+    "effectText": "[DON!! x1] [When Attacking] If you have 1 or less cards in your hand, return up to 1 Character with a cost of 3 or less to the owner's hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-027",
+    "name": "Mr. 1 (Daz.Bonez)",
+    "cardType": "Character",
+    "color": [
+      "Blue"
+    ],
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Baroque Works"
+    ],
+    "effectText": "If your Leader's type includes \"Baroque Works\", this Character gains +1000 power for every 2 Events in your trash.[On Play] Draw 2 cards and trash 1 card from your hand.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-028",
+    "name": "Gum-Gum Champion Rifle",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "Impel Down"
+    ],
+    "effectText": "[Counter] If your Leader has the [Impel Down] type, up to 1 of your Leader or Character cards gains +2000 power during this battle. Then, your opponent returns 1 of their active Characters to the owner's hand.",
+    "triggerText": "Return up to 1 Character with a cost of 3 or less to the bottom of the owner's deck.",
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-029",
+    "name": "Sorry. I'm a Goner.",
+    "cardType": "Event",
+    "color": [
+      "Blue"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew",
+      "East Blue"
+    ],
+    "effectText": "[Counter] Reveal 1 card from the top of your deck. If the revealed card has a cost of 4 or more, return up to 1 of your Characters to the owner's hand. Then, place the revealed card at the bottom of your deck.",
+    "triggerText": "Return up to 1 Character with a cost of 8 or less to the owner's hand.",
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-030",
+    "name": "Loguetown",
+    "cardType": "Stage",
+    "color": [
+      "Blue"
+    ],
+    "cost": 2,
+    "power": null,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "East Blue"
+    ],
+    "effectText": "[Activate:Main] You may place this card and 1 card from your hand at the bottom of your deck in any order: Draw 2 cards.",
+    "triggerText": "Play this card.",
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-031",
+    "name": "Kalifa",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Galley-La Company",
+      "Water Seven"
+    ],
+    "effectText": "[On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader has the [Water Seven] type, add up to 2 Character cards with a cost of 4 or less from your trash to your hand.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-032",
+    "name": "Army Wolves",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": 7000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal",
+      "Impel Down"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-033",
+    "name": "Blueno",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Water Seven"
+    ],
+    "effectText": "[On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader has the [Water Seven] type, play up to 1 [Water Seven] type Character card with a cost of 5 other than [Blueno] from your hand or trash.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-034",
+    "name": "Ms. Wednesday",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Baroque Works"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)[On Your Opponent's Attack][Once Per Turn] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader's type includes \"Baroque Works\", add up to 1 DON!! card from your DON!! deck and set it as active.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-035",
+    "name": "Ms. Monday",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Baroque Works"
+    ],
+    "effectText": "[On Play] If your Leader's type includes \"Baroque Works\", up to 1 of your Leader or Character cards gains +1000 power during this turn.",
+    "triggerText": "DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): Play this card.",
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-036",
+    "name": "Minochihuahua",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Baroque Works",
+      "Impel Down",
+      "Jailer Beast"
+    ],
+    "effectText": "[Rush] (This card can attack on the turn in which it is played.)[On K.O.] If your Leader has the [Impel Down] type, add up to 1 DON!! card from your DON!! deck and rest it.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-037",
+    "name": "Mr. 9",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Baroque Works"
+    ],
+    "effectText": "[On Your Opponent's Attack] [Once Per Turn] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): K.O. up to 1 of your opponent's Characters with a cost of 2 or less.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-038",
+    "name": "Oh Come My Way",
+    "cardType": "Event",
+    "color": [
+      "Purple"
+    ],
+    "cost": 1,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Baroque Works"
+    ],
+    "effectText": "[Counter] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader's type includes \"Baroque Works\", select 1 of your Characters. Change the attack target to the selected Character.",
+    "triggerText": "DON!! -1: Draw 2 cards.",
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-039",
+    "name": "Conquerer of Three Worlds Ragnaraku",
+    "cardType": "Event",
+    "color": [
+      "Purple"
+    ],
+    "cost": 5,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Animal Kingdom Pirates",
+      "The Four Emperors"
+    ],
+    "effectText": "[Main] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): K.O. up to 1 of your opponent's Characters with a cost of 8 or less.",
+    "triggerText": "Ad up to 1 DON!! card from your DON!! deck and set it as active.",
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-040",
+    "name": "Kyros",
+    "cardType": "Leader",
+    "color": [
+      "Black",
+      "Yellow"
+    ],
+    "cost": 0,
+    "power": 5000,
+    "counter": null,
+    "life": 4,
+    "attribute": [
+      "Dressrosa"
+    ],
+    "effectText": "[Activate:Main] [Once Per Turn] You may turn 1 card from the top of your Life cards face-up: K.O. up to 1 of your opponent's Characters with a cost of 0.",
+    "triggerText": null,
+    "rarity": "L",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-041",
+    "name": "Crocus",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 6,
+    "power": 8000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Former Roger Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-042",
+    "name": "Scarlet",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 2,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Dressrosa"
+    ],
+    "effectText": "[Activate:Main] You may trash this Character: Play up to 1 [Dressrosa] type Character card with a cost of 3 or less other than [Scarlet] from your hand rested. Then, give up to 1 of your opponent's Characters -2 cost during this turn.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-043",
+    "name": "Spandine",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": 2000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[On Play] You may place 3 cards with a type including \"CP\" from your trash at the bottom of your deck in any order: Play up to 1 Character card with a type including \"CP\" and a cost of 4 or less other than [Spandine] from your trash rested.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-044",
+    "name": "Funkfreed",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 1,
+    "power": 1000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[Activate:Main] You may rest this Character: Up to 1 of your [Spandam] Characters gains +3000 power during this turn.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-045",
+    "name": "Brook",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Rumbar Pirates"
+    ],
+    "effectText": "[On Play] If your opponent has a Character with a cost of 0, this Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-046",
+    "name": "Brook",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[On Play]/[When Attacking] Give up to 1 of your opponent's Characters -1 cost during this turn. Then, K.O. up to 1 of your opponent's Characters with a cost of 0.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-047",
+    "name": "Laboon",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 2,
+    "power": 4000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Animal"
+    ],
+    "effectText": "[Once Per Turn] When a Character is K.O.'d, draw 1 card and trash 1 card from your hand.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-048",
+    "name": "Laboon",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Animal"
+    ],
+    "effectText": "[Activate:Main]You may rest this Character: Give up to 1 of your opponent's Characters -4 cost during this turn.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-049",
+    "name": "T-Bone",
+    "cardType": "Character",
+    "color": [
+      "Black"
+    ],
+    "cost": 5,
+    "power": 5000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Navy",
+      "Water Seven"
+    ],
+    "effectText": "[On Play] K.O. up to 1 of your opponent's Characters with a cost of 2 or less.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-050",
+    "name": "...I Want to Live!!",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 3,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Straw Hat Crew"
+    ],
+    "effectText": "[Counter] If you have 30 or more cards in your trash, add up to 1 card from the top of your deck to the top of your Life cards.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-051",
+    "name": "Finger Pistol",
+    "cardType": "Event",
+    "color": [
+      "Black"
+    ],
+    "cost": 4,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "CP9"
+    ],
+    "effectText": "[Main] You may trash 2 cards from the top of your deck: K.O. up to 1 of your opponent's Characters with a cost of 5 or less.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-052",
+    "name": "Viola",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Dressrosa"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)[On Play]Choose one:• Look at all of your opponent's Life cards and place them back in their Life area in any order.• Turn all of your Life cards face-down.",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-053",
+    "name": "Gastino",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": null,
+    "attribute": [
+      "Scientist"
+    ],
+    "effectText": "[On Play] Place up to 1 of your opponent's Characters with a cost of 3 or less at the top or bottom of your opponent's Life cards face-up.",
+    "triggerText": "Give up to a total of 2 of your opponent's Leader or Character cards -3000 power during this turn.",
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-054",
+    "name": "Gan.Fall",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Sky Island"
+    ],
+    "effectText": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)[On Play] If your opponent has 1 or less Life cards, K.O. up to 1 of your opponent's Characters with a cost of 3 or less.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-055",
+    "name": "Charlotte Compote",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 7,
+    "power": 9000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-056",
+    "name": "Charlotte Flampe",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 1,
+    "power": 1000,
+    "counter": 2000,
+    "life": null,
+    "attribute": [
+      "Big Mom Pirates"
+    ],
+    "effectText": "[On Play]You may add 1 card from the top or bottom of your Life cards to your hand: Draw 1 card.",
+    "triggerText": null,
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-057",
+    "name": "Shirahoshi",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 0,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Merfolk"
+    ],
+    "effectText": "When this Character is K.O.'d by your opponent's effect, add up to 1 card from the top of your deck to the top of your Life cards.[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+    "triggerText": null,
+    "rarity": "SR",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-058",
+    "name": "Mont Blanc Cricket",
+    "cardType": "Character",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Monkey Mountain Alliance"
+    ],
+    "effectText": "[DON!! x1] [Your Turn] If you have 2 or less Life cards, this Character gains +2000 power.",
+    "triggerText": null,
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-059",
+    "name": "Kingdom Come",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 6,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Sky Island"
+    ],
+    "effectText": "[Main] K.O. up to 1 of your opponent's Characters. Then, trash cards from the top of your Life cards until you have 1 Life card.",
+    "triggerText": "K.O. up to 1 of your opponent's Characters with a cost equal to or less than the total of your and your opponent's Life cards.",
+    "rarity": "R",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-060",
+    "name": "Did Someone Say...Kami?",
+    "cardType": "Event",
+    "color": [
+      "Yellow"
+    ],
+    "cost": 4,
+    "power": null,
+    "counter": null,
+    "life": null,
+    "attribute": [
+      "Sky Island"
+    ],
+    "effectText": "[Main] Play up to 1 [Enel] with a cost of 7 or less life from your hand or trash. Then, trash cards from the top of your Life cards until you have 1 Life card.",
+    "triggerText": "Draw 2 cards and trash 1 card from your hand.",
+    "rarity": "C",
+    "set": "EB01",
+    "imageUrl": ""
+  },
+  {
+    "id": "EB01-061",
+    "name": "Mr.2.Bon.Kurei (Bentham)",
+    "cardType": "Character",
+    "color": [
+      "Purple"
+    ],
+    "cost": 4,
+    "power": 1000,
+    "counter": 1000,
+    "life": null,
+    "attribute": [
+      "Former Baroque Works"
+    ],
+    "effectText": "[On Play] Add up to 1 DON!! card from your DON!! deck and set it as active.[When Attacking] Select up to 1 of your opponent's Characters. This Character's base power becomes the same as the selected Character's power during this turn.",
+    "triggerText": null,
+    "rarity": "SEC",
+    "set": "EB01",
+    "imageUrl": ""
+  }
+]
