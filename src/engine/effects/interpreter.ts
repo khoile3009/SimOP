@@ -1496,7 +1496,11 @@ function executeOp(
             ...s,
             players: {
               ...s.players,
-              [pid]: { ...p, hand, deck: [{ ...card, revealed: false, seenByOwner: true }, ...p.deck] },
+              [pid]: {
+                ...p,
+                hand,
+                deck: [{ ...card, revealed: false, seenByOwner: true }, ...p.deck],
+              },
             },
           }
           break
@@ -2712,7 +2716,9 @@ function moveDeckTopToBottom(
   const ids = new Set(instanceIds)
   const p = state.players[playerId]
   // The owner looked at these before bottoming them: positional knowledge
-  const moved = p.deck.filter((c) => ids.has(c.instanceId)).map((c) => ({ ...c, seenByOwner: true }))
+  const moved = p.deck
+    .filter((c) => ids.has(c.instanceId))
+    .map((c) => ({ ...c, seenByOwner: true }))
   const deck = [...p.deck.filter((c) => !ids.has(c.instanceId)), ...moved]
   return { ...state, players: { ...state.players, [playerId]: { ...p, deck } } }
 }

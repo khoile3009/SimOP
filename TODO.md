@@ -189,8 +189,10 @@
 
 ## Tasks
 
-- [ ]: If we click into trash, show modal of the trash pile
-- [ ]: When the character on the field, if the character is allowed to attack and you drag the character, show an arrow from character to the cursor, if release on a target, attack that target
+- [x]: Trash modal SHIPPED (Oct 2026): click either trash pile to browse it
+      (public info; newest first) in an overlay.
+- [x]: Drag-to-attack arrow - already shipped with the UI overhaul (GameBoard
+      drag handlers + AttackArrow SVG); verified and closed.
 - [x]: Support multiple counter — USE_COUNTER now keeps the defender in the counter step (chain counters, then Pass resolves damage); [Counter] events are their own action (PLAY_COUNTER_EVENT) and pay their DON cost
 
 Engine rules gaps — ALL CLOSED in M1 "rules-solid core" (verified by a 1200-game
@@ -221,6 +223,16 @@ Backlog (feature ideas):
   the analyzer keeps the richer defaults). Black trash mirror: ~30s/game ->
   ~5s/game; strength gate re-passed (planner 73% vs greedy, 179ms/game on the
   benchmark mirror). Profiler kept at scripts/profile-planner.ts.
-- [ ]: M3 leftovers: click-through board preview per line step; honest-information MCTS variant (determinized root voting) for a fair hidden-info bot; knowledge tracking for determinize (cards seen via searches/bottom-decking are currently resampled uniformly).
-- [ ]: Class-based DON picker (design approved — v1 grouped-modal variant): DON are fungible within a class (zone, carrier, state incl. rested/frozen), so selection = count per class, never "which physical DON". Design draft with interactive prototype + engine mapping: https://claude.ai/artifact/VQkJ7FGmdYNLnapQ4J6xaS
+- [x]: M3 leftovers CLOSED (Oct 2026): honest IS-MCTS shipped as the fair Hard
+      (4 worlds x 500 iters beats planner 61% and omniscient mcts 57%);
+      knowledge tracking shipped (seenByOwner pins searched/scried/bottomed
+      cards in determinize; shuffles clear it). Remaining: click-through board
+      preview per line step.
+- [ ]: Board preview per analyzer line step (the last M3 leftover).
+- [x]: Class-based DON picker SHIPPED (Oct 2026, the approved grouped design):
+      all-DON choices render count steppers per class (cost area active/rested,
+      given-to-<carrier>) in ChoicePrompt; forced sets (options <= min) arrive
+      pre-selected everywhere for one-tap confirm (the fleet's 60%
+      single-option friction note). Design draft:
+      https://claude.ai/artifact/VQkJ7FGmdYNLnapQ4J6xaS
   Build when an effect must touch attached DON (restand/attach manipulation in later sets, or full-fidelity DON!!-X — current OP01 DON!!-X pays from the cost area only, which is fine for now). Engine diff when built: grouped PendingChoice shape ({key, carrierUid?, capacity}), CHOOSE as count-vector, returnDon/restand ops accept {class: count}, legalActions emits canonical count-vectors (also shrinks bot action space). Card-target choices keep the flat instanceId shape.

@@ -20,6 +20,7 @@ interface PlayerSideProps {
   cardActions?: CardActions
   attackTargets?: boolean
   choice?: ChoiceHighlight
+  isOpponent?: boolean
 }
 
 export default function PlayerSide({
@@ -32,6 +33,7 @@ export default function PlayerSide({
   cardActions,
   attackTargets,
   choice,
+  isOpponent = false,
 }: PlayerSideProps) {
   const leaderData = getCardById(player.leader.cardId)
   const maxLife = leaderData?.life ?? 5
@@ -92,7 +94,11 @@ export default function PlayerSide({
       )}
 
       {/* Deck + Trash */}
-      <DeckTrashZone deckCount={player.deck.length} trashCount={player.trash.length} />
+      <DeckTrashZone
+        deckCount={player.deck.length}
+        trashCards={player.trash}
+        ownerLabel={isOpponent ? "Opponent's" : 'Your'}
+      />
     </div>
   )
 }

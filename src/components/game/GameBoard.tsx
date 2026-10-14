@@ -87,7 +87,13 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
   const [prevChoice, setPrevChoice] = useState<PendingChoice | null>(null)
   if (pendingChoiceRef !== prevChoice) {
     setPrevChoice(pendingChoiceRef)
-    setChoicePicks([])
+    // Forced sets (a single mandatory target, "trash 2" with exactly 2 cards)
+    // arrive pre-selected: one tap on Confirm instead of pick-then-confirm
+    const forced =
+      pendingChoiceRef !== null &&
+      pendingChoiceRef.min > 0 &&
+      pendingChoiceRef.options.length <= pendingChoiceRef.min
+    setChoicePicks(forced && pendingChoiceRef ? [...pendingChoiceRef.options] : [])
   }
 
   /** During a pending choice, board clicks toggle picks and everything else is inert. */
@@ -500,6 +506,7 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
           <PlayerSide
             player={gameState.players[opponent]}
             isActive={false}
+            isOpponent
             selectedId={null}
             donAttachCount={0}
             onSelectCard={(id) => handleSelectOpponentCard(id)}
