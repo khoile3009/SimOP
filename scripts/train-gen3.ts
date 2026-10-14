@@ -54,12 +54,6 @@ const dot = (w: Weights, f: Features) => {
   for (const k of Object.keys(f)) sum += (w[k] ?? 0) * f[k]
   return sum
 }
-const diff = (a: Features, b: Features): Features => {
-  const d: Features = {}
-  for (const k of Object.keys(a)) d[k] = a[k] - (b[k] ?? 0)
-  for (const k of Object.keys(b)) if (!(k in d)) d[k] = -b[k]
-  return d
-}
 const isTest = (g: number) => g % 5 === 0
 
 // ─── BOOT + BLEND ────────────────────────────────────────────────────────────

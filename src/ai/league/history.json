@@ -1,0 +1,20 @@
+[
+  {
+    "at": "2026-10-14T20:19:08.821Z",
+    "candidate": "hand",
+    "gamesGreedy": 40,
+    "gamesMcts": 10,
+    "results": [
+      {
+        "member": "v0-2026-09-hand-baseline",
+        "greedy": "110-130",
+        "mcts": "37-23",
+        "greedyPct": 46,
+        "mctsPct": 62,
+        "beaten": true,
+        "veto": false
+      }
+    ],
+    "verdict": "ADOPT"
+  }
+]

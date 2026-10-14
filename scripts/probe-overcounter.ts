@@ -9,7 +9,6 @@ import { BASE_DECKS } from '@/sim/baseDecks'
 import { GreedyAgent, type Agent } from '@/ai/agents'
 import { MctsAgent } from '@/ai/mcts'
 import { mulberry32 } from '@/utils/rng'
-import { getOpponent } from '@/engine/turnManager'
 import type { GameState, GameAction, PlayerId } from '@/engine/types'
 
 const games = Number(process.argv[2] ?? 30)
