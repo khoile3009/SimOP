@@ -46,6 +46,9 @@ interface Node {
   labels: string[]
   stepScores: number[]
   done: boolean
+  /** Cached ev(state) - the eval is ~0.5ms on full-pool states, so sorting
+   * or re-ranking must never call it again on the same state */
+  score: number
 }
 
 export interface TurnSearchOptions {
@@ -55,6 +58,8 @@ export interface TurnSearchOptions {
   maxExpansions?: number
   /** How many top candidates get the (costlier) adversarial verification */
   verifyTop?: number
+  /** Defender-option node budget per verified candidate */
+  verifyBudget?: number
   /** Evaluation function (defaults to the active weights) - enables eval A/B */
   evalFn?: EvalFn
 }
@@ -64,14 +69,23 @@ export function searchTurnLines(
   player: PlayerId,
   options: TurnSearchOptions = {},
 ): TurnLine[] {
-  const { beamWidth = 24, maxDepth = 20, topK = 3, maxExpansions = 20000, verifyTop = 8 } = options
-  const ev = options.evalFn ?? evaluateState
+  const {
+    beamWidth = 24,
+    maxDepth = 20,
+    topK = 3,
+    maxExpansions = 20000,
+    verifyTop = 8,
+    verifyBudget = 4000,
+  } = options
+  const ev = memoizeEval(options.evalFn ?? evaluateState)
   if (whoActs(root) !== player) return []
 
   const baselineState = endTurnState(root, player)
   const baseline = baselineState ? ev(baselineState, player) : 0.5
 
-  let frontier: Node[] = [{ state: root, actions: [], labels: [], stepScores: [], done: false }]
+  let frontier: Node[] = [
+    { state: root, actions: [], labels: [], stepScores: [], done: false, score: ev(root, player) },
+  ]
   const finished: Node[] = []
   let expansions = 0
 
@@ -87,8 +101,8 @@ export function searchTurnLines(
       }
       if (actor !== player) {
         // Opponent interrupt (block/counter/trigger): their best reply, not a branch
-        const resolved = rolloutInterrupts(node.state, player)
-        next.push({ ...node, state: resolved })
+        const resolved = rolloutInterrupts(node.state, player, ev)
+        next.push({ ...node, state: resolved, score: ev(resolved, player) })
         continue
       }
 
@@ -96,12 +110,14 @@ export function searchTurnLines(
         if (expansions++ > maxExpansions) break
         const result = processAction(node.state, action, player)
         if (result.error) continue
+        const childScore = ev(result.state, player)
         const child: Node = {
           state: result.state,
           actions: [...node.actions, action],
           labels: [...node.labels, describeAction(node.state, action)],
-          stepScores: [...node.stepScores, ev(result.state, player)],
+          stepScores: [...node.stepScores, childScore],
           done: action.type === 'END_TURN' || !!result.state.winner,
+          score: childScore,
         }
         if (child.done) {
           finished.push(child)
@@ -114,8 +130,8 @@ export function searchTurnLines(
       }
     }
 
-    // Keep the most promising partial lines
-    next.sort((a, b) => ev(b.state, player) - ev(a.state, player))
+    // Keep the most promising partial lines (cached scores - never re-eval in a sort)
+    next.sort((a, b) => b.score - a.score)
     frontier = next.slice(0, beamWidth)
   }
   // Anything still open at the depth cap counts with its current score
@@ -125,7 +141,7 @@ export function searchTurnLines(
     .map((n) => ({
       actions: n.actions,
       labels: n.labels,
-      score: ev(n.state, player),
+      score: n.score,
       stepScores: n.stepScores,
     }))
     .sort((a, b) => b.score - a.score)
@@ -142,7 +158,7 @@ export function searchTurnLines(
   // but their published value is the minimax over the defender's real options -
   // "best line" must not depend on the opponent misdefending
   const verified: TurnLine[] = unique.map((c) => {
-    const v = verifyLine(root, player, c.actions, ev)
+    const v = verifyLine(root, player, c.actions, ev, verifyBudget)
     return {
       ...c,
       worstCase: v.value,
@@ -169,7 +185,14 @@ export class TurnPlannerAgent implements Agent {
   private searchOptions: TurnSearchOptions
 
   constructor(rand: () => number = Math.random, searchOptions: TurnSearchOptions = {}) {
-    this.searchOptions = { beamWidth: 16, verifyTop: 4, topK: 1, ...searchOptions }
+    this.searchOptions = {
+      beamWidth: 16,
+      verifyTop: 4,
+      topK: 1,
+      maxExpansions: 6000,
+      verifyBudget: 1200,
+      ...searchOptions,
+    }
     this.greedy = new GreedyAgent(rand, this.searchOptions.evalFn ?? evaluateState)
   }
 
@@ -201,6 +224,25 @@ export class TurnPlannerAgent implements Agent {
   }
 }
 
+/** Per-search eval memo. States are immutable objects, and the beam, the
+ * verifier and greedy repairs all revisit the same ones; key by object identity. */
+function memoizeEval(fn: EvalFn): EvalFn {
+  const cache = new WeakMap<GameState, { p1?: number; p2?: number }>()
+  return (state, player) => {
+    let entry = cache.get(state)
+    if (!entry) {
+      entry = {}
+      cache.set(state, entry)
+    }
+    const key = player === 'player1' ? 'p1' : 'p2'
+    const hit = entry[key as 'p1' | 'p2']
+    if (hit !== undefined) return hit
+    const value = fn(state, player)
+    entry[key as 'p1' | 'p2'] = value
+    return value
+  }
+}
+
 // ─── Adversarial verification ────────────────────────────────────────────────
 
 interface VerifyOutcome {
@@ -220,8 +262,9 @@ function verifyLine(
   player: PlayerId,
   actions: GameAction[],
   ev: EvalFn,
+  nodes = 4000,
 ): VerifyOutcome {
-  const budget = { nodes: 4000 }
+  const budget = { nodes }
   const branches: { label: string; value: number }[] = []
   const value = verifyRec(root, player, actions, 0, budget, branches, ev)
   return { value, branches }
