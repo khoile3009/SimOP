@@ -759,6 +759,7 @@ function matchesGuard(cardId: string, g: SelectFilter): boolean {
   if (g.costAtMost !== undefined && d.cost > g.costAtMost) return false
   if (g.baseCostAtMost !== undefined && d.cost > g.baseCostAtMost) return false
   if (g.basePowerAtMost !== undefined && (d.power ?? 0) > g.basePowerAtMost) return false
+  if (g.basePowerIs !== undefined && (d.power ?? 0) !== g.basePowerIs) return false
   if (g.baseCostAtLeast !== undefined && d.cost < g.baseCostAtLeast) return false
   if (g.basePowerAtLeast !== undefined && (d.power ?? 0) < g.basePowerAtLeast) return false
   if (g.powerAtLeast !== undefined && (d.power ?? 0) < g.powerAtLeast) return false
@@ -903,8 +904,21 @@ export function fireDef(cardId: string, defIndex: number, policy: Policy): DefFi
         const { state: st, card } = addHand(s, owner, cardId)
         s = st
         const kick = { type: 'PLAY_CARD', cardInstanceId: card.instanceId } as const
-        const v = validateAction(s, kick, owner)
-        if (!v.valid) return result('notFired', `PLAY_CARD refused: ${v.reason}`)
+        let v = validateAction(s, kick, owner)
+        if (!v.valid) {
+          // Conds that cap field DON below the card's cost (ST10-008) make a
+          // rules-legal play impossible; a one-shot discount stands in for the
+          // effect-play that reaches these cards in real games
+          s = {
+            ...s,
+            playDiscounts: {
+              ...s.playDiscounts,
+              [owner]: [...(s.playDiscounts?.[owner] ?? []), { amount: data.cost }],
+            },
+          }
+          v = validateAction(s, kick, owner)
+          if (!v.valid) return result('notFired', `PLAY_CARD refused: ${v.reason}`)
+        }
         driven = drive(processAction(s, kick, owner).state, policy, rand)
         break
       }

@@ -185,6 +185,21 @@
       afterstates — decision-supervised, not outcome-supervised — and/or
       MCTS-in-the-loop evaluation during training. Planner-mediated eval and
       planner data generation both blocked on the turnSearch perf issue below.
+- [x] ST starter-deck ingestion — DONE (Oct 2026). All 35 starter decks on optcgapi
+      (ST-01..ST-36, no ST-29) ingest as one combined ST module: 365 cards, zero
+      MISSING, 72 SIMPLIFIED notes (house classes: DON!!-X cost-area debt, life
+      scry, reveal-stays-on-top, opponent-chooses-by-declining). Ingest patch:
+      starter decks live under /api/decks/ST-NN/ (not /sets/), routed by ST\d+-
+      prefix; scripts/match-reprints.ts built for exact functional reprints (ST
+      found 0 — starter printings word effects differently than their OP
+      successors, e.g. no [Once Per Turn] marks). Engine additions stayed tiny
+      and generic: noBlockPowerAtLeast flag (ST01 Usopp), detachDon +
+      trashFaceUpLife ops (ST28 Momonosuke, ST13 Ace), faceUpLifeToDeckBottom
+      leader rule (ST13 Luffy), searchTop faceUp life placement, basePowerIs /
+      basePowerAtMost filters, minSelfCharsPoweredAtLeast /
+      minSelfCharsBasePowerAtLeast/Is conds. Pool now 2,662 cards / 22 modules.
+      Certified: deffire 100% (8715 def-policy pairs, 0 errors), 1600-game
+      fleet zero violations, 174 tests green.
 - [ ] M7 Online multiplayer (original P2) — serializable actions make this feasible whenever.
 
 ## Tasks

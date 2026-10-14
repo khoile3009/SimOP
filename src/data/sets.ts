@@ -49,6 +49,10 @@ import { OP17_EFFECTS, OP17_STATICS, KEYWORD_ONLY_OP17, COVERAGE_NOTES_OP17 } fr
 import op14Cards from './op14/cards.json'
 import op14Attrs from './op14/battleAttributes.json'
 import { OP14_EFFECTS, OP14_STATICS, KEYWORD_ONLY_OP14, COVERAGE_NOTES_OP14 } from './op14/effects'
+import stCards from './st/cards.json'
+import stAttrs from './st/battleAttributes.json'
+import stReprints from './st/reprints.json'
+import { ST_EFFECTS, ST_STATICS, KEYWORD_ONLY_ST, COVERAGE_NOTES_ST } from './st/effects'
 import prb01Cards from './prb01/cards.json'
 import prb01Attrs from './prb01/battleAttributes.json'
 import {
@@ -270,6 +274,16 @@ export const SET_MODULES: SetModule[] = [
     statics: EB04_STATICS,
     keywordOnly: KEYWORD_ONLY_EB04,
     notes: COVERAGE_NOTES_EB04,
+  },
+  {
+    code: 'ST',
+    cards: stCards as CardData[],
+    battleAttributes: stAttrs,
+    effects: ST_EFFECTS,
+    statics: ST_STATICS,
+    keywordOnly: KEYWORD_ONLY_ST,
+    notes: COVERAGE_NOTES_ST,
+    reprints: stReprints,
   },
   {
     code: 'PRB01',

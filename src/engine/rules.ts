@@ -309,6 +309,10 @@ function validateActivateBlocker(
     if (lock.present && getEffectivePower(state, blocker) <= lock.value) {
       return { valid: false, reason: 'This Character cannot block this attack' }
     }
+    const highLock = getFlag(state, attacker, 'noBlockPowerAtLeast')
+    if (highLock.present && getEffectivePower(state, blocker) >= highLock.value) {
+      return { valid: false, reason: 'This Character cannot block this attack' }
+    }
     const costLock = getFlag(state, attacker, 'noBlockCostAtMost')
     if (costLock.present && getEffectiveFieldCost(state, blocker) <= costLock.value) {
       return { valid: false, reason: 'This Character cannot block this attack' }

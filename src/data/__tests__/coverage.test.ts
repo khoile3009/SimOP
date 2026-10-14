@@ -18,7 +18,8 @@ describe.each(SET_MODULES.map((s) => [s.code, s] as const))('%s coverage ledger'
         card.id in set.statics ||
         card.id in CARD_RULES ||
         set.keywordOnly.includes(card.id) ||
-        card.id in set.notes
+        card.id in set.notes ||
+        card.id in (set.reprints ?? {})
       if (!covered) unaccounted.push(`${card.id} ${card.name}: ${card.effectText.slice(0, 60)}`)
     }
     expect(unaccounted).toEqual([])
@@ -28,6 +29,7 @@ describe.each(SET_MODULES.map((s) => [s.code, s] as const))('%s coverage ledger'
     const unaccounted: string[] = []
     for (const card of set.cards) {
       if (!card.triggerText) continue
+      if (card.id in (set.reprints ?? {})) continue
       const hasTriggerDef = (set.effects[card.id] ?? []).some((d) => d.timing === 'trigger')
       if (!hasTriggerDef && !(card.id in set.notes)) {
         unaccounted.push(`${card.id} ${card.name}: [Trigger] ${card.triggerText.slice(0, 60)}`)

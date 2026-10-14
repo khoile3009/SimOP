@@ -203,6 +203,12 @@ export interface Cond {
   allSelfCharsNoCounter?: boolean
   /** At most `count` of your characters have effective power >= `power` (Brownbeard) */
   maxSelfCharsPoweredAtLeast?: { power: number; count: number }
+  /** At least `count` of your characters have effective power >= `power` (ST21 Mole Pistol) */
+  minSelfCharsPoweredAtLeast?: { power: number; count: number }
+  /** At least `count` of your characters have PRINTED power >= `power` (ST30 leader) */
+  minSelfCharsBasePowerAtLeast?: { power: number; count: number }
+  /** At least `count` of your characters have PRINTED power EXACTLY `power` (ST30 events) */
+  minSelfCharsBasePowerIs?: { power: number; count: number }
   /** Rested DON!! in your cost area (Caribou) */
   minSelfRestedDon?: number
   /** Your leader has ANY of these types */
@@ -330,6 +336,8 @@ export interface SelectFilter {
   basePowerAtMost?: number
   /** PRINTED power floor ("6000 base power or more") */
   basePowerAtLeast?: number
+  /** Exact PRINTED power ("with 6000 base power") */
+  basePowerIs?: number
   /** The card has at least this many DON!! given ("with 2 or more DON!! cards given") */
   attachedDonAtLeast?: number
   /** PRINTED cost cap ("with a base cost of 4 or less") - ignores cost modifiers */
@@ -413,6 +421,7 @@ export type FlagName =
   | 'taunt' // opponent may only attack this card
   | 'noBattleKo' // cannot be K.O.'d in battle
   | 'noBlockPowerAtMost' // on an attacker: blockers with power <= value can't block
+  | 'noBlockPowerAtLeast' // on an attacker: blockers with power >= value can't block
   // Cannot be K.O.'d in battle by attackers with this battle attribute
   | 'noBattleKoBySlash'
   | 'noBattleKoByStrike'
@@ -474,6 +483,10 @@ export type EffectOp =
   | { op: 'trashLifeTop'; owner: 'self' | 'opponent'; count: number }
   /** Trash the controller's Life from the top until `count` remain (EB01 yellow) */
   | { op: 'trashLifeDownTo'; count: number }
+  /** Trash ALL of the controller's face-up Life cards (ST13 Ace) */
+  | { op: 'trashFaceUpLife' }
+  /** Return up to N DON!! given to the controller's cards to the cost area, rested */
+  | { op: 'detachDon'; count: number }
   /** Move a bound field character to the TOP of its owner's Life (Katakuri) */
   | { op: 'fieldToLife'; ref: string; faceUp?: boolean; bottom?: boolean }
   /** Move bound cards from the controller's trash to their deck bottom */
@@ -615,6 +628,8 @@ export type EffectOp =
       to: 'hand' | 'play' | 'trash' | 'life'
       restTo?: 'bottom' | 'trash'
       playRested?: boolean
+      /** to 'life' only: the card is placed face-up (ST13 Ace leader) */
+      faceUp?: boolean
     }
   /** Look at top N; chosen subset goes to the bottom (order kept), rest stays on top */
   | { op: 'scryBottom'; count: number }
@@ -795,6 +810,8 @@ export interface StaticDef {
     hasTrigger?: boolean
     /** Only targets with exactly this printed power */
     basePowerIs?: number
+    /** Only targets with printed power at most this (ST21 Franky) */
+    basePowerAtMost?: number
     /** Only targets with NO printed counter value (OP17 Kaido/Xebec hand auras) */
     noCounter?: boolean
   }

@@ -49,9 +49,11 @@ Path alias: `@/` maps to `src/` (configured in tsconfig and vite.config.ts).
 
 ## Effect System
 
-Coverage: FULL FIDELITY for every set on optcgapi — OP01–OP17, EB01–EB04, PRB01/02
-(2,278 cards; OP14/OP15 live under combined API slugs like OP14-EB04, routed by
-card_set_id prefix — scripts/ingest.ts takes comma-joined slugs). The SIMPLIFIED
+Coverage: FULL FIDELITY for every set on optcgapi — OP01–OP17, EB01–EB04, PRB01/02,
+plus the ST starter decks (2,662 cards; OP14/OP15 live under combined API slugs like
+OP14-EB04, routed by card_set_id prefix — scripts/ingest.ts takes comma-joined slugs;
+ST decks live under /api/decks/ST-NN/ and ingest as one combined ST module via
+`npm run ingest -- ST-01,ST-02,... ST`). The SIMPLIFIED
 ledger holds only rules-equivalent conveniences, ordering nuances and API
 transcriptions. Every card is automated via effect defs +
 statics in `src/data/<set>/effects.ts`, printed-keyword parsing, or the rules layer;

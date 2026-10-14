@@ -37,6 +37,8 @@ export interface CardRules {
   donDeckSize?: number
   /** On a LEADER: an empty deck loses at the END of that turn, not on the draw (OP15 Brook) */
   deckOutAtTurnEnd?: boolean
+  /** On a LEADER: face-up Life taken as damage goes to the deck bottom, not the hand (ST13 Luffy) */
+  faceUpLifeToDeckBottom?: boolean
 }
 
 export const CARD_RULES: Record<string, CardRules> = {
@@ -66,6 +68,10 @@ export const CARD_RULES: Record<string, CardRules> = {
   'EB02-016': { extraNames: ['Tony Tony.Chopper'] }, // Chopperman
   'EB02-024': { extraNames: ['Usopp'] }, // Sogeking
   'EB04-038': { extraNames: ['Trafalgar Law', 'Donquixote Rosinante'] }, // Rosinante & Law
+  'ST30-001': { extraNames: ['Monkey.D.Luffy', 'Portgas.D.Ace'] }, // Luffy & Ace
+  'ST12-001': { extraNames: ['Roronoa Zoro', 'Sanji'] }, // Zoro & Sanji
+  // ST13-003 Luffy leader: face-up Life taken as damage goes to the deck bottom
+  'ST13-003': { faceUpLifeToDeckBottom: true },
   'OP03-040': { deckOutWins: true }, // Nami leader: mill yourself to victory
 }
 

@@ -34,6 +34,10 @@ interface ApiRow {
  * names here as sets introduce them - the report flags any string that fails
  * to segment. */
 const SEED_TYPES = [
+  // ST vocabulary
+  "Buggy's Delivery",
+  'Bowin Island',
+  'Straw Hat Cre', // ST14-014 API typo, aliased below
   // EB02 vocabulary
   'Accino Family',
   'Fake Straw Hat Crew',
@@ -189,6 +193,7 @@ const SEED_TYPES = [
 const TYPE_ALIASES: Record<string, string> = {
   Film: 'FILM',
   Smile: 'SMILE',
+  'Straw Hat Cre': 'Straw Hat Crew',
 }
 
 function knownTypes(): string[] {
@@ -268,7 +273,9 @@ async function main() {
 
   const rows: ApiRow[] = []
   for (const slug of slugs) {
-    const res = await fetch(`https://optcgapi.com/api/sets/${slug}/`)
+    // Starter/structure decks live under /decks/, boosters under /sets/
+    const endpoint = slug.startsWith('ST-') ? 'decks' : 'sets'
+    const res = await fetch(`https://optcgapi.com/api/${endpoint}/${slug}/`)
     if (!res.ok) throw new Error(`API ${res.status} for set ${slug}`)
     const batch = (await res.json()) as ApiRow[]
     if (!Array.isArray(batch)) {
@@ -280,8 +287,12 @@ async function main() {
   // Dedupe parallel arts (prefer the non-Parallel row) and drop alt-art
   // reprints of OTHER sets' cards that the API lists inside this set
   const byId = new Map<string, ApiRow>()
+  // The merged 'ST' module keeps every STnn-* row; everything else routes by
+  // its exact set prefix
+  const keep = (id: string) =>
+    setCode === 'ST' ? /^ST\d+-/.test(id) : id.startsWith(setCode + '-')
   for (const row of rows) {
-    if (!row.card_set_id.startsWith(setCode + '-')) continue
+    if (!keep(row.card_set_id)) continue
     const existing = byId.get(row.card_set_id)
     const isParallel = (row.card_name ?? '').includes('(Parallel)')
     if (!existing || ((existing.card_name ?? '').includes('(Parallel)') && !isParallel)) {

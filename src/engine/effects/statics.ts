@@ -37,6 +37,27 @@ export function evalCond(
     ).length
     if (n > q.count) return false
   }
+  if (cond.minSelfCharsPoweredAtLeast !== undefined) {
+    const q = cond.minSelfCharsPoweredAtLeast
+    const n = state.players[controller].characters.filter(
+      (c) => condPower(state, c) >= q.power,
+    ).length
+    if (n < q.count) return false
+  }
+  if (cond.minSelfCharsBasePowerAtLeast !== undefined) {
+    const q = cond.minSelfCharsBasePowerAtLeast
+    const n = state.players[controller].characters.filter(
+      (c) => (getCardById(c.cardId)?.power ?? 0) >= q.power,
+    ).length
+    if (n < q.count) return false
+  }
+  if (cond.minSelfCharsBasePowerIs !== undefined) {
+    const q = cond.minSelfCharsBasePowerIs
+    const n = state.players[controller].characters.filter(
+      (c) => (getCardById(c.cardId)?.power ?? 0) === q.power,
+    ).length
+    if (n < q.count) return false
+  }
   if (cond.allSelfCharsNoCounter !== undefined) {
     const clean = state.players[controller].characters.every(
       (c) => (getCardById(c.cardId)?.counter ?? 0) <= 0,
@@ -610,6 +631,9 @@ export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
   'hasOtherCharacterTypedColor',
   'allSelfCharsNoCounter',
   'maxSelfCharsPoweredAtLeast',
+  'minSelfCharsPoweredAtLeast',
+  'minSelfCharsBasePowerAtLeast',
+  'minSelfCharsBasePowerIs',
   'lacksCharTypedCostAtLeast',
   'charDisadvantageAtLeast',
   'atMostLifeOfOpp',
@@ -726,6 +750,12 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
         if (
           t.basePowerIs !== undefined &&
           (getCardById(card.cardId)?.power ?? 0) !== t.basePowerIs
+        ) {
+          continue
+        }
+        if (
+          t.basePowerAtMost !== undefined &&
+          (getCardById(card.cardId)?.power ?? 0) > t.basePowerAtMost
         ) {
           continue
         }

@@ -436,6 +436,52 @@ function executeOp(
       return advance(s)
     }
 
+    case 'trashFaceUpLife': {
+      const p = state.players[controller]
+      const faceUp = p.lifeCards.filter((c) => c.revealed)
+      if (faceUp.length === 0) return advance(state)
+      let s: GameState = {
+        ...state,
+        players: {
+          ...state.players,
+          [controller]: {
+            ...p,
+            lifeCards: p.lifeCards.filter((c) => !c.revealed),
+            trash: [...p.trash, ...faceUp],
+          },
+        },
+      }
+      for (let i = 0; i < faceUp.length; i++) {
+        s = emitEngineEvent(s, { kind: 'lifeRemoved', player: controller })
+      }
+      return advance(s)
+    }
+
+    case 'detachDon': {
+      const p = state.players[controller]
+      let remaining = op.count
+      const returned: GameCard[] = []
+      const strip = (c: GameCard): GameCard => {
+        if (remaining <= 0 || c.attachedDon === 0) return c
+        const take = Math.min(remaining, c.attachedDon)
+        remaining -= take
+        for (let i = 0; i < take; i++) {
+          returned.push({ ...createGameCard('DON', controller), isRested: true })
+        }
+        return { ...c, attachedDon: c.attachedDon - take }
+      }
+      const leader = strip(p.leader)
+      const characters = p.characters.map(strip)
+      if (returned.length === 0) return advance(state)
+      return advance({
+        ...state,
+        players: {
+          ...state.players,
+          [controller]: { ...p, leader, characters, donArea: [...p.donArea, ...returned] },
+        },
+      })
+    }
+
     case 'trashLifeDownTo': {
       let s = state
       while (s.players[controller].lifeCards.length > op.count) {
@@ -1659,7 +1705,7 @@ function executeOp(
       for (const id of chosen) {
         if (op.to === 'play') s = playCardFree(s, controller, id, op.playRested ?? false, events)
         else if (op.to === 'trash') s = deckToTrash(s, controller, id)
-        else if (op.to === 'life') s = deckCardToLifeTop(s, controller, id)
+        else if (op.to === 'life') s = deckCardToLifeTop(s, controller, id, op.faceUp)
         else s = deckToHand(s, controller, id)
       }
       const rest = top.filter((c) => !chosen.has(c.instanceId)).map((c) => c.instanceId)
@@ -2161,6 +2207,9 @@ function selectOptions(state: GameState, frame: EffectFrame, filter: SelectFilte
       if (filter.basePowerAtLeast !== undefined && (data?.power ?? 0) < filter.basePowerAtLeast) {
         return false
       }
+      if (filter.basePowerIs !== undefined && (data?.power ?? 0) !== filter.basePowerIs) {
+        return false
+      }
       if (filter.attachedDonAtLeast !== undefined && c.attachedDon < filter.attachedDonAtLeast) {
         return false
       }
@@ -2236,7 +2285,12 @@ function matchCardData(cardId: string, filter: CardDataFilter): boolean {
 // ─── State helpers ───────────────────────────────────────────────────────────
 
 /** Pull one card out of the controller's deck onto the top of their Life. */
-function deckCardToLifeTop(state: GameState, controller: PlayerId, instanceId: string): GameState {
+function deckCardToLifeTop(
+  state: GameState,
+  controller: PlayerId,
+  instanceId: string,
+  faceUp?: boolean,
+): GameState {
   const p = state.players[controller]
   const idx = p.deck.findIndex((c) => c.instanceId === instanceId)
   if (idx < 0) return state
@@ -2246,7 +2300,11 @@ function deckCardToLifeTop(state: GameState, controller: PlayerId, instanceId: s
     ...state,
     players: {
       ...state.players,
-      [controller]: { ...p, deck, lifeCards: [{ ...card, revealed: false }, ...p.lifeCards] },
+      [controller]: {
+        ...p,
+        deck,
+        lifeCards: [{ ...card, revealed: faceUp ?? false }, ...p.lifeCards],
+      },
     },
   }
 }
@@ -2629,6 +2687,9 @@ function guardTargetMatches(state: GameState, card: GameCard, g: SelectFilter): 
     g.basePowerAtLeast !== undefined &&
     (getCardById(card.cardId)?.power ?? 0) < g.basePowerAtLeast
   ) {
+    return false
+  }
+  if (g.basePowerIs !== undefined && (getCardById(card.cardId)?.power ?? 0) !== g.basePowerIs) {
     return false
   }
   if (g.attributeIs && getBattleAttribute(card.cardId) !== g.attributeIs) return false

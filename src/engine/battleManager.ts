@@ -2,7 +2,7 @@ import type { GameState, GameCard, GameEvent, PlayerId } from './types'
 import type { FlagName } from './effects/ast'
 import { getCardById } from '@/data/cardService'
 import { getOpponent, expireModifiers } from './turnManager'
-import { getBattleAttribute } from './rulesLayer'
+import { getBattleAttribute, getCardRules } from './rulesLayer'
 import { getBattlePower } from './powerCalc'
 import { hasKeyword } from './keywords'
 import { koById, queueEffects, removeFromField, emitEngineEvent } from './effects/interpreter'
@@ -256,6 +256,24 @@ export function dealLifeDamage(
         },
       }
       events.push({ type: 'LIFE_BANISHED', playerId, description: 'Life card banished to trash' })
+      s = damageEvent(s)
+      s = emitEngineEvent(s, { kind: 'lifeRemoved', player: playerId })
+      const zeroed = lifeZeroCheck(s)
+      if (zeroed) return zeroed
+    } else if (lifeCard.revealed && getCardRules(player.leader.cardId)?.faceUpLifeToDeckBottom) {
+      // ST13 Luffy's rule: face-up Life goes to the deck bottom instead of the
+      // hand; no [Trigger] prompt (the card never enters the hand)
+      s = {
+        ...s,
+        players: {
+          ...s.players,
+          [playerId]: {
+            ...player,
+            lifeCards,
+            deck: [...player.deck, { ...lifeCard, revealed: false, seenByOwner: true }],
+          },
+        },
+      }
       s = damageEvent(s)
       s = emitEngineEvent(s, { kind: 'lifeRemoved', player: playerId })
       const zeroed = lifeZeroCheck(s)
