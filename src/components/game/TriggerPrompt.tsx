@@ -19,7 +19,12 @@ export default function TriggerPrompt({ gameState, onResolve }: TriggerPromptPro
       <div className="glass-panel flex flex-col items-center gap-4 p-6">
         <p className="text-sm font-medium">Trigger available</p>
         {card && (
-          <img src={getCardImageUrl(card.cardId)} alt={data?.name ?? ''} className="w-32 rounded" draggable={false} />
+          <img
+            src={getCardImageUrl(card.cardId)}
+            alt={data?.name ?? ''}
+            className="w-32 rounded"
+            draggable={false}
+          />
         )}
         {data?.triggerText && (
           <p className="max-w-xs text-center text-xs text-text-secondary">

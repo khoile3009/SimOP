@@ -82,13 +82,15 @@ function DraggableHandCard({
         <CardActionPopup
           actions={[
             ...(cardActions.isMainPhase && !cardActions.isInBattle
-              ? [{
-                  label: 'Play',
-                  onClick: () => cardActions.onPlay(card.instanceId),
-                  primary: canAfford,
-                  disabled: !canAfford,
-                  hint: !canAfford && cardData ? `Need ${cardData.cost} DON` : undefined,
-                }]
+              ? [
+                  {
+                    label: 'Play',
+                    onClick: () => cardActions.onPlay(card.instanceId),
+                    primary: canAfford,
+                    disabled: !canAfford,
+                    hint: !canAfford && cardData ? `Need ${cardData.cost} DON` : undefined,
+                  },
+                ]
               : []),
             { label: 'Inspect', onClick: () => cardActions.onInspect(card.instanceId) },
           ]}
@@ -99,7 +101,16 @@ function DraggableHandCard({
   )
 }
 
-export default function HandZone({ cards, faceDown, flipped, selectedId, onSelect, cardActions, counterMode, pickMode }: HandZoneProps) {
+export default function HandZone({
+  cards,
+  faceDown,
+  flipped,
+  selectedId,
+  onSelect,
+  cardActions,
+  counterMode,
+  pickMode,
+}: HandZoneProps) {
   if (faceDown) {
     // Revealed cards (effect reveals, bounces, life hits) show their face; the
     // rest stay hidden. Effect picks over this hand are blind: card backs are
@@ -204,11 +215,14 @@ export default function HandZone({ cards, faceDown, flipped, selectedId, onSelec
                     className="w-full"
                     draggable={false}
                   />
-                  {selectMode.showCounterValue && hasCounter && cardData && cardData.counter !== null && (
-                    <span className="absolute bottom-0.5 left-0.5 rounded bg-action-green/90 px-1 text-[10px] font-bold text-white">
-                      +{cardData.counter}
-                    </span>
-                  )}
+                  {selectMode.showCounterValue &&
+                    hasCounter &&
+                    cardData &&
+                    cardData.counter !== null && (
+                      <span className="absolute bottom-0.5 left-0.5 rounded bg-action-green/90 px-1 text-[10px] font-bold text-white">
+                        +{cardData.counter}
+                      </span>
+                    )}
                 </button>
               </div>
             )
@@ -219,7 +233,10 @@ export default function HandZone({ cards, faceDown, flipped, selectedId, onSelec
   }
 
   return (
-    <div className={`flex ${flipped ? 'items-start' : 'items-end'} justify-center py-2`} style={{ minHeight: 100 }}>
+    <div
+      className={`flex ${flipped ? 'items-start' : 'items-end'} justify-center py-2`}
+      style={{ minHeight: 100 }}
+    >
       <div className="relative" style={{ width: totalWidth + cardWidth, height: 88 }}>
         {cards.map((card, i) => {
           const isSelected = selectedId === card.instanceId

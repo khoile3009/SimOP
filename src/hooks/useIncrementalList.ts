@@ -10,8 +10,13 @@ export function useIncrementalList<T>(items: T[], chunk = 60) {
   const [limit, setLimit] = useState(chunk)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  // New filter results restart the window
-  useEffect(() => setLimit(chunk), [items, chunk])
+  // New filter results restart the window (adjust-during-render, not an effect:
+  // React re-renders immediately with the reset limit, before painting)
+  const [prevItems, setPrevItems] = useState(items)
+  if (prevItems !== items) {
+    setPrevItems(items)
+    setLimit(chunk)
+  }
 
   useEffect(() => {
     const el = sentinelRef.current

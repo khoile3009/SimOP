@@ -13,7 +13,13 @@ interface DeckListProps {
   onChangeLeader: () => void
 }
 
-export default function DeckList({ deck, onRemove, onNameChange, onSave, onChangeLeader }: DeckListProps) {
+export default function DeckList({
+  deck,
+  onRemove,
+  onNameChange,
+  onSave,
+  onChangeLeader,
+}: DeckListProps) {
   const total = getTotalCards(deck)
   const leader = deck.leader ? getCardById(deck.leader) : null
   const leaderColors = getLeaderColors(deck.leader)

@@ -27,7 +27,13 @@ export default function ActionBar({
   const isInBattle = !!gameState.battle
   const activeDon = gameState.players[currentPlayer].donArea.filter((d) => !d.isRested).length
 
-  const actions: { label: string; onClick: () => void; primary?: boolean; disabled?: boolean; hint?: string }[] = []
+  const actions: {
+    label: string
+    onClick: () => void
+    primary?: boolean
+    disabled?: boolean
+    hint?: string
+  }[] = []
 
   if (selectedZone === 'hand' && isMainPhase && !isInBattle) {
     const canAfford = cardData ? activeDon >= cardData.cost : false

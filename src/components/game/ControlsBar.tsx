@@ -120,9 +120,7 @@ export default function ControlsBar({
   if (battle && battle.step === 'COUNTER') {
     return (
       <div className="flex flex-wrap items-center justify-center gap-3 py-2">
-        <span className="text-sm text-text-secondary">
-          Select counter cards from hand
-        </span>
+        <span className="text-sm text-text-secondary">Select counter cards from hand</span>
         {counterEvents.map((e) => (
           <button
             key={e.cardInstanceId}

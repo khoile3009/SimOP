@@ -179,7 +179,9 @@ export default function AnalyzePanel() {
                       (up to {pct(scoreFor(line.score))})
                     </span>
                   )}
-                  <span className={`text-xs tabular-nums ${delta >= 0 ? 'text-action-green' : 'text-life-red'}`}>
+                  <span
+                    className={`text-xs tabular-nums ${delta >= 0 ? 'text-action-green' : 'text-life-red'}`}
+                  >
                     {delta >= 0 ? '+' : ''}
                     {delta}pp vs pass
                   </span>

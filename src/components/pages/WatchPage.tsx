@@ -5,29 +5,36 @@ import { Wordmark } from '@/components/common/PageShell'
 import Button from '@/components/common/Button'
 import { legalActions, whoActs } from '@/engine/legalActions'
 import { useGameStore } from '@/stores/gameStore'
-import { RandomAgent, GreedyAgent, type Agent } from '@/ai/agents'
+import { useDeckStore } from '@/stores/deckStore'
+import type { Agent } from '@/ai/agents'
+import { AGENT_FACTORIES, type AgentKind } from '@/sim/benchmark'
 import { evaluateState } from '@/ai/evaluate'
-import { makeAutoDeck } from '@/sim/selfplay'
 import GameBoard from '@/components/game/GameBoard'
+import DeckSelect from '@/components/common/DeckSelect'
+import { resolveDeckChoice, type DeckChoice } from '@/components/common/deckChoice'
 
-type AgentKind = 'greedy' | 'random'
-
-function makeAgent(kind: AgentKind): Agent {
-  return kind === 'greedy' ? new GreedyAgent() : new RandomAgent()
-}
+const AGENT_KINDS: AgentKind[] = ['random', 'greedy', 'planner', 'mcts']
 
 export default function WatchPage() {
   const { gameState, startNewGame, dispatch } = useGameStore()
+  const { savedDecks } = useDeckStore()
   const [running, setRunning] = useState(false)
   const [speed, setSpeed] = useState(400)
   const [kinds, setKinds] = useState<Record<PlayerId, AgentKind>>({
     player1: 'greedy',
     player2: 'greedy',
   })
+  const [deck1Choice, setDeck1Choice] = useState<DeckChoice>({ kind: 'auto', leaderId: 'OP01-001' })
+  const [deck2Choice, setDeck2Choice] = useState<DeckChoice>({ kind: 'mirror' })
   const agentsRef = useRef<Record<PlayerId, Agent>>({
-    player1: makeAgent('greedy'),
-    player2: makeAgent('greedy'),
+    player1: AGENT_FACTORIES.greedy(Math.random),
+    player2: AGENT_FACTORIES.greedy(Math.random),
   })
+
+  const validDecks = savedDecks.filter((d) => d.leader && d.cards.length > 0)
+  const deck1 = resolveDeckChoice(deck1Choice, validDecks)
+  const deck2 = resolveDeckChoice(deck2Choice, validDecks, deck1)
+  const ready = deck1 !== null && deck2 !== null
 
   const stepOnce = () => {
     const state = useGameStore.getState().gameState
@@ -48,11 +55,12 @@ export default function WatchPage() {
   }, [running, gameState, speed])
 
   const start = () => {
+    if (!deck1 || !deck2) return
     agentsRef.current = {
-      player1: makeAgent(kinds.player1),
-      player2: makeAgent(kinds.player2),
+      player1: AGENT_FACTORIES[kinds.player1](Math.random),
+      player2: AGENT_FACTORIES[kinds.player2](Math.random),
     }
-    startNewGame(makeAutoDeck('OP01-001'), makeAutoDeck('OP01-001'))
+    startNewGame(deck1, deck2)
     setRunning(true)
   }
 
@@ -76,13 +84,16 @@ export default function WatchPage() {
               value={kinds[pid]}
               onChange={(e) => setKinds((k) => ({ ...k, [pid]: e.target.value as AgentKind }))}
             >
-              <option value="greedy">greedy</option>
-              <option value="random">random</option>
+              {AGENT_KINDS.map((k) => (
+                <option key={k} value={k}>
+                  {k}
+                </option>
+              ))}
             </select>
           </label>
         ))}
 
-        <Button size="sm" variant="success" onClick={start}>
+        <Button size="sm" variant="success" disabled={!ready} onClick={start}>
           New match
         </Button>
         {gameState && !gameState.winner && (
@@ -144,11 +155,30 @@ export default function WatchPage() {
           <GameBoard spectator />
         </div>
       ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-text-secondary">
-          <p className="font-display text-2xl font-bold tracking-wide text-text-primary">
-            Spectator mode
-          </p>
-          <p className="text-sm">Pick agents above and start a match to watch the bots play.</p>
+        <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-6 px-4">
+          <div className="flex flex-col items-center gap-1 text-center">
+            <p className="font-display text-2xl font-bold tracking-wide text-text-primary">
+              Spectator mode
+            </p>
+            <p className="text-sm text-text-secondary">
+              Pick the decks and agents, then watch the bots play.
+            </p>
+          </div>
+          <div className="glass-panel grid gap-4 px-5 py-4 sm:grid-cols-2">
+            <DeckSelect
+              label="Player 1 deck"
+              value={deck1Choice}
+              onChange={setDeck1Choice}
+              savedDecks={validDecks}
+            />
+            <DeckSelect
+              label="Player 2 deck"
+              value={deck2Choice}
+              onChange={setDeck2Choice}
+              savedDecks={validDecks}
+              allowMirror
+            />
+          </div>
         </div>
       )}
     </div>

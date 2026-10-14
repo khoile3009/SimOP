@@ -27,7 +27,10 @@ interface CardDetailProps {
 
 export default function CardDetail({ card, onClose }: CardDetailProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
       <div
         className="glass-panel mx-4 flex max-h-[90vh] w-full max-w-2xl gap-6 overflow-y-auto p-6"
         onClick={(e) => e.stopPropagation()}
@@ -39,10 +42,7 @@ export default function CardDetail({ card, onClose }: CardDetailProps) {
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <div className="flex items-start justify-between gap-2">
             <h2 className="text-xl font-bold">{card.name}</h2>
-            <button
-              onClick={onClose}
-              className="shrink-0 text-text-muted hover:text-text-primary"
-            >
+            <button onClick={onClose} className="shrink-0 text-text-muted hover:text-text-primary">
               ✕
             </button>
           </div>
@@ -54,7 +54,10 @@ export default function CardDetail({ card, onClose }: CardDetailProps) {
               {RARITY_LABEL[card.rarity] || card.rarity}
             </span>
             {card.color.map((c) => (
-              <span key={c} className={`rounded px-2 py-0.5 text-white ${COLOR_BADGES[c] || 'bg-gray-600'}`}>
+              <span
+                key={c}
+                className={`rounded px-2 py-0.5 text-white ${COLOR_BADGES[c] || 'bg-gray-600'}`}
+              >
                 {c}
               </span>
             ))}

@@ -8,9 +8,19 @@ interface AttackArrowProps {
 
 export default function AttackArrow({ sourceX, sourceY, lineRef }: AttackArrowProps) {
   return (
-    <svg className="pointer-events-none fixed inset-0 z-40" style={{ width: '100vw', height: '100vh' }}>
+    <svg
+      className="pointer-events-none fixed inset-0 z-40"
+      style={{ width: '100vw', height: '100vh' }}
+    >
       <defs>
-        <marker id="attack-arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+        <marker
+          id="attack-arrow"
+          markerWidth="10"
+          markerHeight="7"
+          refX="10"
+          refY="3.5"
+          orient="auto"
+        >
           <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
         </marker>
       </defs>

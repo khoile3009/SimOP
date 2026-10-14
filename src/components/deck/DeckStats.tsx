@@ -56,11 +56,7 @@ export default function DeckStats({ deck }: DeckStatsProps) {
     <div className="glass-panel p-3">
       <h3 className="mb-1 text-xs font-semibold uppercase text-text-muted">Cost Curve</h3>
 
-      <svg
-        viewBox={`0 0 ${CHART_W} ${CHART_H}`}
-        className="w-full"
-        style={{ maxHeight: 120 }}
-      >
+      <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} className="w-full" style={{ maxHeight: 120 }}>
         <defs>
           <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#3b82f6" />
@@ -79,14 +75,7 @@ export default function DeckStats({ deck }: DeckStatsProps) {
             <g key={cost}>
               {count > 0 && (
                 <>
-                  <rect
-                    x={x}
-                    y={y}
-                    width={barW}
-                    height={barH}
-                    rx={2}
-                    fill="url(#barGrad)"
-                  />
+                  <rect x={x} y={y} width={barW} height={barH} rx={2} fill="url(#barGrad)" />
                   <text
                     x={x + barW / 2}
                     y={y - 3}

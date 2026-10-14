@@ -19,18 +19,28 @@ interface LeaderZoneProps {
   choiceState?: 'chosen' | 'eligible' | 'excluded'
 }
 
-export default function LeaderZone({ leader, isSelected, onClick, cardActions, attackTargetId, choiceState }: LeaderZoneProps) {
+export default function LeaderZone({
+  leader,
+  isSelected,
+  onClick,
+  cardActions,
+  attackTargetId,
+  choiceState,
+}: LeaderZoneProps) {
   const cardData = getCardById(leader.cardId)
   const gameState = useGameStore((s) => s.gameState)
   const power = gameState ? getEffectivePower(gameState, leader) : 0
-  const canAttack = cardActions ? !leader.isRested && cardActions.isMainPhase && !cardActions.isInBattle : false
+  const canAttack = cardActions
+    ? !leader.isRested && cardActions.isMainPhase && !cardActions.isInBattle
+    : false
 
   // Draggable for attack (current player side)
-  const { ref: dragRef, attributes, listeners, isDragging } = useDragCard(
-    leader,
-    'character',
-    !canAttack || !cardActions,
-  )
+  const {
+    ref: dragRef,
+    attributes,
+    listeners,
+    isDragging,
+  } = useDragCard(leader, 'character', !canAttack || !cardActions)
 
   // Droppable as attack target (opponent side)
   const { setNodeRef: dropRef, isOver } = useDroppable({
@@ -73,13 +83,15 @@ export default function LeaderZone({ leader, isSelected, onClick, cardActions, a
           <CardActionPopup
             actions={[
               ...(cardActions.isMainPhase && !cardActions.isInBattle
-                ? [{
-                    label: 'Attack',
-                    onClick: () => cardActions.onAttack(leader.instanceId),
-                    primary: canAttack,
-                    disabled: !canAttack,
-                    hint: !canAttack ? 'Rested' : undefined,
-                  }]
+                ? [
+                    {
+                      label: 'Attack',
+                      onClick: () => cardActions.onAttack(leader.instanceId),
+                      primary: canAttack,
+                      disabled: !canAttack,
+                      hint: !canAttack ? 'Rested' : undefined,
+                    },
+                  ]
                 : []),
               { label: 'Inspect', onClick: () => cardActions.onInspect(leader.instanceId) },
             ]}

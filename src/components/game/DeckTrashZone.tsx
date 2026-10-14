@@ -11,7 +11,12 @@ export default function DeckTrashZone({ deckCount, trashCount }: DeckTrashZonePr
       {/* Deck */}
       <div className="relative">
         <div className="h-20 w-14 overflow-hidden rounded bg-ocean-800">
-          <img src={getCardBackUrl()} alt="Deck" className="h-full w-full object-cover" draggable={false} />
+          <img
+            src={getCardBackUrl()}
+            alt="Deck"
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
         </div>
         <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-ocean-600 px-1 text-[10px] font-bold">
           {deckCount}

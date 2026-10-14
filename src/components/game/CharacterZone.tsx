@@ -50,11 +50,12 @@ function CharacterCard({
     : false
 
   // Draggable for attack (current player side)
-  const { ref: dragRef, attributes, listeners, isDragging } = useDragCard(
-    char,
-    'character',
-    !canAttack || !cardActions,
-  )
+  const {
+    ref: dragRef,
+    attributes,
+    listeners,
+    isDragging,
+  } = useDragCard(char, 'character', !canAttack || !cardActions)
 
   // Droppable as attack target (opponent side)
   const { setNodeRef: dropRef, isOver } = useDroppable({
@@ -89,9 +90,7 @@ function CharacterCard({
         <div className="absolute inset-x-0 bottom-0 bg-black/70 px-1 py-0.5 text-center">
           <span className="text-[10px] font-semibold tabular-nums">{power}</span>
           {char.attachedDon > 0 && (
-            <span className="ml-0.5 text-[9px] text-don-gold">
-              {'◆'.repeat(char.attachedDon)}
-            </span>
+            <span className="ml-0.5 text-[9px] text-don-gold">{'◆'.repeat(char.attachedDon)}</span>
           )}
         </div>
       </button>
@@ -99,13 +98,15 @@ function CharacterCard({
         <CardActionPopup
           actions={[
             ...(cardActions.isMainPhase && !cardActions.isInBattle
-              ? [{
-                  label: 'Attack',
-                  onClick: () => cardActions.onAttack(char.instanceId),
-                  primary: canAttack,
-                  disabled: !canAttack,
-                  hint: hasSummonSickness ? 'Just played' : !canAttack ? 'Rested' : undefined,
-                }]
+              ? [
+                  {
+                    label: 'Attack',
+                    onClick: () => cardActions.onAttack(char.instanceId),
+                    primary: canAttack,
+                    disabled: !canAttack,
+                    hint: hasSummonSickness ? 'Just played' : !canAttack ? 'Rested' : undefined,
+                  },
+                ]
               : []),
             { label: 'Inspect', onClick: () => cardActions.onInspect(char.instanceId) },
           ]}
@@ -116,7 +117,15 @@ function CharacterCard({
   )
 }
 
-export default function CharacterZone({ characters, selectedId, onSelect, droppableId, cardActions, attackTargets, choice }: CharacterZoneProps) {
+export default function CharacterZone({
+  characters,
+  selectedId,
+  onSelect,
+  droppableId,
+  cardActions,
+  attackTargets,
+  choice,
+}: CharacterZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: droppableId ?? 'character-zone' })
 
   return (
