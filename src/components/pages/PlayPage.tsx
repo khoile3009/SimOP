@@ -39,7 +39,8 @@ function useAiDriver() {
 const DIFFICULTIES = [
   { value: 'greedy', label: 'Greedy', hint: 'Easy · instant moves' },
   { value: 'planner', label: 'Planner', hint: 'Medium · plans whole turns' },
-  { value: 'mcts', label: 'MCTS', hint: 'Hard · tree search' },
+  { value: 'honest', label: 'Honest MCTS', hint: 'Hard · fair, never peeks' },
+  { value: 'mcts', label: 'Oracle MCTS', hint: 'Expert · sees your hand' },
 ] as const
 
 export default function PlayPage() {

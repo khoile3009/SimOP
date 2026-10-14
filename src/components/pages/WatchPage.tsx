@@ -13,7 +13,7 @@ import GameBoard from '@/components/game/GameBoard'
 import DeckSelect from '@/components/common/DeckSelect'
 import { resolveDeckChoice, DEFAULT_CHOICE, type DeckChoice } from '@/components/common/deckChoice'
 
-const AGENT_KINDS: AgentKind[] = ['random', 'greedy', 'planner', 'mcts']
+const AGENT_KINDS: AgentKind[] = ['random', 'greedy', 'planner', 'mcts', 'honest']
 
 export default function WatchPage() {
   const { gameState, startNewGame, dispatch } = useGameStore()

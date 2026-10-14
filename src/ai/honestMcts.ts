@@ -36,8 +36,11 @@ export class HonestMctsAgent implements Agent {
 
   constructor(rand: () => number = Math.random, options: HonestMctsOptions = {}) {
     this.rand = rand
-    this.worlds = options.worlds ?? 6
-    this.iterations = options.iterations ?? 120
+    // Tuned Oct 2026 (scripts/tune-honest.ts): per-world budget parity matters -
+    // 4x500 beat planner 61% and the OMNISCIENT mcts 57% (world-averaging
+    // regularizes what the cheater overfits)
+    this.worlds = options.worlds ?? 4
+    this.iterations = options.iterations ?? 500
     this.exploration = options.exploration
     this.evalFn = options.evalFn
   }
