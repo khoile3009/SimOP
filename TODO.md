@@ -1,5 +1,9 @@
 ## Roadmap
 
+> Bot improvement plan (Oct 2026, post full-pool coverage): see [BOT_PLAN.md](BOT_PLAN.md) -
+> counter-economy eval terms first (playing a counter card must price the lost defense),
+> then planner profiling, gen-3 learned eval (pairwise ranking / search bootstrap), IS-MCTS.
+
 - [x] M1 Rules-solid core — engine gaps closed, fleet-certified (1200 games, zero violations/unused effects)
 - [x] M2 Analyzer — eval bar, adversarially-verified turn lines, lethal certificates, Honest mode
 - [x] M3 MCTS — perfect-info UCT beats planner (ladder: mcts 73% > planner 50% > greedy 27%); determinization; difficulty select
