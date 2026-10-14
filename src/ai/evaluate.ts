@@ -23,7 +23,12 @@ export type Features = Record<string, number>
 export type Weights = Record<string, number>
 
 export const HAND_WEIGHTS: Weights = {
-  lifeDiff: 0.5,
+  // Life value is CONVEX: early hits are nearly card-neutral (the life card
+  // joins the hand), so the flat per-life term is small and lifeDanger prices
+  // the bottom of the stack - this is what lets the bots take early damage
+  // instead of burning counters at 5 life (over-countering)
+  lifeDiff: 0.2,
+  lifeDanger: 0.35,
   lifeZero: 1.5,
   handCountDiff: 0.07,
   counterHandDiff: 0.05,
@@ -161,6 +166,8 @@ export function featureVector(state: GameState, playerId: PlayerId): Features {
   const them = sideStats(state, opp)
   const f: Features = {
     lifeDiff: me.life - them.life,
+    // Escalating penalty below 3 life (0 at 3+, 3 at 0); positive = THEY are in danger
+    lifeDanger: Math.max(0, 3 - them.life) - Math.max(0, 3 - me.life),
     lifeZero: (them.life === 0 ? 1 : 0) - (me.life === 0 ? 1 : 0),
     handCountDiff: me.hand - them.hand,
     counterHandDiff: (me.counterHand - them.counterHand) / 1000,

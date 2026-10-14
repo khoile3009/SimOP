@@ -15,13 +15,17 @@ import { HAND_WEIGHTS, makeEval, type EvalFn, type Weights } from '@/ai/evaluate
 const gamesGreedy = Number(process.argv[2] ?? 60)
 const gamesMcts = Number(process.argv[3] ?? 16)
 const weightsFile = process.argv[4]
+const oldWeightsFile = process.argv[5]
 
-const NEW = weightsFile
-  ? makeEval(JSON.parse(readFileSync(weightsFile, 'utf8')).weights as Weights)
-  : makeEval(HAND_WEIGHTS)
-const OLD = weightsFile
-  ? makeEval(HAND_WEIGHTS)
-  : makeEval({ ...HAND_WEIGHTS, defenseShortfallDiff: 0 })
+const loadWeights = (spec: string): Weights =>
+  spec === 'hand' ? HAND_WEIGHTS : (JSON.parse(readFileSync(spec, 'utf8')).weights as Weights)
+
+const NEW = weightsFile ? makeEval(loadWeights(weightsFile)) : makeEval(HAND_WEIGHTS)
+const OLD = oldWeightsFile
+  ? makeEval(loadWeights(oldWeightsFile))
+  : weightsFile
+    ? makeEval(HAND_WEIGHTS)
+    : makeEval({ ...HAND_WEIGHTS, defenseShortfallDiff: 0 })
 
 const DECK_PAIRS: [string, string][] = [
   ['base-enel', 'base-luffy-bg'],
@@ -56,7 +60,7 @@ function leg(
 
 console.log(
   weightsFile
-    ? `gate: ${weightsFile} vs hand weights`
+    ? `gate: ${weightsFile} vs ${oldWeightsFile ?? 'hand weights'}`
     : `gate: defenseShortfallDiff ${HAND_WEIGHTS.defenseShortfallDiff} vs 0`,
 )
 leg('greedy', gamesGreedy, (ev) => (rand) => new GreedyAgent(rand, ev))

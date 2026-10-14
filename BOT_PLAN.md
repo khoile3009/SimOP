@@ -71,6 +71,19 @@ winner, Zhang–Buro chance bucketing, PIMC strategy-fusion pathology, Suphx ora
 
 ## 3. Workstreams
 
+**P0b — life-stage counter policy (over-countering) — ADOPTED (Oct 2026)**
+Play observation (user): bots burned counters defending leader hits at full
+life, where good play takes the damage (the life card joins the hand, so early
+hits are near card-neutral). Probe confirmed: 81% of leader attacks defended at
+4-5 life, same as at 0-1 (scripts/probe-overcounter.ts). Cause: linear
+lifeDiff 0.5 dwarfing the card-economy terms. Fix: convex life value -
+lifeDiff 0.2 + new lifeDanger feature (max(0, 3 - life), weight 0.35).
+Behavior after: 2% defended at 4-5 life, 71% at 2-3 (counters banked early get
+spent where they matter), 83% at 0-1. Gate vs the pre-change weights: greedy
+142-158 (47%, parity) and MCTS 41-31 (57%) - adopted on the same
+greedy-parity/MCTS-up signature as P0. Known nuance for later: Double Attack
+hits (2 life) may deserve defense one bucket earlier.
+
 **P0 — counter economy + eval hygiene — DONE (Oct 2026, ADOPTED)**
 Shipped as `defenseShortfall(side, attacker)` in evaluate.ts: demand = the
 attacker's counterPressure, supply = hand counters + 2k per live blocker, minus
