@@ -179,7 +179,9 @@ export function endOfBattleCleanup(
         const strip = (c: GameCard): GameCard => ({
           ...c,
           isRested: false,
-          modifiers: c.modifiers.filter((m) => !(m.kind === 'flag' && m.flag === 'activeAfterCharBattle')),
+          modifiers: c.modifiers.filter(
+            (m) => !(m.kind === 'flag' && m.flag === 'activeAfterCharBattle'),
+          ),
         })
         s = {
           ...s,

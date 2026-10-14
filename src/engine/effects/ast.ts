@@ -60,6 +60,8 @@ export type EngineEventKind =
   | 'handTrashed'
   /** An attack was declared; `player` is the ATTACKER's owner */
   | 'attackDeclared'
+  /** A character went from active to rested (attacking, costs, effects); source is the card */
+  | 'cardRested'
   /** A player's life count reached 0 (Enel) */
   | 'lifeZero'
   /** A card left a player's Life area (damage or effects); `player` is the life's owner */
@@ -169,6 +171,8 @@ export interface Cond {
   minDonField?: number
   /** DON!! on the OPPONENT's field (purple trigger punishes) */
   minDonFieldOpp?: number
+  /** DON!! on the OPPONENT's field is at most this (PRB02 Luffy) */
+  maxDonFieldOpp?: number
   maxLifeSelf?: number
   minLifeSelf?: number
   minDeckSelf?: number
@@ -264,6 +268,24 @@ export interface Cond {
   oppCharKoedThisTurn?: boolean
   /** The OPPONENT has a character with this effective cost or less (Baskerville) */
   oppCharCostAtMost?: number
+  /** The opponent controls at most this many characters (EB02 Vegapunk) */
+  maxOppCharacters?: number
+  /** Your Stage carries this name (EB02 Klabautermann's Merry Go) */
+  hasStageNamed?: string
+  /** At least one of your Life cards is face-up (EB03 Smoothie) */
+  hasFaceUpLife?: boolean
+  /** The opponent has at MOST `count` characters with printed power >= `power` (EB04 Law) */
+  maxOppCharsBasePowerAtLeast?: { power: number; count: number }
+  /** At least `count` characters across BOTH fields have effective cost >= `cost` (EB04 Ginny) */
+  minCharsCostAtLeastAnywhere?: { cost: number; count: number }
+  /** NO character on either field has printed power >= this (EB04 Emet) */
+  noCharBasePowerAtLeastAnywhere?: number
+  /** The game's turn counter is at least this ("your second turn or later" = 3) */
+  minTurnNumber?: number
+  /** Total DON!! given to the OPPONENT's leader and characters (OP15 Cabaji) */
+  minOppGivenDon?: number
+  /** You control a character with this name and at least this power (OP15 Oars) */
+  charNamedPowerAtLeast?: { name: string; power: number }
 }
 
 /** Instance selection filter, for `select` (live zones). */
@@ -306,10 +328,22 @@ export interface SelectFilter {
   costAtMostOppDon?: boolean
   /** PRINTED power cap ("5000 base power or less") */
   basePowerAtMost?: number
+  /** PRINTED power floor ("6000 base power or more") */
+  basePowerAtLeast?: number
+  /** The card has at least this many DON!! given ("with 2 or more DON!! cards given") */
+  attachedDonAtLeast?: number
   /** PRINTED cost cap ("with a base cost of 4 or less") - ignores cost modifiers */
   baseCostAtMost?: number
   /** Exact PRINTED cost ("with a base cost of 1") - ignores cost modifiers */
   baseCostIs?: number
+  /** PRINTED cost floor ("with a base cost of 4 or more") - ignores cost modifiers */
+  baseCostAtLeast?: number
+  /** The card has no [When Attacking] def (EB03 Vivi leader's Rush grant) */
+  noWhenAttacking?: boolean
+  /** The card has no [On Play] def (PRB01 Sanji leader's Rush grant) */
+  noOnPlayEffect?: boolean
+  /** The card carries ANY of these names (PRB02 Ace) */
+  nameIsAny?: string[]
   /** The card's text box is blank ("with no base effect") */
   noBaseEffect?: boolean
   /** Effective power (base + DON + modifiers + auras) at selection time */
@@ -342,6 +376,8 @@ export interface SelectFilter {
   orNameIs?: string
   /** Option must share no color with the card bound under this name (Law leader) */
   differentColorThanRef?: string
+  /** Option must carry the same name as the card bound under this ref (EB02 GERMA 66) */
+  sameNameAsRef?: string
 }
 
 /** Printed-data filter, for deck reveals/searches. */
@@ -406,6 +442,10 @@ export type FlagName =
 
 export type EffectOp =
   | { op: 'draw'; count: number; who?: 'self' | 'opponent' }
+  /** Draw one card per card bound under countRef (EB04 Scaled Neptunian) */
+  | { op: 'drawPerRef'; countRef: string }
+  /** A select whose required size equals another binding's size ("trash that many") */
+  | { op: 'selectPerRef'; bind: string; filter: SelectFilter; countRef: string; prompt: string }
   | {
       op: 'select'
       bind: string
@@ -432,6 +472,8 @@ export type EffectOp =
   | { op: 'deckTopToLife'; count: number }
   /** Trash the top card(s) of a player's Life */
   | { op: 'trashLifeTop'; owner: 'self' | 'opponent'; count: number }
+  /** Trash the controller's Life from the top until `count` remain (EB01 yellow) */
+  | { op: 'trashLifeDownTo'; count: number }
   /** Move a bound field character to the TOP of its owner's Life (Katakuri) */
   | { op: 'fieldToLife'; ref: string; faceUp?: boolean; bottom?: boolean }
   /** Move bound cards from the controller's trash to their deck bottom */
@@ -458,8 +500,12 @@ export type EffectOp =
   | { op: 'basePowerToRef'; ref: string; duration: ModifierDuration }
   /** Redirect the current attack to a bound card of the defender's (OP16 Teach) */
   | { op: 'redirectAttack'; ref: string }
+  /** OP14 Law: the two bound cards exchange their printed base powers */
+  | { op: 'swapBasePower'; ref: string; refB?: string; duration: ModifierDuration }
+  /** Give 1 rested DON!! from the cost area to the leader and EACH character (OP14 Gorgon Sisters) */
+  | { op: 'giveRestedDonEach'; includeLeader?: boolean }
   /** Move bound TRASH cards to the top of the controller's Life, face-up (Shiryu) */
-  | { op: 'trashToLife'; ref: string }
+  | { op: 'trashToLife'; ref: string; faceUp?: boolean }
   /** Rest every character a player controls (The Ark Noah) */
   | { op: 'restAll'; owner: 'self' | 'opponent' }
   /** Deal damage to the opponent's Life (triggers are SIMPLIFIED away) */
@@ -468,6 +514,10 @@ export type EffectOp =
   | { op: 'requireRefPowerAtMost'; ref: string; max: number }
   /** Skip the rest unless every bound card's effective cost is at most `max` */
   | { op: 'requireRefCostAtMost'; ref: string; max: number }
+  /** Skip the rest unless every bound card's effective cost EQUALS its given DON!! (OP15 Purinpurin) */
+  | { op: 'requireRefCostEqualsAttachedDon'; ref: string }
+  /** Power mod scaled by the printed cost of the controller's TOP Life card (OP15 Luffy) */
+  | { op: 'powerModPerLifeTopCost'; ref: string; amountPer: number; duration: ModifierDuration }
   /** Mill as many cards as another binding's size (Murder at the Steam Bath) */
   | { op: 'millPerRef'; countRef: string }
   /** The controller wins the game outright (Roger) */
@@ -519,6 +569,8 @@ export type EffectOp =
       duration: ModifierDuration
       /** Scale by floor(count / per) instead of the raw count */
       per?: number
+      /** Count the DON!! given to the countRef cards instead of the cards (OP15 Krieg) */
+      countAttachedDon?: boolean
     }
   /** Katakuri-style life scry, simplified: may move the top card of either
    * player's Life to the bottom of that stack (the "look" is not modeled) */
@@ -546,6 +598,7 @@ export type EffectOp =
   | { op: 'rest'; ref: string }
   | { op: 'setActive'; ref: string }
   | { op: 'bottomDeck'; ref: string } // from controller's hand
+  | { op: 'topDeck'; ref: string } // from controller's hand to the deck TOP
   | { op: 'bottomDeckFromField'; ref: string } // to the owner's deck
   | { op: 'returnToHand'; ref: string } // from field to the owner's hand
   | { op: 'toHand'; ref: string } // from the controller's trash
@@ -583,7 +636,10 @@ export type EffectOp =
   /** Schedule a one-shot for the End Phase ("at the end of this turn") */
   | { op: 'atTurnEnd'; kind: 'setActiveDon' | 'deckTopToLife' | 'addDonActive'; count: number } // from DON!! deck to cost area
   /** Rested cost-area DON onto the source card, or onto a bound card via toRef */
-  | { op: 'giveRestedDon'; upTo: number; toRef?: string; fromActive?: boolean }
+  /** The DON!! come from the RECEIVER's owner's cost area, so giving to the
+   * opponent's characters drains the opponent's own DON!! (OP15 East Blue).
+   * anyState: rested DON!! are taken first, then active ones. */
+  | { op: 'giveRestedDon'; upTo: number; toRef?: string; fromActive?: boolean; anyState?: boolean }
   /** Move DON already given to your other cards onto the bound card (Dragon) */
   | { op: 'moveAttachedDon'; upTo: number; toRef: string }
   /** Set a bound card's power to a fixed value via a delta modifier (Ain) */
@@ -643,6 +699,8 @@ export type EffectOp =
   | { op: 'lifeTopToHand'; count: number; who?: 'self' | 'opponent' }
   /** Activate a bound EVENT card from the controller's hand for free (Sanji leader) */
   | { op: 'activateEventFromHand'; ref: string }
+  /** Activate a bound EVENT's [Main] from the controller's trash (EB03 Reiju) */
+  | { op: 'activateEventFromTrash'; ref: string }
   /** The opponent returns DON from their cost area to their DON!! deck (rested first) */
   | { op: 'oppReturnDon'; count: number }
   /** Turn-scoped restriction on the controller (cleared at end of turn) */
@@ -676,7 +734,7 @@ export interface EffectDef {
   timing: EffectTiming
   /** For timings 'replaceKo'/'guardKo': 'oppEffect' narrows the window to
    * opponent-effect K.O.s, 'effect' to any non-battle K.O.; default any K.O. */
-  replaceWhen?: 'any' | 'oppEffect' | 'effect' | 'battle'
+  replaceWhen?: 'any' | 'oppEffect' | 'effect' | 'battle' | 'byOpponent'
   /** 'removal': this guardKo/replaceKo window also opens when the card would LEAVE
    * the field by effect (bounce, bottom-deck, into Life) - "would be removed from
    * the field". Absent = K.O.s only. */
@@ -720,6 +778,8 @@ export interface StaticDef {
       | 'myHand'
       | 'handSelf'
     typeIncludes?: string
+    /** Substring over type names ("a type including 'Baroque Works'") */
+    typeContains?: string
     typeIncludesAny?: string[]
     nameIs?: string
     nameNot?: string
@@ -748,6 +808,8 @@ export interface StaticDef {
     trashPerN?: number
     /** +amount per distinct card name among your characters (OP16 Luffy) */
     perUniqueCharNames?: boolean
+    /** +amount per N RESTED DON!! in your cost area (EB01 Sanji) */
+    selfRestedDonPerN?: number
     amount: number
   }
   keyword?: string
@@ -755,6 +817,12 @@ export interface StaticDef {
   flagValue?: number
   /** Cost delta for matching cards (scope 'myHand'); applied at read time, floor 0 */
   costMod?: number
+  /** Scaling cost delta: amount per N cards in the controller's trash (EB04 Lucci) */
+  costModPer?: { trashPerN: number; amount: number }
+  /** The target's printed base is replaced by its leader's printed base (OP14 Vista) */
+  powerBecomesLeaderBase?: boolean
+  /** The target's printed base is replaced by this value (OP15 Fuza/Holly/Luffy) */
+  basePowerSet?: number
   /** The counter value matching HAND cards get ("the counter ... becomes +2000");
    * scope 'myHand' or 'handSelf', read by getEffectiveCounter */
   counterSet?: number

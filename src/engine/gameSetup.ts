@@ -62,9 +62,10 @@ function setupPlayer(deck: Deck, playerId: PlayerId): PlayerState {
   // also why a mulligan legitimately reshuffles the future life cards.
   const hand = deckCards.splice(0, STARTING_HAND_SIZE)
 
-  // Build DON deck
+  // Build DON deck (a leader rule can shrink it - OP15 Enel plays with 6)
   const donDeck: GameCard[] = []
-  for (let i = 0; i < DON_DECK_SIZE; i++) {
+  const donDeckSize = getCardRules(deck.leader)?.donDeckSize ?? DON_DECK_SIZE
+  for (let i = 0; i < donDeckSize; i++) {
     donDeck.push(createDonCard(playerId))
   }
 
@@ -142,10 +143,7 @@ export function acceptHand(state: GameState, playerId: PlayerId): GameState {
 }
 
 export function isMulliganComplete(state: GameState): boolean {
-  return (
-    state.mulliganState.player1 !== 'pending' &&
-    state.mulliganState.player2 !== 'pending'
-  )
+  return state.mulliganState.player1 !== 'pending' && state.mulliganState.player2 !== 'pending'
 }
 
 export function startGame(state: GameState): GameState {
@@ -160,9 +158,10 @@ export function startGame(state: GameState): GameState {
     const stageType = getCardRules(p.leader.cardId)?.startsWithStageType
     if (stageType && !players[pid].stage) {
       const q = players[pid]
-      const idx = q.deck.findIndex((c) =>
-        (getCardById(c.cardId)?.attribute ?? []).includes(stageType) &&
-        getCardById(c.cardId)?.cardType === 'Stage',
+      const idx = q.deck.findIndex(
+        (c) =>
+          (getCardById(c.cardId)?.attribute ?? []).includes(stageType) &&
+          getCardById(c.cardId)?.cardType === 'Stage',
       )
       if (idx >= 0) {
         const deck = [...q.deck]

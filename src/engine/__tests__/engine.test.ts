@@ -4,7 +4,13 @@ import { createGame } from '../gameSetup'
 import { processAction } from '../processor'
 import { getEffectivePower } from '../powerCalc'
 import { getCardById } from '@/data/cardService'
-import { DECK_SIZE, STARTING_HAND_SIZE, DON_DECK_SIZE, DON_FIRST_TURN, DON_PER_TURN } from '../constants'
+import {
+  DECK_SIZE,
+  STARTING_HAND_SIZE,
+  DON_DECK_SIZE,
+  DON_FIRST_TURN,
+  DON_PER_TURN,
+} from '../constants'
 
 // A valid OP01 Red deck using Roronoa Zoro as leader
 function makeTestDeck(): Deck {
@@ -134,7 +140,8 @@ describe('Turn Structure', () => {
       {
         type: 'DECLARE_ATTACK',
         attackerId: player.leader.instanceId,
-        targetId: state.players[currentPlayer === 'player1' ? 'player2' : 'player1'].leader.instanceId,
+        targetId:
+          state.players[currentPlayer === 'player1' ? 'player2' : 'player1'].leader.instanceId,
       },
       currentPlayer,
     )
@@ -431,7 +438,11 @@ describe('Battle', () => {
     if (counterCard) {
       // Use counter (adds power to defender). The defender may keep countering
       // (CR 7-1-3-2); when nothing more can be played the step auto-resolves.
-      r = processAction(r.state, { type: 'USE_COUNTER', cardInstanceIds: [counterCard.instanceId] }, opponent)
+      r = processAction(
+        r.state,
+        { type: 'USE_COUNTER', cardInstanceIds: [counterCard.instanceId] },
+        opponent,
+      )
       if (r.state.battle) {
         r = processAction(r.state, { type: 'PASS_COUNTER' }, opponent)
       }

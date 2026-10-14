@@ -39,7 +39,11 @@ function withCharacter(
   }
 }
 
-function withHand(state: GameState, pid: PlayerId, cardIds: string[]): { state: GameState; cards: GameCard[] } {
+function withHand(
+  state: GameState,
+  pid: PlayerId,
+  cardIds: string[],
+): { state: GameState; cards: GameCard[] } {
   const cards = cardIds.map((id) => createGameCard(id, pid))
   const p = state.players[pid]
   return {
@@ -82,18 +86,29 @@ describe('event pipeline (socket 1)', () => {
     let state = baseState()
     const usopp = withCharacter(state, 'player1', 'OP01-004', { attachedDon: 1 })
     state = usopp.state
-    state = { ...state, players: { ...state.players, player1: { ...state.players.player1, hand: [] } } }
+    state = {
+      ...state,
+      players: { ...state.players, player1: { ...state.players.player1, hand: [] } },
+    }
     const oppHand = withHand(state, 'player2', ['OP01-119', 'OP01-119', 'OP01-013'])
     state = setDon(oppHand.state, 'player2', 8)
     state = counterBattle(state, 'player1')
 
-    state = processAction(state, { type: 'PLAY_COUNTER_EVENT', cardInstanceId: oppHand.cards[0].instanceId }, 'player2').state
+    state = processAction(
+      state,
+      { type: 'PLAY_COUNTER_EVENT', cardInstanceId: oppHand.cards[0].instanceId },
+      'player2',
+    ).state
     // Thunder Bagua's own +4000 choice resolves first, then the listener draws
     expect(state.pendingChoice?.playerId).toBe('player2')
     state = choose(state, [])
     expect(state.players.player1.hand.length).toBe(1)
 
-    state = processAction(state, { type: 'PLAY_COUNTER_EVENT', cardInstanceId: oppHand.cards[1].instanceId }, 'player2').state
+    state = processAction(
+      state,
+      { type: 'PLAY_COUNTER_EVENT', cardInstanceId: oppHand.cards[1].instanceId },
+      'player2',
+    ).state
     state = choose(state, [])
     expect(state.players.player1.hand.length).toBe(1) // once per turn
   })
@@ -104,7 +119,10 @@ describe('event pipeline (socket 1)', () => {
       ...state,
       players: {
         ...state.players,
-        player1: { ...state.players.player1, leader: { ...state.players.player1.leader, attachedDon: 1 } },
+        player1: {
+          ...state.players.player1,
+          leader: { ...state.players.player1.leader, attachedDon: 1 },
+        },
       },
     }
     state = setDon(state, 'player1', 3)
@@ -127,20 +145,31 @@ describe('event pipeline (socket 1)', () => {
       ...state,
       players: {
         ...state.players,
-        player1: { ...state.players.player1, leader: { ...state.players.player1.leader, attachedDon: 1 } },
+        player1: {
+          ...state.players.player1,
+          leader: { ...state.players.player1.leader, attachedDon: 1 },
+        },
       },
     }
     const hand = withHand(state, 'player1', ['OP01-030', 'OP01-030', 'OP01-013'])
     state = setDon(hand.state, 'player1', 6)
 
     const deckBefore = state.players.player1.deck.length
-    state = processAction(state, { type: 'PLAY_CARD', cardInstanceId: hand.cards[0].instanceId }, 'player1').state
+    state = processAction(
+      state,
+      { type: 'PLAY_CARD', cardInstanceId: hand.cards[0].instanceId },
+      'player1',
+    ).state
     expect(state.pendingChoice).toBeNull() // search whiffs in a blue/purple deck
     // played -1, drew +1: hand size unchanged, deck down by the drawn card
     expect(state.players.player1.hand.length).toBe(3)
     expect(state.players.player1.deck.length).toBe(deckBefore - 1)
 
-    state = processAction(state, { type: 'PLAY_CARD', cardInstanceId: hand.cards[1].instanceId }, 'player1').state
+    state = processAction(
+      state,
+      { type: 'PLAY_CARD', cardInstanceId: hand.cards[1].instanceId },
+      'player1',
+    ).state
     expect(state.players.player1.hand.length).toBe(2) // no second draw this turn
     expect(state.players.player1.deck.length).toBe(deckBefore - 1)
   })
@@ -156,7 +185,11 @@ describe('reveals and revealed-hand knowledge', () => {
     const [eventCard] = oppHand.cards
     const topLife = state.players.player2.lifeCards[0]
 
-    state = processAction(state, { type: 'ACTIVATE_EFFECT', cardInstanceId: arlong.card.instanceId, effectId: '0' }, 'player1').state
+    state = processAction(
+      state,
+      { type: 'ACTIVATE_EFFECT', cardInstanceId: arlong.card.instanceId, effectId: '0' },
+      'player1',
+    ).state
     expect(state.pendingChoice?.playerId).toBe('player1')
     state = choose(state, [eventCard.instanceId])
     // Revealed an Event: the life choice opens
@@ -178,11 +211,17 @@ describe('reveals and revealed-hand knowledge', () => {
     state = oppHand.state
     const charCard = oppHand.cards[1]
 
-    state = processAction(state, { type: 'ACTIVATE_EFFECT', cardInstanceId: arlong.card.instanceId, effectId: '0' }, 'player1').state
+    state = processAction(
+      state,
+      { type: 'ACTIVATE_EFFECT', cardInstanceId: arlong.card.instanceId, effectId: '0' },
+      'player1',
+    ).state
     state = choose(state, [charCard.instanceId])
     expect(state.pendingChoice).toBeNull()
     expect(state.players.player2.lifeCards.length).toBe(5)
-    expect(state.players.player2.hand.find((c) => c.instanceId === charCard.instanceId)?.revealed).toBe(true)
+    expect(
+      state.players.player2.hand.find((c) => c.instanceId === charCard.instanceId)?.revealed,
+    ).toBe(true)
   })
 
   it('OP01-105 Bao Huang reveals chosen cards, and determinize pins them', () => {
@@ -192,7 +231,11 @@ describe('reveals and revealed-hand knowledge', () => {
     const oppHand = withHand(state, 'player2', ['OP01-013', 'OP01-016', 'OP01-030'])
     state = oppHand.state
 
-    state = processAction(state, { type: 'PLAY_CARD', cardInstanceId: hand.cards[0].instanceId }, 'player1').state
+    state = processAction(
+      state,
+      { type: 'PLAY_CARD', cardInstanceId: hand.cards[0].instanceId },
+      'player1',
+    ).state
     const targets = [oppHand.cards[0].instanceId, oppHand.cards[1].instanceId]
     state = choose(state, targets)
 
@@ -230,7 +273,11 @@ describe('OP01-013 Sanji life-pay', () => {
 
   it('takes the TOP life card to hand privately, without firing its trigger', () => {
     const { state: s0, sanji, triggerLife } = sanjiState()
-    let state = processAction(s0, { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' }, 'player1').state
+    let state = processAction(
+      s0,
+      { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' },
+      'player1',
+    ).state
     expect(state.pendingChoice?.options).toEqual([triggerLife.instanceId])
     state = choose(state, [triggerLife.instanceId])
 
@@ -249,7 +296,11 @@ describe('OP01-013 Sanji life-pay', () => {
 
   it('declining the pay ends the effect but consumes the once-per-turn', () => {
     const { state: s0, sanji } = sanjiState()
-    let state = processAction(s0, { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' }, 'player1').state
+    let state = processAction(
+      s0,
+      { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' },
+      'player1',
+    ).state
     state = choose(state, [])
 
     const p1 = state.players.player1
@@ -257,7 +308,11 @@ describe('OP01-013 Sanji life-pay', () => {
     const live = p1.characters.find((c) => c.instanceId === sanji.instanceId)!
     expect(getEffectivePower(state, live)).toBe(3000)
     expect(live.attachedDon).toBe(0)
-    const again = processAction(state, { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' }, 'player1')
+    const again = processAction(
+      state,
+      { type: 'ACTIVATE_EFFECT', cardInstanceId: sanji.instanceId, effectId: '0' },
+      'player1',
+    )
     expect(again.error).toBeDefined()
   })
 
@@ -278,7 +333,15 @@ describe('OP01-013 Sanji life-pay', () => {
         },
       },
     }
-    state = processAction(state, { type: 'DECLARE_ATTACK', attackerId: attacker.card.instanceId, targetId: state.players.player2.leader.instanceId }, 'player1').state
+    state = processAction(
+      state,
+      {
+        type: 'DECLARE_ATTACK',
+        attackerId: attacker.card.instanceId,
+        targetId: state.players.player2.leader.instanceId,
+      },
+      'player1',
+    ).state
     const taken = state.players.player2.hand.find((c) => c.instanceId === plainLife.instanceId)
     expect(taken).toBeDefined()
     expect(taken!.revealed).toBeFalsy()
@@ -319,7 +382,11 @@ describe('cost modifiers', () => {
     state = setDon(hand.state, 'player1', 1) // printed cost 2, discounted to 1
     state = counterBattle(state, 'player2')
 
-    const result = processAction(state, { type: 'PLAY_COUNTER_EVENT', cardInstanceId: hand.cards[0].instanceId }, 'player1')
+    const result = processAction(
+      state,
+      { type: 'PLAY_COUNTER_EVENT', cardInstanceId: hand.cards[0].instanceId },
+      'player1',
+    )
     expect(result.error).toBeUndefined()
     state = choose(result.state, []) // decline +4000
     if (state.pendingChoice) state = choose(state, []) // decline the bounce
@@ -335,8 +402,19 @@ describe('battle attributes', () => {
       state = attacker.state
       const luffy = withCharacter(state, 'player2', 'OP01-024', { attachedDon: 2, isRested: true })
       state = luffy.state
-      state = { ...state, players: { ...state.players, player2: { ...state.players.player2, hand: [] } } }
-      state = processAction(state, { type: 'DECLARE_ATTACK', attackerId: attacker.card.instanceId, targetId: luffy.card.instanceId }, 'player1').state
+      state = {
+        ...state,
+        players: { ...state.players, player2: { ...state.players.player2, hand: [] } },
+      }
+      state = processAction(
+        state,
+        {
+          type: 'DECLARE_ATTACK',
+          attackerId: attacker.card.instanceId,
+          targetId: luffy.card.instanceId,
+        },
+        'player1',
+      ).state
       return state.players.player2.characters.some((c) => c.instanceId === luffy.card.instanceId)
     }
 
@@ -392,13 +470,17 @@ describe('K.O. replacement window (socket 2)', () => {
     const events: GameEvent[] = []
 
     state = runStack(koById(state, c.card.instanceId, events), events)
-    const survivor = state.players.player2.characters.find((x) => x.instanceId === c.card.instanceId)
+    const survivor = state.players.player2.characters.find(
+      (x) => x.instanceId === c.card.instanceId,
+    )
     expect(survivor).toBeDefined()
     expect(survivor!.modifiers).toHaveLength(1)
     expect(events.some((e) => e.type === 'KO_REPLACED')).toBe(true)
 
     state = runStack(koById(state, c.card.instanceId, events), events)
-    expect(state.players.player2.characters.some((x) => x.instanceId === c.card.instanceId)).toBe(false)
+    expect(state.players.player2.characters.some((x) => x.instanceId === c.card.instanceId)).toBe(
+      false,
+    )
     expect(state.players.player2.trash.some((x) => x.instanceId === c.card.instanceId)).toBe(true)
   })
 })

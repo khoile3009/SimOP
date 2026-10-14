@@ -388,6 +388,15 @@ function processDeclareAttack(
     attackerIsLeader: newLeader.instanceId === attackerId,
     targetIsLeader: state.players[opponentId].leader.instanceId === targetId,
   })
+  // Declaring an attack rests the attacker ("when this Character becomes rested")
+  if (newLeader.instanceId !== attackerId) {
+    newState = emitEngineEvent(newState, {
+      kind: 'cardRested',
+      player: playerId,
+      sourceInstanceId: attackerId,
+      byController: playerId,
+    })
+  }
   // [When Attacking] effects fire in the attack step, before blocks (CR 7-1-1-3)
   const attacker =
     newLeader.instanceId === attackerId
@@ -482,6 +491,12 @@ function processActivateBlocker(
 
   // [On Block] effects fire when the blocker is activated (CR 7-1-2-2)
   newState = emitEngineEvent(newState, { kind: 'blockerActivated', player: playerId })
+  newState = emitEngineEvent(newState, {
+    kind: 'cardRested',
+    player: playerId,
+    sourceInstanceId: blockerId,
+    byController: playerId,
+  })
   const blocker = newState.players[playerId].characters.find((c) => c.instanceId === blockerId)
   if (blocker) {
     newState = runStack(queueEffects(newState, blocker, 'onBlock', playerId), events)

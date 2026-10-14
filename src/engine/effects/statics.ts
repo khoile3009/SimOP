@@ -109,6 +109,55 @@ export function evalCond(
   }
   if (cond.maxDeckSelf !== undefined && me.deck.length > cond.maxDeckSelf) return false
   if (cond.minTrashSelf !== undefined && me.trash.length < cond.minTrashSelf) return false
+  if (cond.minTurnNumber !== undefined && state.turnNumber < cond.minTurnNumber) return false
+  if (cond.hasStageNamed !== undefined) {
+    const stage = state.players[controller].stage
+    if (!stage || !cardHasName(stage.cardId, cond.hasStageNamed)) return false
+  }
+  if (cond.hasFaceUpLife && !state.players[controller].lifeCards.some((c) => c.revealed)) {
+    return false
+  }
+  if (cond.maxOppCharsBasePowerAtLeast !== undefined) {
+    const q = cond.maxOppCharsBasePowerAtLeast
+    const opp = state.players[controller === 'player1' ? 'player2' : 'player1']
+    const n = opp.characters.filter((c) => (getCardById(c.cardId)?.power ?? 0) >= q.power).length
+    if (n > q.count) return false
+  }
+  if (cond.minCharsCostAtLeastAnywhere !== undefined) {
+    const q = cond.minCharsCostAtLeastAnywhere
+    let n = 0
+    for (const pid of ['player1', 'player2'] as const) {
+      n += state.players[pid].characters.filter(
+        (c) => getEffectiveFieldCost(state, c) >= q.cost,
+      ).length
+    }
+    if (n < q.count) return false
+  }
+  if (cond.noCharBasePowerAtLeastAnywhere !== undefined) {
+    for (const pid of ['player1', 'player2'] as const) {
+      for (const c of state.players[pid].characters) {
+        if ((getCardById(c.cardId)?.power ?? 0) >= cond.noCharBasePowerAtLeastAnywhere) {
+          return false
+        }
+      }
+    }
+  }
+  if (cond.maxOppCharacters !== undefined) {
+    const opp = state.players[controller === 'player1' ? 'player2' : 'player1']
+    if (opp.characters.length > cond.maxOppCharacters) return false
+  }
+  if (cond.minOppGivenDon !== undefined) {
+    const opp = state.players[controller === 'player1' ? 'player2' : 'player1']
+    const given = opp.leader.attachedDon + opp.characters.reduce((n, c) => n + c.attachedDon, 0)
+    if (given < cond.minOppGivenDon) return false
+  }
+  if (cond.charNamedPowerAtLeast !== undefined) {
+    const q = cond.charNamedPowerAtLeast
+    const found = state.players[controller].characters.some(
+      (c) => cardHasName(c.cardId, q.name) && condPower(state, c) >= q.power,
+    )
+    if (!found) return false
+  }
   if (cond.maxTrashSelf !== undefined && me.trash.length > cond.maxTrashSelf) return false
   if (
     cond.minActiveDonSelf !== undefined &&
@@ -164,6 +213,12 @@ export function evalCond(
   if (
     cond.allSelfCharsTyped &&
     !me.characters.every((c) => cardTypes(c.cardId).includes(cond.allSelfCharsTyped!))
+  ) {
+    return false
+  }
+  if (
+    cond.maxDonFieldOpp !== undefined &&
+    donOnField(state, getOpponent(controller)) > cond.maxDonFieldOpp
   ) {
     return false
   }
@@ -469,6 +524,16 @@ export function evalCond(
  * against fired every "conditional" effect unconditionally).
  */
 export const IMPLEMENTED_CONDS: ReadonlySet<string> = new Set([
+  'minTurnNumber',
+  'maxOppCharacters',
+  'hasStageNamed',
+  'hasFaceUpLife',
+  'maxOppCharsBasePowerAtLeast',
+  'maxDonFieldOpp',
+  'minCharsCostAtLeastAnywhere',
+  'noCharBasePowerAtLeastAnywhere',
+  'minOppGivenDon',
+  'charNamedPowerAtLeast',
   'yourTurn',
   'opponentsTurn',
   'selfRested',
@@ -566,6 +631,10 @@ interface AuraGrant {
   cost: number
   keywords: string[]
   flags: { flag: FlagName; value: number }[]
+  /** An active static replaces the target's printed base with its leader's (OP14 Vista) */
+  powerBecomesLeaderBase?: boolean
+  /** An active static replaces the target's printed base with this value (OP15) */
+  basePowerSet?: number
 }
 
 /**
@@ -628,6 +697,12 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
         }
         if (t.typeIncludes && !cardTypes(card.cardId).includes(t.typeIncludes)) continue
         if (
+          t.typeContains &&
+          !cardTypes(card.cardId).some((x) => x.includes(t.typeContains ?? ''))
+        ) {
+          continue
+        }
+        if (
           t.typeIncludesAny &&
           !t.typeIncludesAny.some((ty) => cardTypes(card.cardId).includes(ty))
         ) {
@@ -674,6 +749,10 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
             )
             power += def.powerPer.amount * names.size
           }
+          if (def.powerPer.selfRestedDonPerN) {
+            const restedDon = owner.donArea.filter((d) => d.isRested).length
+            power += def.powerPer.amount * Math.floor(restedDon / def.powerPer.selfRestedDonPerN)
+          }
           if (def.powerPer.trashPerN) {
             power += def.powerPer.amount * Math.floor(owner.trash.length / def.powerPer.trashPerN)
           }
@@ -686,8 +765,15 @@ export function auraGrants(state: GameState, card: GameCard): AuraGrant {
         }
         result.power += power
         result.cost += def.costMod ?? 0
+        if (def.costModPer?.trashPerN) {
+          result.cost +=
+            def.costModPer.amount *
+            Math.floor(state.players[pid].trash.length / def.costModPer.trashPerN)
+        }
         if (def.keyword) result.keywords.push(def.keyword)
         if (def.flag) result.flags.push({ flag: def.flag, value: def.flagValue ?? 0 })
+        if (def.powerBecomesLeaderBase) result.powerBecomesLeaderBase = true
+        if (def.basePowerSet !== undefined) result.basePowerSet = def.basePowerSet
       }
     }
   }

@@ -152,6 +152,20 @@ function tuneForCond(state: GameState, owner: PlayerId, opp: PlayerId, cond?: An
     s = setLife(s, owner, 5)
     s = setLife(s, opp, 5)
   }
+  if (cond.hasFaceUpLife) {
+    const p = s.players[owner]
+    const lifeCards =
+      p.lifeCards.length > 0 ? [...p.lifeCards] : [createGameCard(SMALL_VANILLA, owner)]
+    lifeCards[0] = { ...lifeCards[0], revealed: true }
+    s = { ...s, players: { ...s.players, [owner]: { ...p, lifeCards } } }
+  }
+  if (has('maxDonFieldOpp')) {
+    const p = s.players[opp]
+    const keep = num('maxDonFieldOpp')
+    if (p.donArea.length > keep) {
+      s = { ...s, players: { ...s.players, [opp]: { ...p, donArea: p.donArea.slice(0, keep) } } }
+    }
+  }
   if (cond.lessLifeThanOpp) s = setLife(s, owner, 2)
   if (cond.atMostLifeOfOpp !== undefined) s = setLife(s, owner, s.players[opp].lifeCards.length)
   if (cond.anyPlayerLifeZero) s = setLife(s, opp, 0)
@@ -254,6 +268,27 @@ function tuneForCond(state: GameState, owner: PlayerId, opp: PlayerId, cond?: An
     }
     // leave enough active DON to pay an onPlay cost; paying rests DON anyway
     s = restOwnDon(s, owner, Math.min(5, num('minSelfRestedAny')))
+  }
+  if (has('minTurnNumber')) {
+    s = { ...s, turnNumber: Math.max(s.turnNumber, num('minTurnNumber')) }
+  }
+  if (has('minOppGivenDon')) {
+    const p = s.players[opp]
+    s = {
+      ...s,
+      players: {
+        ...s.players,
+        [opp]: { ...p, leader: { ...p.leader, attachedDon: num('minOppGivenDon') } },
+      },
+    }
+  }
+  if (cond.charNamedPowerAtLeast) {
+    const q = cond.charNamedPowerAtLeast as { name: string; power: number }
+    const match = getAllCards().find((c) => c.cardType === 'Character' && cardHasName(c.id, q.name))
+    if (match) {
+      const want = Math.max(0, Math.ceil((q.power - (match.power ?? 0)) / 1000))
+      addOwn(match.id, { attachedDon: Math.min(want, 10) })
+    }
   }
   for (const key of ['hasCharacterNamed', 'hasOtherCharacterNamed'] as const) {
     if (typeof cond[key] === 'string') {
@@ -445,6 +480,13 @@ function tuneForCond(state: GameState, owner: PlayerId, opp: PlayerId, cond?: An
           characters: p.characters.map((c) => ({ ...c, isRested: true })),
         },
       },
+    }
+  }
+  if (cond.minCharsCostAtLeastAnywhere) {
+    const q = cond.minCharsCostAtLeastAnywhere as { cost: number; count: number }
+    for (let i = 0; i < q.count; i++) {
+      const id = findCharWhere((c) => c.cost >= Math.min(q.cost, 10))
+      if (id) addOwn(id)
     }
   }
   if (cond.minOppCharsBasePowerAtLeast) {
@@ -717,6 +759,8 @@ function matchesGuard(cardId: string, g: SelectFilter): boolean {
   if (g.costAtMost !== undefined && d.cost > g.costAtMost) return false
   if (g.baseCostAtMost !== undefined && d.cost > g.baseCostAtMost) return false
   if (g.basePowerAtMost !== undefined && (d.power ?? 0) > g.basePowerAtMost) return false
+  if (g.baseCostAtLeast !== undefined && d.cost < g.baseCostAtLeast) return false
+  if (g.basePowerAtLeast !== undefined && (d.power ?? 0) < g.basePowerAtLeast) return false
   if (g.powerAtLeast !== undefined && (d.power ?? 0) < g.powerAtLeast) return false
   if (g.powerAtMost !== undefined && (d.power ?? 0) > g.powerAtMost) return false
   if (g.attributeIs && getBattleAttribute(cardId) !== g.attributeIs) return false
@@ -816,6 +860,10 @@ export function fireDef(cardId: string, defIndex: number, policy: Policy): DefFi
       s = { ...s, players: { ...s.players, [owner]: { ...p, trash: [...p.trash, ...extra] } } }
     }
     s = tuneForCond(s, owner, opp, def.condition as AnyCond | undefined)
+    // onBlock scenarios place the def's card on the DEFENDER's side: tune there too
+    if (def.timing === 'onBlock') {
+      s = tuneForCond(s, opp, owner, def.condition as AnyCond | undefined)
+    }
     if (
       def.condition &&
       (def.condition as AnyCond).opponentsTurn &&
@@ -954,7 +1002,7 @@ export function fireDef(cardId: string, defIndex: number, policy: Policy): DefFi
       case 'onBlock': {
         const blocker = addChar(s, opp, cardId, { attachedDon: def.donRequired ?? 0, ...stamp })
         const attacker = addChar(blocker.state, owner, BIG_VANILLA)
-        let st = processAction(
+        const st = processAction(
           attacker.state,
           {
             type: 'DECLARE_ATTACK',

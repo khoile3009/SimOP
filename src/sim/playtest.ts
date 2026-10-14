@@ -6,6 +6,7 @@ import { RandomAgent, GreedyAgent, type Agent } from '@/ai/agents'
 import { runGame } from './selfplay'
 import { buildCoverageDecks, coverageCardIds, annotateUnreachable } from './decks'
 import { SET_MODULES } from '@/data/sets'
+import { getCardRules } from '@/engine/rulesLayer'
 import type { CoverageDeck } from './decks'
 import { mulberry32 } from '@/utils/rng'
 
@@ -94,7 +95,10 @@ export function checkInvariants(state: GameState): string | null {
       p.donDeck.length +
       p.leader.attachedDon +
       p.characters.reduce((s, c) => s + c.attachedDon, 0)
-    if (donTotal !== 10) return `${pid} DON conservation broken: ${donTotal} != 10`
+    const donSize = getCardRules(p.leader.cardId)?.donDeckSize ?? 10
+    if (donTotal !== donSize) {
+      return `${pid} DON conservation broken: ${donTotal} != ${donSize}`
+    }
     if (p.characters.length > 5) return `${pid} has ${p.characters.length} characters (max 5)`
     for (const c of p.characters) {
       if (c.attachedDon < 0) return `${pid} character with negative attached DON`

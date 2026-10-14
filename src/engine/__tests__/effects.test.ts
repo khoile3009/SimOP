@@ -113,7 +113,10 @@ describe('OP01-006 Otama: [On Play] select + power debuff', () => {
     const target = withCharacter(state, 'player2', 'OP01-010') // 3000 power
     state = target.state
 
-    state = act(state, { type: 'PLAY_CARD', cardInstanceId: state.players.player1.hand[0].instanceId })
+    state = act(state, {
+      type: 'PLAY_CARD',
+      cardInstanceId: state.players.player1.hand[0].instanceId,
+    })
     expect(state.pendingChoice).not.toBeNull()
     expect(whoActs(state)).toBe('player1')
 
@@ -135,7 +138,10 @@ describe('OP01-006 Otama: [On Play] select + power debuff', () => {
     state = withHand(state, 'player1', ['OP01-006'])
     state = withActiveDon(state, 'player1', 3)
 
-    state = act(state, { type: 'PLAY_CARD', cardInstanceId: state.players.player1.hand[0].instanceId })
+    state = act(state, {
+      type: 'PLAY_CARD',
+      cardInstanceId: state.players.player1.hand[0].instanceId,
+    })
     expect(state.pendingChoice).toBeNull()
     expect(state.stack).toHaveLength(0)
   })
@@ -146,7 +152,10 @@ describe('OP01-011 Chopper: optional cost via abortIfEmpty', () => {
     let state = baseState()
     state = withHand(state, 'player1', ['OP01-011', 'OP01-004', 'OP01-010'])
     state = withActiveDon(state, 'player1', 3)
-    return act(state, { type: 'PLAY_CARD', cardInstanceId: state.players.player1.hand[0].instanceId })
+    return act(state, {
+      type: 'PLAY_CARD',
+      cardInstanceId: state.players.player1.hand[0].instanceId,
+    })
   }
 
   it('declining the cost skips the draw', () => {
@@ -185,7 +194,11 @@ describe('OP01-017 Nico Robin: [DON!! x1] [When Attacking] K.O.', () => {
     const fixture = setup(1)
     const { robin, victim } = fixture
     let state = fixture.state
-    state = act(state, { type: 'DECLARE_ATTACK', attackerId: robin.instanceId, targetId: victim.instanceId })
+    state = act(state, {
+      type: 'DECLARE_ATTACK',
+      attackerId: robin.instanceId,
+      targetId: victim.instanceId,
+    })
     expect(state.pendingChoice).not.toBeNull()
 
     state = act(state, { type: 'CHOOSE', instanceIds: [victim.instanceId] })
@@ -199,7 +212,11 @@ describe('OP01-017 Nico Robin: [DON!! x1] [When Attacking] K.O.', () => {
     const fixture = setup(0)
     const { robin, victim } = fixture
     let state = fixture.state
-    state = act(state, { type: 'DECLARE_ATTACK', attackerId: robin.instanceId, targetId: victim.instanceId })
+    state = act(state, {
+      type: 'DECLARE_ATTACK',
+      attackerId: robin.instanceId,
+      targetId: victim.instanceId,
+    })
     expect(state.pendingChoice).toBeNull()
     // Defender has no blockers; whether the counter step remains depends on
     // their (random seeded) hand - either way, no Robin choice ever pended
@@ -311,7 +328,10 @@ describe('OP01-029 Radical Beam: counter event', () => {
 
     const options = legalActions(state)
     const eventCard = state.players.player1.hand[0]
-    expect(options).toContainEqual({ type: 'PLAY_COUNTER_EVENT', cardInstanceId: eventCard.instanceId })
+    expect(options).toContainEqual({
+      type: 'PLAY_COUNTER_EVENT',
+      cardInstanceId: eventCard.instanceId,
+    })
 
     const lifeBefore = state.players.player1.lifeCards.length
     state = act(state, { type: 'PLAY_COUNTER_EVENT', cardInstanceId: eventCard.instanceId })
@@ -355,7 +375,9 @@ describe('OP01-024 Luffy: [Activate: Main] [Once Per Turn]', () => {
     expect(activate).toBeDefined()
 
     state = act(state, activate!)
-    const after = state.players.player1.characters.find((c) => c.instanceId === luffy.card.instanceId)!
+    const after = state.players.player1.characters.find(
+      (c) => c.instanceId === luffy.card.instanceId,
+    )!
     expect(after.attachedDon).toBe(2)
     expect(state.players.player1.donArea).toHaveLength(0)
 
@@ -378,14 +400,18 @@ describe('OP01-051 Kid: taunt aura', () => {
 
     const attacks = legalActions(state).filter((a) => a.type === 'DECLARE_ATTACK')
     expect(attacks.length).toBeGreaterThan(0)
-    expect(attacks.every((a) => a.type === 'DECLARE_ATTACK' && a.targetId === kid.card.instanceId)).toBe(true)
+    expect(
+      attacks.every((a) => a.type === 'DECLARE_ATTACK' && a.targetId === kid.card.instanceId),
+    ).toBe(true)
 
     // Without the DON requirement met, the taunt is off
     let free = baseState()
     const kid2 = withCharacter(free, 'player2', 'OP01-051', { isRested: true, attachedDon: 0 })
     free = kid2.state
     const attacks2 = legalActions(free).filter((a) => a.type === 'DECLARE_ATTACK')
-    expect(attacks2.some((a) => a.type === 'DECLARE_ATTACK' && a.targetId !== kid2.card.instanceId)).toBe(true)
+    expect(
+      attacks2.some((a) => a.type === 'DECLARE_ATTACK' && a.targetId !== kid2.card.instanceId),
+    ).toBe(true)
   })
 })
 
@@ -399,12 +425,18 @@ describe('OP01-114 X.Drake: DON!!-1 cost and opponent-chosen discard', () => {
       ...state,
       players: {
         ...state.players,
-        player2: { ...p2, hand: [createGameCard('OP01-010', 'player2'), createGameCard('OP01-012', 'player2')] },
+        player2: {
+          ...p2,
+          hand: [createGameCard('OP01-010', 'player2'), createGameCard('OP01-012', 'player2')],
+        },
       },
     }
     const donDeckBefore = state.players.player1.donDeck.length
 
-    state = act(state, { type: 'PLAY_CARD', cardInstanceId: state.players.player1.hand[0].instanceId })
+    state = act(state, {
+      type: 'PLAY_CARD',
+      cardInstanceId: state.players.player1.hand[0].instanceId,
+    })
     // First choice: the controller may pay DON!!-1 (all-or-nothing)
     expect(state.pendingChoice?.playerId).toBe('player1')
     expect(state.pendingChoice?.exact).toBe(true)
@@ -485,7 +517,10 @@ describe('6th character replacement (CR 3-7-6-1)', () => {
     expect(state.players.player1.characters).toHaveLength(5)
     const handBefore = state.players.player1.hand.length
 
-    state = act(state, { type: 'PLAY_CARD', cardInstanceId: state.players.player1.hand[0].instanceId })
+    state = act(state, {
+      type: 'PLAY_CARD',
+      cardInstanceId: state.players.player1.hand[0].instanceId,
+    })
     expect(state.pendingChoice?.min).toBe(1)
 
     state = act(state, { type: 'CHOOSE', instanceIds: [onKo.card.instanceId] })

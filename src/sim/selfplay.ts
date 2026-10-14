@@ -2,7 +2,7 @@ import type { GameState, GameAction, PlayerId, Deck } from '@/engine/types'
 import { createGame } from '@/engine/gameSetup'
 import { processAction } from '@/engine/processor'
 import { legalActions, whoActs } from '@/engine/legalActions'
-import { getCardById, getCardsBySet } from '@/data/cardService'
+import { getCardById, getCardsBySet, getAllCards } from '@/data/cardService'
 import { mulberry32, setRandomSource, resetRandomSource } from '@/utils/rng'
 import { evaluateState } from '@/ai/evaluate'
 import type { Agent } from '@/ai/agents'
@@ -56,6 +56,24 @@ export function makeAutoDeck(leaderId: string): Deck {
     const qty = Math.min(MAX_CARD_COPIES, DECK_SIZE - total)
     cards.push({ cardId: card.id, qty })
     total += qty
+  }
+  // Tiny sets (PRB promos) cannot fill 50 from their own pool; decks may
+  // legally mix sets, so fall back to the full color-matched card pool
+  if (total < DECK_SIZE) {
+    const extra = getAllCards()
+      .filter(
+        (c) =>
+          (c.cardType === 'Character' || c.cardType === 'Event') &&
+          c.color.some((col) => colors.has(col)) &&
+          !cards.some((d) => d.cardId === c.id),
+      )
+      .sort((a, b) => a.cost - b.cost || a.id.localeCompare(b.id))
+    for (const card of extra) {
+      if (total >= DECK_SIZE) break
+      const qty = Math.min(MAX_CARD_COPIES, DECK_SIZE - total)
+      cards.push({ cardId: card.id, qty })
+      total += qty
+    }
   }
   if (total < DECK_SIZE) {
     throw new Error(`Card pool too small for ${leaderId}: got ${total}/${DECK_SIZE}`)

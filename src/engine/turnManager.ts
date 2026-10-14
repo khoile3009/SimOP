@@ -100,8 +100,12 @@ export function executeDraw(state: GameState): GameState {
   }
 
   // Deck-out: drawing from an empty deck decides the game (usually a loss;
-  // the rules layer can invert it - Nami's win condition)
+  // the rules layer can invert it - Nami's win condition). OP15 Brook defers
+  // the loss to the End Phase: the draw simply whiffs.
   if (player.deck.length === 0) {
+    if (getCardRules(player.leader.cardId)?.deckOutAtTurnEnd) {
+      return { ...state, phase: 'DON' }
+    }
     return { ...state, winner: deckOutWinner(player.leader.cardId, playerId) }
   }
 
@@ -192,6 +196,15 @@ export function executeEndPhase(state: GameState): GameState {
         stage: newStage,
       },
     },
+  }
+
+  // OP15 Brook: a player whose rules defer deck-out loses at the end of the
+  // turn in which their deck is (still) empty - checked for BOTH players
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    const pl = switched.players[pid]
+    if (pl.deck.length === 0 && getCardRules(pl.leader.cardId)?.deckOutAtTurnEnd) {
+      return { ...switched, winner: deckOutWinner(pl.leader.cardId, pid) }
+    }
   }
 
   // "During this turn" effects on both fields end with the turn (CR 6-6-1-2).

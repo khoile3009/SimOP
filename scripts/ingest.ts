@@ -34,6 +34,18 @@ interface ApiRow {
  * names here as sets introduce them - the report flags any string that fails
  * to segment. */
 const SEED_TYPES = [
+  // EB02 vocabulary
+  'Accino Family',
+  'Fake Straw Hat Crew',
+  'Treasure Pirates',
+  // OP15/EB04 vocabulary
+  'Mogaro Kingdom',
+  'The Moon',
+  'Space Pirates',
+  'Hot Springs Island',
+  'Rolling Pirates',
+  "The Victims' Club",
+  "The Owner of Cindry's Shadow",
   'Rocks Pirates',
   'Elbaph',
   'Giant Pirates',
@@ -227,6 +239,10 @@ function cleanName(raw: string): string {
   return raw
     .replace(/\s*\(Parallel\)\s*/g, '')
     .replace(/\s*\(Alternate Art\)\s*$/g, '')
+    .replace(/\s*\(Reprint\)\s*$/g, '')
+    .replace(/\s*\(Dash Pack\)\s*$/g, '')
+    .replace(/\s*\([A-Z]+\d+-\d+\)\s*$/g, '')
+    .replace(/\s*-\s*[A-Z]+\d+-\d+\s*$/g, '')
     .replace(/\s*\(\d+\)\s*$/g, '')
     .trim()
 }
@@ -238,18 +254,28 @@ function toInt(v: string | number | null): number | null {
 }
 
 async function main() {
-  const apiSetId = process.argv[2]
-  if (!apiSetId) {
-    console.error('usage: npm run ingest -- <API set id, e.g. OP-02>')
+  const slugArg = process.argv[2]
+  if (!slugArg) {
+    console.error('usage: npm run ingest -- <API slug[,slug2]> [set code]')
+    console.error('e.g.   npm run ingest -- OP-02')
+    console.error('       npm run ingest -- OP14-EB04 OP14         (mixed feed, keep OP14-*)')
+    console.error('       npm run ingest -- OP14-EB04,OP15-EB04 EB04 (one set across feeds)')
     process.exit(1)
   }
-  const setCode = apiSetId.replace('-', '') // OP-02 -> OP02
+  const slugs = slugArg.split(',')
+  const setCode = (process.argv[3] ?? slugArg.replace('-', '')).toUpperCase()
   const dir = `src/data/${setCode.toLowerCase()}`
 
-  const res = await fetch(`https://optcgapi.com/api/sets/${apiSetId}/`)
-  if (!res.ok) throw new Error(`API ${res.status} for set ${apiSetId}`)
-  const rows = (await res.json()) as ApiRow[]
-  if (!Array.isArray(rows)) throw new Error(`Unexpected payload: ${JSON.stringify(rows).slice(0, 120)}`)
+  const rows: ApiRow[] = []
+  for (const slug of slugs) {
+    const res = await fetch(`https://optcgapi.com/api/sets/${slug}/`)
+    if (!res.ok) throw new Error(`API ${res.status} for set ${slug}`)
+    const batch = (await res.json()) as ApiRow[]
+    if (!Array.isArray(batch)) {
+      throw new Error(`Unexpected payload: ${JSON.stringify(batch).slice(0, 120)}`)
+    }
+    rows.push(...batch)
+  }
 
   // Dedupe parallel arts (prefer the non-Parallel row) and drop alt-art
   // reprints of OTHER sets' cards that the API lists inside this set
@@ -270,7 +296,10 @@ async function main() {
 
   for (const row of [...byId.values()].sort((a, b) => a.card_set_id.localeCompare(b.card_set_id))) {
     const raw = (row.card_text ?? '').trim()
-    const text = raw === 'NULL' ? '' : raw // the API spells "no effect" as literal NULL
+    let text = raw === 'NULL' ? '' : raw // the API spells "no effect" as literal NULL
+    // Some rows write the trigger section without brackets ("\nTrigger Play this
+    // card.") - normalize so the section splitter sees it (OP17-104 bug class)
+    text = text.replace(/(^|\n)Trigger\s+(?=[A-Z])/g, '$1[Trigger] ')
     // A trigger SECTION's [Trigger] sits at the start or after sentence-ending
     // punctuation; "a [Trigger] from your hand" mid-sentence is a keyword
     // MENTION, not a section break.

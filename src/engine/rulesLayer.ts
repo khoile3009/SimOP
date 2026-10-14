@@ -1,4 +1,5 @@
 import { getCardById } from '@/data/cardService'
+import { REPRINTS } from './effects/registry'
 import { SET_MODULES } from '@/data/sets'
 import { MAX_CARD_COPIES } from './constants'
 
@@ -32,9 +33,17 @@ export interface CardRules {
   deckEventCostLimitBelow?: number
   /** On a LEADER: at game start, play one Stage of this type from the deck (Imu) */
   startsWithStageType?: string
+  /** On a LEADER: the DON!! deck holds this many cards instead of 10 (OP15 Enel) */
+  donDeckSize?: number
+  /** On a LEADER: an empty deck loses at the END of that turn, not on the draw (OP15 Brook) */
+  deckOutAtTurnEnd?: boolean
 }
 
 export const CARD_RULES: Record<string, CardRules> = {
+  // OP15-058 Enel leader: six-card DON!! deck
+  'OP15-058': { donDeckSize: 6 },
+  // OP15-022 Brook leader: decking out loses at the End Phase, not on the draw
+  'OP15-022': { deckOutAtTurnEnd: true },
   // OP16-042 Prisoner of Impel Down: any number of copies allowed
   'OP16-042': { deckCopyLimit: 'any' },
   // OP13-003 Roger leader: a DON!! from each DON!! Phase goes to the leader
@@ -54,13 +63,16 @@ export const CARD_RULES: Record<string, CardRules> = {
   'OP01-121': { extraNames: ['Kozuki Oden', 'Kouzuki Oden'] },
   'OP02-042': { extraNames: ['Kouzuki Oden', 'Kozuki Oden'] },
   'OP03-122': { extraNames: ['Usopp'] }, // Sogeking
+  'EB02-016': { extraNames: ['Tony Tony.Chopper'] }, // Chopperman
+  'EB02-024': { extraNames: ['Usopp'] }, // Sogeking
+  'EB04-038': { extraNames: ['Trafalgar Law', 'Donquixote Rosinante'] }, // Rosinante & Law
   'OP03-040': { deckOutWins: true }, // Nami leader: mill yourself to victory
 }
 
 /** Who wins when `playerId` must draw from an empty deck (CR loss, unless the
  * rules layer inverts it - Nami's win-condition replacement). */
 export function getCardRules(cardId: string): CardRules | undefined {
-  return CARD_RULES[cardId]
+  return CARD_RULES[REPRINTS[cardId] ?? cardId]
 }
 
 export function deckOutWinner(leaderCardId: string, playerId: 'player1' | 'player2') {

@@ -164,6 +164,26 @@ export function buildCoverageDecks(set = 'OP01'): CoverageDeck[] {
         cards.push({ cardId: filler.id, qty })
         total += qty
       }
+      // Small sets (EB/PRB) can exhaust their own color pool; decks may
+      // legally mix sets, so fall back to the full card pool
+      if (total < DECK_SIZE) {
+        for (const filler of getAllCards()) {
+          if (total >= DECK_SIZE) break
+          if (
+            filler.cardType !== 'Character' &&
+            filler.cardType !== 'Event' &&
+            filler.cardType !== 'Stage'
+          ) {
+            continue
+          }
+          if (!filler.color.some((c) => leader.color.includes(c))) continue
+          if (cards.some((c) => c.cardId === filler.id)) continue
+          if (!fitsLeaderRules(leader.id, filler)) continue
+          const qty = Math.min(MAX_CARD_COPIES, DECK_SIZE - total)
+          cards.push({ cardId: filler.id, qty })
+          total += qty
+        }
+      }
       if (total !== DECK_SIZE) {
         throw new Error(`Coverage deck for ${leader.name} came out at ${total}/${DECK_SIZE}`)
       }
