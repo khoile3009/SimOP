@@ -1,19 +1,27 @@
-/* A/B gate for hand-weight eval changes (BOT_PLAN P0).
- * NEW = current HAND_WEIGHTS; OLD = same weights with the feature under test
- * zeroed. Seat-swapped, cross-deck, greedy and MCTS consumers.
- * Run: vite-node scripts/gate-eval.ts [gamesGreedy] [gamesMcts]
+/* A/B gate for eval changes (BOT_PLAN P0/P2): the adoption decision.
+ * Default: NEW = current HAND_WEIGHTS, OLD = same with defenseShortfallDiff
+ * zeroed (the P0 gate). With a weights-file arg: NEW = those fitted weights,
+ * OLD = the hand weights (the gen-3 gate).
+ * Seat-swapped, base-deck pairs, greedy and MCTS consumers.
+ * Run: vite-node scripts/gate-eval.ts [gamesGreedy] [gamesMcts] [weightsFile]
  */
+import { readFileSync } from 'node:fs'
 import { runMatch } from '@/sim/selfplay'
 import { getBaseDeck } from '@/sim/baseDecks'
 import { GreedyAgent } from '@/ai/agents'
 import { MctsAgent } from '@/ai/mcts'
-import { HAND_WEIGHTS, makeEval, type EvalFn } from '@/ai/evaluate'
+import { HAND_WEIGHTS, makeEval, type EvalFn, type Weights } from '@/ai/evaluate'
 
 const gamesGreedy = Number(process.argv[2] ?? 60)
 const gamesMcts = Number(process.argv[3] ?? 16)
+const weightsFile = process.argv[4]
 
-const NEW = makeEval(HAND_WEIGHTS)
-const OLD = makeEval({ ...HAND_WEIGHTS, defenseShortfallDiff: 0 })
+const NEW = weightsFile
+  ? makeEval(JSON.parse(readFileSync(weightsFile, 'utf8')).weights as Weights)
+  : makeEval(HAND_WEIGHTS)
+const OLD = weightsFile
+  ? makeEval(HAND_WEIGHTS)
+  : makeEval({ ...HAND_WEIGHTS, defenseShortfallDiff: 0 })
 
 const DECK_PAIRS: [string, string][] = [
   ['base-enel', 'base-luffy-bg'],
@@ -46,6 +54,10 @@ function leg(
   )
 }
 
-console.log(`gate: defenseShortfallDiff ${HAND_WEIGHTS.defenseShortfallDiff} vs 0`)
+console.log(
+  weightsFile
+    ? `gate: ${weightsFile} vs hand weights`
+    : `gate: defenseShortfallDiff ${HAND_WEIGHTS.defenseShortfallDiff} vs 0`,
+)
 leg('greedy', gamesGreedy, (ev) => (rand) => new GreedyAgent(rand, ev))
 leg('mcts  ', gamesMcts, (ev) => (rand) => new MctsAgent(rand, { evalFn: ev }))

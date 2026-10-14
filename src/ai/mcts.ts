@@ -31,6 +31,15 @@ export interface MctsOptions {
   iterations?: number
   exploration?: number
   evalFn?: EvalFn
+  /** Gen-3 data hook: receives the root's explored children after each search */
+  onSearch?: (info: MctsSearchInfo) => void
+}
+
+export interface MctsSearchInfo {
+  state: GameState
+  actor: PlayerId
+  /** The chosen child first; all values from the ACTOR's perspective */
+  children: { action: GameAction; state: GameState; visits: number; value: number }[]
 }
 
 export class MctsAgent implements Agent {
@@ -39,12 +48,14 @@ export class MctsAgent implements Agent {
   private iterations: number
   private exploration: number
   private evalFn: EvalFn
+  private onSearch?: (info: MctsSearchInfo) => void
 
   constructor(rand: () => number = Math.random, options: MctsOptions = {}) {
     this.rand = rand
     this.iterations = options.iterations ?? 300
     this.exploration = options.exploration ?? 0.5
     this.evalFn = options.evalFn ?? evaluateState
+    this.onSearch = options.onSearch
   }
 
   choose(state: GameState, actions: GameAction[]): GameAction {
@@ -112,6 +123,15 @@ export class MctsAgent implements Agent {
       ) {
         best = child
       }
+    }
+    if (this.onSearch && root.actor && best) {
+      const children = [best, ...root.children.filter((c) => c !== best)].map((c) => ({
+        action: c.action!,
+        state: c.state,
+        visits: c.visits,
+        value: this.perspective(root.actor, c),
+      }))
+      this.onSearch({ state, actor: root.actor, children })
     }
     return best?.action ?? actions[0]
   }
