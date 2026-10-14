@@ -114,14 +114,28 @@ scripts/train-gen3.ts -> gates). Both variants rejected by the ladder:
   gate 46% greedy / 44% MCTS - parity-minus, NOT adopted. Expected ceiling:
   the label search was GUIDED BY the hand eval, so one pass is a single policy-
   iteration step off its own teacher.
-Hand weights (with P0's counter economy) remain the champion. Gen-3.1 options,
-in order of promise:
-1. Deeper label searches (1000+ iterations for labeling only; fewer games) so
-   boot targets genuinely exceed the teacher, then ITERATE the loop (regenerate
-   with the trained eval guiding the search).
-2. Cross-parent pairs (compare afterstates from different positions, margin-
-   weighted by search-value gap) to fix rank's style contamination.
-3. Blend: boot loss + a small outcome-anchored term for absolute calibration.
+Hand weights (with P0's counter economy) remain the champion.
+
+**Gen-3.1 (deep labels) — RUN, REJECTED (Oct 2026).** 150 games at 1000
+iterations (3.3x deeper labels), outcome field added; BOOT gated 45%/42%,
+BLEND (0.75 search + 0.25 outcome) gated 48%/39% despite the best prediction
+metrics yet (CE 0.555 vs 0.570) and sane weights (it independently rediscovered
+the convex life curve: lifeDanger 0.31 vs our hand-set 0.35).
+
+**The pattern after four rejected fits** (gen-1 outcomes, gen-2 afterstates,
+gen-3 rank/boot, gen-3.1 deep boot): a LINEAR model fit to targets produced by
+search-over-that-same-linear-eval mostly recovers its teacher - the tactical
+gains search finds are state-specific and not expressible as better global
+weights on these features. Meanwhile every adopted improvement (threshold
+buckets, defenseShortfall, lifeDanger) was a new hand-designed NONLINEAR
+feature. Conclusion: the target is now right; the FUNCTION CLASS is the
+bottleneck. Next steps, in order:
+1. Keep mining nonlinear hand features from play observations (cheap, 2-for-2
+   adoption rate; each also enriches any future learned model's inputs).
+2. Small MLP over the feature vector (eval path step 3) trained on the
+   gen-3.1 corpus (search targets + outcome anchor) - the first capacity step,
+   same gate. The data pipeline and gates are ready; this is now the only
+   untested lever on the eval side.
 
 **P3 — honest-information search**
 - IS-MCTS / multiple-observer variant over the existing determinizer (stop averaging
