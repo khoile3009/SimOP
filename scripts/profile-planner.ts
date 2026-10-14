@@ -2,7 +2,7 @@
  * Runs planner-vs-greedy on full-fidelity auto decks and reports where the
  * time goes. Not wired into package.json; run with `vite-node scripts/profile-planner.ts`.
  */
-import { makeAutoDeck, runGame } from '@/sim/selfplay'
+import { makeAutoDeck } from '@/sim/selfplay'
 import { GreedyAgent } from '@/ai/agents'
 import { TurnPlannerAgent, searchTurnLines } from '@/ai/turnSearch'
 import { evaluateState } from '@/ai/evaluate'

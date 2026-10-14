@@ -149,10 +149,12 @@ anecdote. Elo over league members once there are 4+.
 
 ### 4.5 Benchmark and data infrastructure
 
-- Fixed meta pool: 8-12 versioned benchmark decks across archetypes (Enel 6-DON
-  ramp, Brook mill, black trash-count, red aggro, yellow life-tempo...) so every
-  ladder is comparable across engine versions. Auto decks drift as sets land;
-  the benchmark pool must not.
+- Fixed meta pool: DONE (Oct 2026) - 8 frozen archetype decks in
+  src/data/baseDecks.json (built by scripts/build-base-decks.ts from the OP16
+  meta: Enel 6-DON, BG Luffy Impel Down, Rosinante Navy, Teach control, Lucy
+  Dressrosa, black Yamato, Kalgara Shandia, red Whitebeard). They double as the
+  "Base decks" group in the Play/Watch pickers and the gate-eval deck pairs.
+  Regenerate deliberately on a meta shift and note it here.
 - Exploitability probe before adoption: tune a best-response agent against the
   candidate (ByteRL lesson: ladder win rate is not robustness).
 - Data flywheel: every ladder/fleet run can log (chosen, rejected) afterstate

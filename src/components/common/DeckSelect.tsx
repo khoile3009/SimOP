@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { Deck } from '@/engine/types'
 import { getAllLeaders, getCardById } from '@/data/cardService'
 import { encodeChoice, decodeChoice, type DeckChoice } from './deckChoice'
+import { BASE_DECKS, getBaseDeck } from '@/sim/baseDecks'
 
 export default function DeckSelect({
   label,
@@ -31,7 +32,9 @@ export default function DeckSelect({
       ? getCardById(savedDecks.find((d) => d.id === value.id)?.leader ?? '')
       : value.kind === 'auto'
         ? getCardById(value.leaderId)
-        : null
+        : value.kind === 'base'
+          ? getCardById(getBaseDeck(value.id)?.leader ?? '')
+          : null
 
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
@@ -42,6 +45,13 @@ export default function DeckSelect({
         onChange={(e) => onChange(decodeChoice(e.target.value))}
       >
         {allowMirror && <option value="mirror">Mirror the other deck</option>}
+        <optgroup label="Base decks (OP16 meta archetypes)">
+          {BASE_DECKS.map((d) => (
+            <option key={d.id} value={`base:${d.id}`}>
+              {d.name} · {getCardById(d.leader)?.name ?? d.leader}
+            </option>
+          ))}
+        </optgroup>
         {savedDecks.length > 0 && (
           <optgroup label="Your saved decks">
             {savedDecks.map((d) => (
@@ -64,9 +74,11 @@ export default function DeckSelect({
       <span className="truncate text-xs text-text-muted">
         {value.kind === 'mirror'
           ? 'Plays whatever the other seat runs.'
-          : resolvedLeader
-            ? `${resolvedLeader.name} · ${resolvedLeader.color.join('/')}${value.kind === 'auto' ? ' · auto-built 50' : ''}`
-            : 'Pick a deck'}
+          : value.kind === 'base'
+            ? (getBaseDeck(value.id)?.archetype ?? 'Pick a deck')
+            : resolvedLeader
+              ? `${resolvedLeader.name} · ${resolvedLeader.color.join('/')}${value.kind === 'auto' ? ' · auto-built 50' : ''}`
+              : 'Pick a deck'}
       </span>
     </div>
   )

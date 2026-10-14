@@ -1,0 +1,502 @@
+[
+  {
+    "id": "base-enel",
+    "name": "Purple Enel",
+    "archetype": "6-DON tempo ramp (OP16 meta tier 1)",
+    "leader": "OP15-058",
+    "frozen": "2026-10-14",
+    "cards": [
+      {
+        "cardId": "OP15-060",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-118",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-061",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-066",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-067",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-068",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-065",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-059",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-063",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-077",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-078",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-075",
+        "qty": 3
+      },
+      {
+        "cardId": "OP15-074",
+        "qty": 3
+      }
+    ]
+  },
+  {
+    "id": "base-luffy-bg",
+    "name": "Blue-Green Luffy",
+    "archetype": "Impel Down midrange (OP16 meta tier 1)",
+    "leader": "OP16-022",
+    "frozen": "2026-10-14",
+    "cards": [
+      {
+        "cardId": "OP16-034",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-054",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-055",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-056",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-045",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-026",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-048",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-042",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-038",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-025",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-029",
+        "qty": 4
+      },
+      {
+        "cardId": "OP01-084",
+        "qty": 4
+      },
+      {
+        "cardId": "EB01-026",
+        "qty": 2
+      }
+    ]
+  },
+  {
+    "id": "base-rosinante",
+    "name": "Purple-Yellow Rosinante",
+    "archetype": "Navy admiral ramp (OP16 meta tier 1)",
+    "leader": "OP12-061",
+    "frozen": "2026-10-14",
+    "cards": [
+      {
+        "cardId": "EB04-038",
+        "qty": 4
+      },
+      {
+        "cardId": "EB04-058",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-064",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-067",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-065",
+        "qty": 3
+      },
+      {
+        "cardId": "EB04-056",
+        "qty": 4
+      },
+      {
+        "cardId": "OP10-066",
+        "qty": 4
+      },
+      {
+        "cardId": "OP12-112",
+        "qty": 4
+      },
+      {
+        "cardId": "OP17-075",
+        "qty": 4
+      },
+      {
+        "cardId": "OP10-114",
+        "qty": 4
+      },
+      {
+        "cardId": "OP12-076",
+        "qty": 4
+      },
+      {
+        "cardId": "OP12-111",
+        "qty": 4
+      },
+      {
+        "cardId": "OP14-073",
+        "qty": 3
+      }
+    ]
+  },
+  {
+    "id": "base-teach",
+    "name": "Black-Yellow Teach",
+    "archetype": "Blackbeard control (OP16 meta tier 2)",
+    "leader": "OP16-080",
+    "frozen": "2026-10-14",
+    "cards": [
+      {
+        "cardId": "OP16-110",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-103",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-106",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-119",
+        "qty": 2
+      },
+      {
+        "cardId": "OP09-093",
+        "qty": 2
+      },
+      {
+        "cardId": "OP16-102",
+        "qty": 4
+      },
+      {
+        "cardId": "OP09-088",
+        "qty": 4
+      },
+      {
+        "cardId": "OP09-089",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-109",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-107",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-114",
+        "qty": 4
+      },
+      {
+        "cardId": "OP09-082",
+        "qty": 4
+      },
+      {
+        "cardId": "OP09-095",
+        "qty": 4
+      },
+      {
+        "cardId": "OP10-084",
+        "qty": 2
+      }
+    ]
+  },
+  {
+    "id": "base-lucy",
+    "name": "Red-Blue Lucy",
+    "archetype": "Dressrosa events (OP16 meta tier 2)",
+    "leader": "OP15-002",
+    "frozen": "2026-10-14",
+    "cards": [
+      {
+        "cardId": "OP15-046",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-021",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-020",
+        "qty": 2
+      },
+      {
+        "cardId": "OP09-118",
+        "qty": 2
+      },
+      {
+        "cardId": "OP06-058",
+        "qty": 2
+      },
+      {
+        "cardId": "OP15-040",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-045",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-042",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-055",
+        "qty": 3
+      },
+      {
+        "cardId": "OP15-054",
+        "qty": 3
+      },
+      {
+        "cardId": "OP15-052",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-051",
+        "qty": 4
+      },
+      {
+        "cardId": "EB02-002",
+        "qty": 4
+      },
+      {
+        "cardId": "OP10-043",
+        "qty": 4
+      },
+      {
+        "cardId": "OP10-049",
+        "qty": 2
+      }
+    ]
+  },
+  {
+    "id": "base-yamato",
+    "name": "Black Yamato",
+    "archetype": "Wano cost control (OP16 meta tier 2)",
+    "leader": "OP16-079",
+    "frozen": "2026-10-14",
+    "cards": [
+      {
+        "cardId": "OP16-096",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-098",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-082",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-095",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-086",
+        "qty": 4
+      },
+      {
+        "cardId": "OP14-089",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-087",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-091",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-092",
+        "qty": 4
+      },
+      {
+        "cardId": "OP10-094",
+        "qty": 4
+      },
+      {
+        "cardId": "OP10-083",
+        "qty": 4
+      },
+      {
+        "cardId": "OP11-085",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-081",
+        "qty": 2
+      }
+    ]
+  },
+  {
+    "id": "base-kalgara",
+    "name": "Yellow Kalgara",
+    "archetype": "Shandian life tempo (OP16 meta dark horse)",
+    "leader": "OP08-098",
+    "frozen": "2026-10-14",
+    "cards": [
+      {
+        "cardId": "OP15-101",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-119",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-114",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-108",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-110",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-112",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-111",
+        "qty": 4
+      },
+      {
+        "cardId": "OP15-117",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-119",
+        "qty": 2
+      },
+      {
+        "cardId": "OP08-110",
+        "qty": 4
+      },
+      {
+        "cardId": "OP05-104",
+        "qty": 4
+      },
+      {
+        "cardId": "OP06-099",
+        "qty": 4
+      },
+      {
+        "cardId": "OP12-103",
+        "qty": 4
+      }
+    ]
+  },
+  {
+    "id": "base-ace-red",
+    "name": "Red Whitebeard Ace",
+    "archetype": "Moby Dick aggro (OP16 meta tier 3)",
+    "leader": "OP16-001",
+    "frozen": "2026-10-14",
+    "cards": [
+      {
+        "cardId": "OP16-021",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-014",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-003",
+        "qty": 3
+      },
+      {
+        "cardId": "OP16-010",
+        "qty": 4
+      },
+      {
+        "cardId": "OP12-002",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-004",
+        "qty": 4
+      },
+      {
+        "cardId": "OP17-006",
+        "qty": 4
+      },
+      {
+        "cardId": "OP17-010",
+        "qty": 4
+      },
+      {
+        "cardId": "OP02-008",
+        "qty": 4
+      },
+      {
+        "cardId": "OP03-003",
+        "qty": 4
+      },
+      {
+        "cardId": "OP03-005",
+        "qty": 4
+      },
+      {
+        "cardId": "OP03-007",
+        "qty": 4
+      },
+      {
+        "cardId": "OP16-002",
+        "qty": 3
+      }
+    ]
+  }
+]

@@ -11,7 +11,7 @@ import { AGENT_FACTORIES, type AgentKind } from '@/sim/benchmark'
 import { evaluateState } from '@/ai/evaluate'
 import GameBoard from '@/components/game/GameBoard'
 import DeckSelect from '@/components/common/DeckSelect'
-import { resolveDeckChoice, type DeckChoice } from '@/components/common/deckChoice'
+import { resolveDeckChoice, DEFAULT_CHOICE, type DeckChoice } from '@/components/common/deckChoice'
 
 const AGENT_KINDS: AgentKind[] = ['random', 'greedy', 'planner', 'mcts']
 
@@ -24,7 +24,7 @@ export default function WatchPage() {
     player1: 'greedy',
     player2: 'greedy',
   })
-  const [deck1Choice, setDeck1Choice] = useState<DeckChoice>({ kind: 'auto', leaderId: 'OP01-001' })
+  const [deck1Choice, setDeck1Choice] = useState<DeckChoice>(DEFAULT_CHOICE)
   const [deck2Choice, setDeck2Choice] = useState<DeckChoice>({ kind: 'mirror' })
   const agentsRef = useRef<Record<PlayerId, Agent>>({
     player1: AGENT_FACTORIES.greedy(Math.random),

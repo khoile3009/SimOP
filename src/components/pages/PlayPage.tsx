@@ -9,7 +9,7 @@ import GameBoard from '@/components/game/GameBoard'
 import PageShell, { Wordmark } from '@/components/common/PageShell'
 import Button from '@/components/common/Button'
 import DeckSelect from '@/components/common/DeckSelect'
-import { resolveDeckChoice, type DeckChoice } from '@/components/common/deckChoice'
+import { resolveDeckChoice, DEFAULT_CHOICE, type DeckChoice } from '@/components/common/deckChoice'
 
 /** Drives the AI seat: whenever the engine is waiting on the AI, play its move. */
 function useAiDriver() {
@@ -50,9 +50,7 @@ export default function PlayPage() {
 
   const validDecks = savedDecks.filter((d) => d.leader && d.cards.length > 0)
   const [yourChoice, setYourChoice] = useState<DeckChoice>(() =>
-    validDecks.length > 0
-      ? { kind: 'saved', id: validDecks[0].id }
-      : { kind: 'auto', leaderId: 'OP01-001' },
+    validDecks.length > 0 ? { kind: 'saved', id: validDecks[0].id } : DEFAULT_CHOICE,
   )
   const [oppChoice, setOppChoice] = useState<DeckChoice>({ kind: 'mirror' })
 

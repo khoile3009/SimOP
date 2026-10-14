@@ -38,6 +38,10 @@ export const HAND_WEIGHTS: Weights = {
   counterPressureDiff: 0.04, // cards their hand must spend to blank my attacks
   tradeCoverageDiff: 0.05, // how much of their remaining pool my bodies out-trade
   blockersDiff: 0.07,
+  // Counter economy: hand counters are DEFENSE SUPPLY against the opponent's
+  // board, not just card stock - playing a 2000-counter card must read as a
+  // defensive loss exactly when their board can punish it (shortfall > 0)
+  defenseShortfallDiff: 0.08,
   // Leader-matchup one-hots (ldrMe:*/ldrOpp:*) carry no hand weight; the
   // trainer prices them, letting the fitted model shift values per matchup
 }
@@ -170,6 +174,7 @@ export function featureVector(state: GameState, playerId: PlayerId): Features {
     counterPressureDiff: me.counterPressure - them.counterPressure,
     tradeCoverageDiff: me.tradeCoverage - them.tradeCoverage,
     blockersDiff: me.blockers - them.blockers,
+    defenseShortfallDiff: defenseShortfall(them, me) - defenseShortfall(me, them),
     deckCounterDensityDiff: me.deckCounterDensity - them.deckCounterDensity,
     deckTriggerDensityDiff: me.deckTriggerDensity - them.deckTriggerDensity,
     deckThreatDensityDiff: me.deckThreatDensity - them.deckThreatDensity,
@@ -179,6 +184,21 @@ export function featureVector(state: GameState, playerId: PlayerId): Features {
   f[`ldrMe:${state.players[playerId].leader.cardId}`] = 1
   f[`ldrOpp:${state.players[opp].leader.cardId}`] = 1
   return f
+}
+
+/**
+ * How many 1000-counter units `side` is SHORT when `attacker`'s board comes in:
+ * demand is the attacker's counterPressure (counters needed to blank their
+ * free attacks), supply is hand counters plus a hit absorbed per live blocker,
+ * and life above 2 is damage the side can simply tank. Positive only when the
+ * defense genuinely does not cover the threat - so holding counters is worth
+ * nothing against an empty board, and worth a lot at low life under a wide one.
+ */
+function defenseShortfall(side: SideStats, attacker: SideStats): number {
+  const demand = attacker.counterPressure
+  const supply = side.counterHand / 1000 + 2 * side.blockers
+  const tankable = Math.max(0, side.life - 2)
+  return Math.max(0, demand - supply - tankable)
 }
 
 function sigmoid(x: number): number {
