@@ -9,6 +9,7 @@ import { useDeckStore } from '@/stores/deckStore'
 import type { Agent } from '@/ai/agents'
 import { AGENT_FACTORIES, type AgentKind } from '@/sim/benchmark'
 import { evaluateState } from '@/ai/evaluate'
+import { forecastDefense } from '@/ai/belief'
 import { describeAction } from '@/ai/turnSearch'
 import { getEffectivePower } from '@/engine/powerCalc'
 import { getEffectDefs } from '@/engine/effects/registry'
@@ -222,6 +223,15 @@ export default function WatchPage() {
         <div className="fixed bottom-2 right-2 top-24 z-40 flex w-80 flex-col gap-1 overflow-hidden rounded-xl border border-glass-border bg-ocean-950/90 p-2 backdrop-blur-md">
           <div className="flex items-center justify-between px-1">
             <span className="ui-label">Match log</span>
+            {gameState && (
+              <span
+                className="text-[10px] tabular-nums text-text-muted"
+                title="Forecast: P(defends a flippable leader swing) = willingness (life-bucket prior + this game's observed counter pattern) x ability (blockers + counter density vs hand size)"
+              >
+                defends: P1 ~{Math.round(forecastDefense(gameState, 'player1').p * 100)}% · P2 ~
+                {Math.round(forecastDefense(gameState, 'player2').p * 100)}%
+              </span>
+            )}
             <button
               className="text-[11px] text-text-secondary hover:text-text-primary"
               onClick={() => {

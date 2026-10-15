@@ -55,7 +55,23 @@ export function resolveDamage(state: GameState): { state: GameState; events: Gam
   const attackerPower = getBattlePower(state, attacker, battle.attackerPowerBonus)
   const defenderPower = getBattlePower(state, defender, battle.defenderPowerBonus)
 
-  let newState = state
+  let newState: GameState = {
+    ...state,
+    defenseLog: [
+      ...(state.defenseLog ?? []),
+      {
+        turn: state.turnNumber,
+        defender: battle.defenderPlayer,
+        attackerPower,
+        defenderPower,
+        counterPower: battle.defenderPowerBonus,
+        blocked: battle.currentTargetId !== battle.originalTargetId,
+        targetLeader: defenderPlayer.leader.instanceId === battle.originalTargetId,
+        defenderLife: defenderPlayer.lifeCards.length,
+        defenderHand: defenderPlayer.hand.length,
+      },
+    ].slice(-40),
+  }
 
   if (attackerPower >= defenderPower) {
     // Attack succeeds

@@ -3,6 +3,7 @@ import type { PlayerId } from '@/engine/types'
 import { whoActs } from '@/engine/legalActions'
 import { useGameStore } from '@/stores/gameStore'
 import { evaluateState } from '@/ai/evaluate'
+import { forecastDefense } from '@/ai/belief'
 import { searchTurnLines } from '@/ai/turnSearch'
 import type { TurnLine } from '@/ai/turnSearch'
 import { honestLines } from '@/ai/honest'
@@ -66,6 +67,19 @@ export default function AnalyzePanel() {
           P1 {pct(p1Score)} · P2 {pct(1 - p1Score)}
         </span>
       </div>
+
+      {aiPlayer && (
+        <p
+          className="text-[11px] text-text-muted"
+          title="P(they defend a flippable leader swing) = willingness (life-bucket prior blended with this game's observed counter pattern) x ability (ready blockers + counter density against hand size)"
+        >
+          They defend swings ~{Math.round(forecastDefense(gameState, aiPlayer).p * 100)}%
+          {(() => {
+            const f = forecastDefense(gameState, aiPlayer)
+            return f.faced > 0 ? ` (defended ${f.defended}/${f.faced} this game)` : ''
+          })()}
+        </p>
+      )}
 
       {/* Eval history sparkline (player 1 perspective) */}
       {evalHistory.length > 1 && (

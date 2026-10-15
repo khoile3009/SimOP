@@ -73,6 +73,22 @@ export interface PlayerState {
   stage: GameCard | null
 }
 
+export interface DefenseObservation {
+  turn: number
+  defender: PlayerId
+  /** Battle powers at resolution (defender's includes counters played) */
+  attackerPower: number
+  defenderPower: number
+  /** Counter power the defender spent this battle */
+  counterPower: number
+  /** The attack was redirected to a blocker */
+  blocked: boolean
+  /** The ORIGINAL target was the leader (a life swing) */
+  targetLeader: boolean
+  defenderLife: number
+  defenderHand: number
+}
+
 export interface BattleState {
   attackerId: string
   attackerPlayer: PlayerId
@@ -110,6 +126,10 @@ export interface GameState {
   }>
   /** Per-player restrictions that expire at end of turn (e.g. 'noLifeToHand') */
   turnFlags: Record<PlayerId, string[]>
+  /** Resolved counter steps this game (bounded): the observable defense
+   * pattern that belief models read - "they passed on a flippable leader hit
+   * at 4 life". Appended by resolveDamage. */
+  defenseLog?: DefenseObservation[]
   /** One-shot cost discounts for playing matching cards this turn (Kin'emon) */
   playDiscounts: Record<PlayerId, PlayDiscount[]>
   actionHistory: GameAction[]
