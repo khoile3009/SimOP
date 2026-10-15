@@ -1,7 +1,8 @@
-import type { DefenseObservation, GameState, PlayerId } from '@/engine/types'
+import type { DefenseObservation, GameCard, GameState, PlayerId } from '@/engine/types'
 import { getCardById } from '@/data/cardService'
+import { getOpponent } from '@/engine/turnManager'
 import { hasKeyword, isCounterEvent } from '@/engine/keywords'
-import { getEffectiveCounter } from '@/engine/effects/statics'
+import { determinize } from './determinize'
 
 /**
  * Response forecasting from the viewer's honest information: how likely is
@@ -67,9 +68,7 @@ export function forecastDefense(state: GameState, defender: PlayerId): ResponseF
     const pool = [...d.hand, ...d.deck, ...d.lifeCards]
     let counterish = 0
     for (const card of pool) {
-      const data = getCardById(card.cardId)
-      const value = data ? getEffectiveCounter(state, defender, card) : 0
-      if (value >= 1000 || (data && isCounterEvent(data))) counterish++
+      if (counterCapable(state, defender, card)) counterish++
     }
     const density = pool.length > 0 ? counterish / pool.length : 0
     ability = 1 - Math.pow(1 - density, d.hand.length)
@@ -77,4 +76,76 @@ export function forecastDefense(state: GameState, defender: PlayerId): ResponseF
 
   const p = willingness * ability
   return { p, willingness, ability, faced, defended }
+}
+
+/** Printed-data counter capability, memoized per card id: the belief path
+ * runs per sampled world per iteration, so no statics walk here (counterSet
+ * hand auras are ignored - a rare, small distortion). */
+const COUNTER_CAPABLE = new Map<string, boolean>()
+function counterCapable(_state: GameState, _owner: PlayerId, card: GameCard): boolean {
+  const hit = COUNTER_CAPABLE.get(card.cardId)
+  if (hit !== undefined) return hit
+  const data = getCardById(card.cardId)
+  const capable = !!data && ((data.counter ?? 0) >= 1000 || isCounterEvent(data))
+  COUNTER_CAPABLE.set(card.cardId, capable)
+  return capable
+}
+
+/**
+ * Likelihood of the opponent's observed defense pattern under a sampled
+ * world's CURRENT hand (sticky-hand approximation: hand composition drifts
+ * slowly, so recent evidence still binds). Model: each counter card they hold
+ * answers a flippable leader swing independently with probability equal to
+ * the life-bucket willingness at the time, so
+ *   P(pass | c counters) = (1 - s)^c.
+ * Worlds that deal them a fistful of counters they visibly never used score
+ * low; worlds that starve them after observed defends score low too.
+ */
+export function defenseLikelihood(world: GameState, viewer: PlayerId): number {
+  const opp = getOpponent(viewer)
+  let counters = 0
+  for (const card of world.players[opp].hand) {
+    if (counterCapable(world, opp, card)) counters++
+  }
+  let likelihood = 1
+  for (const o of world.defenseLog ?? []) {
+    if (o.defender !== opp || !relevant(o)) continue
+    const s = lifePrior(o.defenderLife)
+    const pPass = Math.pow(1 - s, counters)
+    likelihood *= (o.counterPower > 0 || o.blocked ? 1 - pPass : pPass) + 1e-3
+  }
+  return likelihood
+}
+
+/**
+ * Belief-weighted determinization (lazy particle filter): sample `candidates`
+ * worlds, weight each by how well it explains the opponent's observed defense
+ * pattern, and pick proportionally. With no relevant evidence it costs one
+ * plain determinize.
+ */
+export function beliefDeterminize(
+  state: GameState,
+  viewer: PlayerId,
+  rand: () => number,
+  candidates = 5,
+): GameState {
+  const opp = getOpponent(viewer)
+  const hasEvidence = (state.defenseLog ?? []).some((o) => o.defender === opp && relevant(o))
+  if (!hasEvidence) return determinize(state, viewer, rand)
+
+  const worlds: { world: GameState; weight: number }[] = []
+  let total = 0
+  for (let i = 0; i < candidates; i++) {
+    const world = determinize(state, viewer, rand)
+    const weight = defenseLikelihood(world, viewer)
+    worlds.push({ world, weight })
+    total += weight
+  }
+  if (total <= 0) return worlds[0].world
+  let r = rand() * total
+  for (const { world, weight } of worlds) {
+    r -= weight
+    if (r <= 0) return world
+  }
+  return worlds[worlds.length - 1].world
 }

@@ -3,6 +3,7 @@ import type { Agent } from './agents'
 import type { EvalFn } from './evaluate'
 import { MctsAgent } from './mcts'
 import { determinize } from './determinize'
+import { beliefDeterminize } from './belief'
 
 /**
  * Honest hidden-information MCTS (BOT_PLAN P3): root-world voting over
@@ -29,6 +30,9 @@ export interface HonestMctsOptions {
   /** Policy prior for PUCT selection (see MctsOptions.prior) */
   prior?: boolean
   cPuct?: number
+  /** Belief-weighted world sampling: worlds must explain the opponent's
+   * observed defense pattern (off by default, gated) */
+  belief?: boolean
 }
 
 export class HonestMctsAgent implements Agent {
@@ -41,6 +45,7 @@ export class HonestMctsAgent implements Agent {
   private chance?: boolean
   private prior?: boolean
   private cPuct?: number
+  private belief: boolean
 
   constructor(rand: () => number = Math.random, options: HonestMctsOptions = {}) {
     this.rand = rand
@@ -54,6 +59,7 @@ export class HonestMctsAgent implements Agent {
     this.chance = options.chance
     this.prior = options.prior
     this.cPuct = options.cPuct
+    this.belief = options.belief ?? false
   }
 
   choose(state: GameState, actions: GameAction[], playerId: PlayerId): GameAction {
@@ -63,7 +69,9 @@ export class HonestMctsAgent implements Agent {
     for (const a of actions) byKey.set(JSON.stringify(a), { action: a, visits: 0 })
 
     for (let w = 0; w < this.worlds; w++) {
-      const world = determinize(state, playerId, this.rand)
+      const world = this.belief
+        ? beliefDeterminize(state, playerId, this.rand)
+        : determinize(state, playerId, this.rand)
       let searched = false
       const searcher = new MctsAgent(this.rand, {
         iterations: this.iterations,

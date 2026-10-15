@@ -235,6 +235,20 @@ bottleneck. Next steps, in order:
   from the fixed order.
 - Knowledge tracking: revealed cards already pin determinization; extend to "opponent
   searched deck for X type" constraints.
+  - PARTIAL DONE (Oct 2026), belief-weighted determinization: state.defenseLog
+    records every resolved counter step (resolveDamage); src/ai/belief.ts
+    forecastDefense gives P(defends a flippable swing) = willingness (life
+    prior + observed pattern as Beta pseudo-counts) x ability (blockers +
+    counter density vs hand size), surfaced in the analyzer and watch log.
+    beliefDeterminize = lazy particle filter: sample K worlds, weight by
+    P(observed passes/defends | world's hand counters) with
+    P(pass|c) = (1-s)^c, pick proportionally; counter capability memoized on
+    printed data (the statics walk made ismcts 10x slower before this).
+    Gate (gate-belief.ts): ismcts+belief 55% (11-9) -> DEFAULT ON for
+    IS-MCTS (~1.4x move cost); honest+belief 50% (16-16) -> flag kept,
+    default off. Small n, directional. Still open: search-type constraints
+    ("added a {Supernovas} card" narrows the slot), negative inference
+    beyond counters (removal held, blocker declines).
 
 **P4 — exploitability + meta benchmarks**
 - Fixed benchmark deck pool (one per color archetype incl. OP15 Enel 6-DON, Brook

@@ -6,6 +6,7 @@ import { evaluateState } from './evaluate'
 import type { EvalFn } from './evaluate'
 import type { Agent } from './agents'
 import { determinize } from './determinize'
+import { beliefDeterminize } from './belief'
 
 /**
  * Information-set MCTS (BOT_PLAN P3, Cowling et al. 2012): ONE tree over the
@@ -49,6 +50,9 @@ export interface IsMctsOptions {
   evalFn?: EvalFn
   /** Hard cap on actions per descent (loop safety) */
   maxDepth?: number
+  /** Belief-weighted world sampling (default ON - gated at 55% over uniform):
+   * iteration worlds must explain the opponent's observed defense pattern */
+  belief?: boolean
 }
 
 export class IsMctsAgent implements Agent {
@@ -58,6 +62,7 @@ export class IsMctsAgent implements Agent {
   private exploration: number
   private evalFn: EvalFn
   private maxDepth: number
+  private belief: boolean
 
   constructor(rand: () => number = Math.random, options: IsMctsOptions = {}) {
     this.rand = rand
@@ -65,6 +70,7 @@ export class IsMctsAgent implements Agent {
     this.exploration = options.exploration ?? 0.5
     this.evalFn = options.evalFn ?? evaluateState
     this.maxDepth = options.maxDepth ?? 60
+    this.belief = options.belief ?? true
   }
 
   choose(state: GameState, actions: GameAction[], playerId: PlayerId): GameAction {
@@ -76,7 +82,9 @@ export class IsMctsAgent implements Agent {
     const root: IsNode = { children: new Map() }
 
     for (let i = 0; i < this.iterations; i++) {
-      let s = determinize(state, playerId, this.rand)
+      let s = this.belief
+        ? beliefDeterminize(state, playerId, this.rand, 3)
+        : determinize(state, playerId, this.rand)
       let node = root
       const path: IsChild[] = []
       let value: number | null = null

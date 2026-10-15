@@ -83,3 +83,44 @@ describe('response forecasting', () => {
     expect(f.faced).toBe(0)
   })
 })
+
+describe('belief-weighted determinization', () => {
+  it('likelihood: logged passes punish counter-rich sampled hands', async () => {
+    const { defenseLikelihood } = await import('@/ai/belief')
+    const { getCardById } = await import('@/data/cardService')
+    const state = baseState()
+    const logged: GameState = {
+      ...state,
+      defenseLog: [passOnLeader(3), passOnLeader(5), passOnLeader(7)],
+    }
+    const opp = logged.players.player2
+    const counterish = opp.deck.filter((c) => (getCardById(c.cardId)?.counter ?? 0) >= 1000)
+    const blank = opp.deck.filter((c) => (getCardById(c.cardId)?.counter ?? 0) === 0)
+    expect(counterish.length).toBeGreaterThanOrEqual(5)
+    expect(blank.length).toBeGreaterThanOrEqual(5)
+
+    const withHand = (hand: typeof opp.hand): GameState => ({
+      ...logged,
+      players: { ...logged.players, player2: { ...opp, hand } },
+    })
+    const rich = defenseLikelihood(withHand(counterish.slice(0, 5)), 'player1')
+    const poor = defenseLikelihood(withHand(blank.slice(0, 5)), 'player1')
+    expect(poor).toBeGreaterThan(rich)
+  })
+
+  it('sampled worlds conserve the hidden multiset', async () => {
+    const { beliefDeterminize } = await import('@/ai/belief')
+    const state = baseState()
+    const logged: GameState = { ...state, defenseLog: [passOnLeader(3), passOnLeader(5)] }
+    const rand = mulberry32(77)
+    const ids = (s: GameState) =>
+      [...s.players.player2.hand, ...s.players.player2.deck, ...s.players.player2.lifeCards]
+        .map((c) => c.instanceId)
+        .sort()
+    const before = ids(logged)
+    for (let k = 0; k < 5; k++) {
+      const world = beliefDeterminize(logged, 'player1', rand)
+      expect(ids(world)).toEqual(before)
+    }
+  })
+})
