@@ -16,5 +16,32 @@
       }
     ],
     "verdict": "ADOPT"
+  },
+  {
+    "at": "2026-10-15T18:34:21.458Z",
+    "candidate": "hand",
+    "gamesGreedy": 40,
+    "gamesMcts": 10,
+    "results": [
+      {
+        "member": "v0-2026-09-hand-baseline",
+        "greedy": "108-132",
+        "mcts": "36-24",
+        "greedyPct": 45,
+        "mctsPct": 60,
+        "beaten": true,
+        "veto": false
+      },
+      {
+        "member": "v1-2026-10-counter-economy",
+        "greedy": "122-118",
+        "mcts": "33-27",
+        "greedyPct": 51,
+        "mctsPct": 55,
+        "beaten": true,
+        "veto": false
+      }
+    ],
+    "verdict": "ADOPT"
   }
 ]

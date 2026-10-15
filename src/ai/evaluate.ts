@@ -1,4 +1,4 @@
-import type { GameState, PlayerId } from '@/engine/types'
+import type { GameCard, GameState, PlayerId } from '@/engine/types'
 import { getEffectiveCounter } from '@/engine/effects/statics'
 import { getCardById } from '@/data/cardService'
 import { getEffectivePower } from '@/engine/powerCalc'
@@ -47,6 +47,7 @@ export const HAND_WEIGHTS: Weights = {
   // board, not just card stock - playing a 2000-counter card must read as a
   // defensive loss exactly when their board can punish it (shortfall > 0)
   defenseShortfallDiff: 0.08,
+  wastedDebuffDiff: 0.1,
   // Leader-matchup one-hots (ldrMe:*/ldrOpp:*) carry no hand weight; the
   // trainer prices them, letting the fitted model shift values per matchup
 }
@@ -160,6 +161,45 @@ function sideStats(state: GameState, playerId: PlayerId): SideStats {
   }
 }
 
+/** Net 'turn'-duration power modifiers on a unit (what expires at end of turn). */
+function turnMods(unit: GameCard): number {
+  let net = 0
+  for (const m of unit.modifiers) {
+    if (m.kind === 'power' && m.duration === 'turn') net += m.value
+  }
+  return net
+}
+
+/**
+ * Debuff magnitude on `side`'s board that `attacker` can no longer convert
+ * this turn. A minus on a character is real while the target is RESTED and an
+ * active attacker still clears its debuffed power (battle K.O. range); a minus
+ * on the leader is real while any active attacker clears it (damage range).
+ * Anything else expires unconverted - the board looks weaker without anything
+ * having been achieved, and the eval must not pay for that.
+ */
+function wastedDebuff(state: GameState, side: PlayerId, attacker: PlayerId): number {
+  const defSide = state.players[side]
+  const atkSide = state.players[attacker]
+  const activePowers = [atkSide.leader, ...atkSide.characters]
+    .filter((u) => !u.isRested)
+    .map((u) => getEffectivePower(state, u))
+  const maxActive = activePowers.length > 0 ? Math.max(...activePowers) : -Infinity
+
+  let wasted = 0
+  const leaderNet = turnMods(defSide.leader)
+  if (leaderNet < 0 && maxActive < getEffectivePower(state, defSide.leader)) {
+    wasted += -leaderNet
+  }
+  for (const c of defSide.characters) {
+    const net = turnMods(c)
+    if (net >= 0) continue
+    const convertible = c.isRested && maxActive >= getEffectivePower(state, c)
+    if (!convertible) wasted += -net
+  }
+  return wasted
+}
+
 export function featureVector(state: GameState, playerId: PlayerId): Features {
   const opp = getOpponent(playerId)
   const me = sideStats(state, playerId)
@@ -182,6 +222,10 @@ export function featureVector(state: GameState, playerId: PlayerId): Features {
     tradeCoverageDiff: me.tradeCoverage - them.tradeCoverage,
     blockersDiff: me.blockers - them.blockers,
     defenseShortfallDiff: defenseShortfall(them, me) - defenseShortfall(me, them),
+    // Unconvertible debuffs ON MY board were phantom credit to THEM (and vice
+    // versa), so my-side waste raises my corrected score; positive weight
+    wastedDebuffDiff:
+      (wastedDebuff(state, playerId, opp) - wastedDebuff(state, opp, playerId)) / 1000,
     deckCounterDensityDiff: me.deckCounterDensity - them.deckCounterDensity,
     deckTriggerDensityDiff: me.deckTriggerDensity - them.deckTriggerDensity,
     deckThreatDensityDiff: me.deckThreatDensity - them.deckThreatDensity,
