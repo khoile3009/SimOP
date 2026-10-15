@@ -4,6 +4,7 @@ import { RandomAgent, GreedyAgent } from '@/ai/agents'
 import { TurnPlannerAgent } from '@/ai/turnSearch'
 import { MctsAgent } from '@/ai/mcts'
 import { HonestMctsAgent } from '@/ai/honestMcts'
+import { IsMctsAgent } from '@/ai/ismcts'
 import { runGame, makeAutoDeck } from './selfplay'
 import { mulberry32 } from '@/utils/rng'
 
@@ -13,7 +14,7 @@ import { mulberry32 } from '@/utils/rng'
  * other game so first-player advantage cancels, seeded for reproducibility.
  */
 
-export type AgentKind = 'random' | 'greedy' | 'planner' | 'mcts' | 'honest'
+export type AgentKind = 'random' | 'greedy' | 'planner' | 'mcts' | 'honest' | 'ismcts'
 
 export const AGENT_FACTORIES: Record<AgentKind, (rand: () => number) => Agent> = {
   random: (rand) => new RandomAgent(rand),
@@ -21,6 +22,7 @@ export const AGENT_FACTORIES: Record<AgentKind, (rand: () => number) => Agent> =
   planner: (rand) => new TurnPlannerAgent(rand),
   mcts: (rand) => new MctsAgent(rand),
   honest: (rand) => new HonestMctsAgent(rand),
+  ismcts: (rand) => new IsMctsAgent(rand),
 }
 
 export interface PairResult {
