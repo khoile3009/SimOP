@@ -34,8 +34,8 @@ observation -> named concept -> feature -> gate (2-for-2 today, ~1h each),
    question for free later.
 
 **Next up (app)**
-6. ST-set ingestion (true netdecks need starter staples; same ritual as EB/PRB,
-   one session) -> regenerate base decks from real lists.
+6. DONE (Oct 2026): ST-set ingestion (35 starter decks, 365 cards, one combined
+   module) -> base decks regenerated with the real ST staples (see 4.5).
 7. UX: one-tap confirm for single-option effect choices (fleet: 60% of choices),
    the approved DON class picker, trash-pile modal, drag-to-attack arrow.
 8. Difficulty tiers as time budgets per move, not algorithm names.
@@ -259,6 +259,15 @@ anecdote. Elo over league members once there are 4+.
   Dressrosa, black Yamato, Kalgara Shandia, red Whitebeard). They double as the
   "Base decks" group in the Play/Watch pickers and the gate-eval deck pairs.
   Regenerate deliberately on a meta shift and note it here.
+  - Rebuild 2026-10-14 (ST ingestion landed): OP-pool stand-ins replaced by the
+    real starter staples the netdecks run - base-teach gained the ST27
+    Blackbeard package (Kuzan ST27-003 x4, Sanjuan Wolf ST27-004 x4, big Teach
+    ST27-005 x3; Devon ST27-002 entered via fill), base-ace-red the ST15
+    Whitebeard package (Newgate ST15-002 x4, Rush Ace ST15-005 x4; Thatch
+    ST15-004 via fill), base-luffy-bg picked up ST30-014 Mr.3 through the
+    Baroque Works fill. The other five archetypes are unchanged (no color-legal
+    ST staples). Gate/league history before this date used the stand-in lists,
+    so gate numbers across the rebuild are not directly comparable.
 - Exploitability probe before adoption: tune a best-response agent against the
   candidate (ByteRL lesson: ladder win rate is not robustness).
 - Data flywheel: every ladder/fleet run can log (chosen, rejected) afterstate

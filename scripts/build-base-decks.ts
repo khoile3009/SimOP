@@ -1,7 +1,8 @@
 /* Build the base deck pool (BOT_PLAN 4.5 + the deck picker's "Base decks").
  * Curated cores follow the OP16-era meta archetypes (onepiece.gg tier list,
- * Oct 2026), with ST-set staples substituted since starter decks are not in
- * the ingested pool. The remainder of each list is a deterministic fill:
+ * Oct 2026), including the ST starter staples the real lists run (ST15 for
+ * red Whitebeard Ace, ST27 for Blackbeard Teach — the other archetypes have
+ * no color-legal ST staples). The remainder of each list is a deterministic fill:
  * color-legal cards matching the archetype's types, preferring counters until
  * the deck holds 16 counter cards, then stat efficiency on a low curve.
  *
@@ -66,7 +67,7 @@ const SPECS: Spec[] = [
     leader: 'OP16-080',
     core: [
       ['OP16-110', 4], ['OP16-103', 4], ['OP16-106', 4], ['OP16-119', 2],
-      ['OP09-093', 2],
+      ['OP09-093', 2], ['ST27-003', 4], ['ST27-004', 4], ['ST27-005', 3],
     ],
     fillTypes: ['Blackbeard Pirates'],
   },
@@ -107,7 +108,10 @@ const SPECS: Spec[] = [
     name: 'Red Whitebeard Ace',
     archetype: 'Moby Dick aggro (OP16 meta tier 3)',
     leader: 'OP16-001',
-    core: [['OP16-021', 4], ['OP16-014', 4], ['OP16-003', 3]],
+    core: [
+      ['OP16-021', 4], ['OP16-014', 4], ['OP16-003', 3], ['ST15-002', 4],
+      ['ST15-005', 4],
+    ],
     fillTypes: ['Whitebeard Pirates'],
   },
 ]
