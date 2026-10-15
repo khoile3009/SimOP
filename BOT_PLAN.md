@@ -199,7 +199,17 @@ bottleneck. Next steps, in order:
 **P3 — honest-information search**
 - IS-MCTS / multiple-observer variant over the existing determinizer (stop averaging
   incompatible worlds at the root — strategy-fusion fix).
-- Chance-node bucketing for draw/life reveals (Zhang–Buro) to keep branching sane.
+- DONE (Oct 2026): chance-node bucketing for draw/life reveals (Zhang–Buro).
+  src/ai/chance.ts + mcts.ts: END_TURN draws and leader-hit life reveals fan
+  into weight-proportional outcome children over resampled unknown orderings
+  (seenByOwner/revealed pinned), width damped 3->2->1 with chance depth.
+  Default ON for MctsAgent and HonestMctsAgent (gate-eval's deep leg now
+  searches without topdeck clairvoyance). Gate (scripts/gate-chance.ts,
+  seat-swapped, enel/luffy-bg + teach/ace pairs): honest+chance 63% (15-9)
+  vs honest; oracle+chance 45% (27-33) vs oracle - parity within noise, the
+  oracle was genuinely profiting from knowing the future deck order.
+  Remaining clairvoyance: searches/effect draws inside a turn still resolve
+  from the fixed order.
 - Knowledge tracking: revealed cards already pin determinization; extend to "opponent
   searched deck for X type" constraints.
 

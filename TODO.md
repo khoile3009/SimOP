@@ -32,8 +32,17 @@
       1. deck-potential eval features (folds into M4 gen-2);
       2. opponent-outs punisher pass on verified lines ("if they draw removal-class -> n%",
          commit-vs-hold dial via mean-minus-spread ranking);
-      3. chance-node draw steps in MCTS at turn boundaries (Choe & Kim 2019 lazy
-         determinization + Zhang-Buro outcome bucketing; fixes topdeck clairvoyance);
+      3. DONE (Oct 2026): chance-node draw steps in MCTS (Choe & Kim lazy
+         determinization + Zhang-Buro outcome bucketing; fixes topdeck
+         clairvoyance). src/ai/chance.ts resamples unknown deck/life orderings
+         (seenByOwner/revealed stay pinned); mcts.ts fans END_TURN draws
+         (buckets counter/threat/curve/dead) and leader-hit life reveals
+         (trigger/plain) into weight-proportional chance children, width
+         damped 3->2->1 by chance depth. Default ON for mcts + honest. Gate:
+         honest+chance 63% vs honest (15-9), oracle+chance 45% vs oracle
+         (27-33, parity within noise - the oracle WAS profiting from the
+         cheat); wall-clock well under the 2-3x budget. Searches/effect draws
+         still resolve from the fixed order (future refinement);
       4. playing-to-your-outs mode (when max win% < threshold, rank lines by P(win | best
          draw class) - direct transcription of pro play; unpublished as an AI technique).
 - [x] M5 Phase B engine — DONE (Sep 2026). OP01 is now FULLY implemented: zero

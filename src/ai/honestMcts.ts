@@ -24,6 +24,8 @@ export interface HonestMctsOptions {
   iterations?: number
   exploration?: number
   evalFn?: EvalFn
+  /** Chance-node draws inside each world's search (on by default) */
+  chance?: boolean
 }
 
 export class HonestMctsAgent implements Agent {
@@ -33,6 +35,7 @@ export class HonestMctsAgent implements Agent {
   private iterations: number
   private exploration?: number
   private evalFn?: EvalFn
+  private chance?: boolean
 
   constructor(rand: () => number = Math.random, options: HonestMctsOptions = {}) {
     this.rand = rand
@@ -43,6 +46,7 @@ export class HonestMctsAgent implements Agent {
     this.iterations = options.iterations ?? 500
     this.exploration = options.exploration
     this.evalFn = options.evalFn
+    this.chance = options.chance
   }
 
   choose(state: GameState, actions: GameAction[], playerId: PlayerId): GameAction {
@@ -58,6 +62,7 @@ export class HonestMctsAgent implements Agent {
         iterations: this.iterations,
         exploration: this.exploration,
         evalFn: this.evalFn,
+        chance: this.chance,
         onSearch: (info) => {
           searched = true
           for (const child of info.children) {
