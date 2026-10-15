@@ -119,12 +119,15 @@ export default function GameBoard({ spectator = false }: { spectator?: boolean }
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   // In vs-AI mode the human's seat stays at the bottom regardless of whose turn
-  // it is; in hotseat the view follows the turn player.
-  const current: PlayerId = aiPlayer
-    ? aiPlayer === 'player1'
-      ? 'player2'
-      : 'player1'
-    : (gameState?.currentPlayer ?? 'player1')
+  // it is; spectators keep P1 at the bottom (the eval bar's perspective);
+  // only hotseat follows the turn player.
+  const current: PlayerId = spectator
+    ? 'player1'
+    : aiPlayer
+      ? aiPlayer === 'player1'
+        ? 'player2'
+        : 'player1'
+      : (gameState?.currentPlayer ?? 'player1')
   const opponent: PlayerId = current === 'player1' ? 'player2' : 'player1'
 
   const selectedId = selectedTarget?.type === 'card' ? selectedTarget.instanceId : null
