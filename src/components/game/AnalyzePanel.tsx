@@ -200,6 +200,15 @@ export default function AnalyzePanel() {
                       LETHAL
                     </span>
                   ) : null}
+                  {line.afterReply && (
+                    <span
+                      className="text-[10px] tabular-nums text-text-muted"
+                      title="After their reply turn, averaged over what they might draw (worst draw class in parentheses)"
+                    >
+                      reply ~{pct(scoreFor(line.afterReply.expected))} (
+                      {pct(scoreFor(line.afterReply.worstDraw))})
+                    </span>
+                  )}
                 </div>
                 <ol className="flex flex-col gap-0.5 text-xs text-text-secondary">
                   {line.labels.map((label, j) => (
@@ -218,6 +227,18 @@ export default function AnalyzePanel() {
                     {line.branches.map((b, j) => (
                       <div key={j} className="flex justify-between gap-2">
                         <span>If {b.label}</span>
+                        <span className="tabular-nums">{pct(scoreFor(b.value))}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {i === 0 && line.afterReply && (
+                  <div className="mt-1.5 border-t border-glass-border pt-1 text-[11px] text-text-muted">
+                    {line.afterReply.branches.map((b, j) => (
+                      <div key={j} className="flex justify-between gap-2">
+                        <span>
+                          If they draw {b.cls} ({b.cardName})
+                        </span>
                         <span className="tabular-nums">{pct(scoreFor(b.value))}</span>
                       </div>
                     ))}

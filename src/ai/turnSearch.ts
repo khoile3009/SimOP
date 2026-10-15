@@ -9,6 +9,7 @@ import { evaluateState } from './evaluate'
 import type { EvalFn } from './evaluate'
 import { GreedyAgent, rolloutInterrupts } from './agents'
 import type { Agent } from './agents'
+import { sampleOutClasses } from './outs'
 
 /**
  * Whole-turn line search: the best single action means nothing outside its
@@ -38,6 +39,17 @@ export interface TurnLine {
   branches: { label: string; value: number }[]
   /** Eval after each step, aligned with labels */
   stepScores: number[]
+  /** Punisher pass (M4.5 #2): the opponent's reply turn simulated once per
+   * out-class draw - "don't overextend into their outs" */
+  afterReply?: AfterReply
+}
+
+export interface AfterReply {
+  /** Class-mass-weighted value after their greedy reply turn */
+  expected: number
+  /** Value under their most punishing draw class */
+  worstDraw: number
+  branches: { cls: string; cardName: string; value: number }[]
 }
 
 interface Node {
@@ -62,6 +74,11 @@ export interface TurnSearchOptions {
   verifyBudget?: number
   /** Evaluation function (defaults to the active weights) - enables eval A/B */
   evalFn?: EvalFn
+  /** Run the opponent-outs punisher pass on verified lines (analyzer default) */
+  punish?: boolean
+  /** 'punished' ranks by mean-minus-spread over their draw classes
+   * (0.5·expected + 0.5·worstDraw) - the commit-vs-hold dial */
+  rankBy?: 'worstCase' | 'punished'
 }
 
 export function searchTurnLines(
@@ -76,6 +93,8 @@ export function searchTurnLines(
     maxExpansions = 20000,
     verifyTop = 8,
     verifyBudget = 4000,
+    punish = true,
+    rankBy = 'worstCase',
   } = options
   const ev = memoizeEval(options.evalFn ?? evaluateState)
   if (whoActs(root) !== player) return []
@@ -169,7 +188,105 @@ export function searchTurnLines(
     }
   })
 
-  return verified.sort((a, b) => b.worstCase - a.worstCase).slice(0, topK)
+  if (punish) {
+    for (const line of verified) {
+      if (line.lethal) continue // the reply turn never comes
+      line.afterReply = punishLine(root, player, line.actions, ev)
+    }
+  }
+
+  const rankKey = (l: TurnLine): number =>
+    rankBy === 'punished' && l.afterReply
+      ? 0.5 * l.afterReply.expected + 0.5 * l.afterReply.worstDraw
+      : l.worstCase
+  return verified.sort((a, b) => rankKey(b) - rankKey(a)).slice(0, topK)
+}
+
+// ─── Opponent-outs punisher pass (M4.5 #2) ───────────────────────────────────
+
+/**
+ * "Don't overextend into their outs": replay the line to just before its
+ * END_TURN, then once per out-class in the opponent's deck, force that class
+ * representative to their deck top, let the turn change draw it, and play
+ * their whole reply turn with greedy agents on both sides. The result prices
+ * what the board looks like AFTER they answer, not just after we act.
+ */
+function punishLine(
+  root: GameState,
+  player: PlayerId,
+  actions: GameAction[],
+  ev: EvalFn,
+): AfterReply | undefined {
+  if (actions.length === 0 || actions[actions.length - 1].type !== 'END_TURN') return undefined
+  const opp = getOpponent(player)
+
+  // Replay to the pre-END_TURN state, greedy replies on interrupts
+  let s = root
+  for (const action of actions.slice(0, -1)) {
+    for (let guard = 0; guard < 20 && !s.winner && whoActs(s) !== player; guard++) {
+      const resolved = rolloutInterrupts(s, player, ev)
+      if (resolved === s) break
+      s = resolved
+    }
+    if (s.winner || whoActs(s) !== player) return undefined
+    const result = processAction(s, action, player)
+    if (result.error) return undefined
+    s = result.state
+  }
+  if (s.winner) return undefined
+
+  const reps = sampleOutClasses(s.players[opp].deck)
+  if (reps.length === 0) return undefined
+
+  const branches: AfterReply['branches'] = []
+  let weighted = 0
+  let massTotal = 0
+  let worstDraw = Infinity
+  for (const rep of reps) {
+    const forced = forceDeckTop(s, opp, rep.card.instanceId)
+    const ended = processAction(forced, actions[actions.length - 1], player)
+    if (ended.error) continue
+    const value = ev(rolloutReplyTurn(ended.state, player, ev), player)
+    branches.push({
+      cls: rep.cls,
+      cardName: getCardById(rep.card.cardId)?.name ?? rep.card.cardId,
+      value,
+    })
+    weighted += rep.mass * value
+    massTotal += rep.mass
+    if (value < worstDraw) worstDraw = value
+  }
+  if (branches.length === 0) return undefined
+  return { expected: weighted / massTotal, worstDraw, branches }
+}
+
+/** Swap one deck card to the top (the draw the reply turn will see). */
+function forceDeckTop(state: GameState, owner: PlayerId, instanceId: string): GameState {
+  const p = state.players[owner]
+  const idx = p.deck.findIndex((c) => c.instanceId === instanceId)
+  if (idx <= 0) return state
+  const deck = [...p.deck]
+  ;[deck[0], deck[idx]] = [deck[idx], deck[0]]
+  return { ...state, players: { ...state.players, [owner]: { ...p, deck } } }
+}
+
+/** Play out the opponent's whole turn, greedy on both sides, and stop when
+ * the turn comes back (or someone wins). */
+function rolloutReplyTurn(state: GameState, player: PlayerId, ev: EvalFn): GameState {
+  const agent = new GreedyAgent(() => 0.5, ev)
+  let s = state
+  for (let guard = 0; guard < 80; guard++) {
+    if (s.winner || s.currentPlayer === player) return s
+    const actor = whoActs(s)
+    if (!actor) return s
+    const options = legalActions(s)
+    if (options.length === 0) return s
+    const action = options.length === 1 ? options[0] : agent.choose(s, options, actor)
+    const result = processAction(s, action, actor)
+    if (result.error) return s
+    s = result.state
+  }
+  return s
 }
 
 /**
@@ -191,6 +308,10 @@ export class TurnPlannerAgent implements Agent {
       topK: 1,
       maxExpansions: 6000,
       verifyBudget: 1200,
+      // Punisher ranking adopted Oct 2026: 57% over worst-case ranking
+      // across 100 seat-swapped base-deck games (gate-punish.ts)
+      punish: true,
+      rankBy: 'punished',
       ...searchOptions,
     }
     this.greedy = new GreedyAgent(rand, this.searchOptions.evalFn ?? evaluateState)

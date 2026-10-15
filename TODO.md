@@ -30,8 +30,16 @@
       independent of the learned eval and can land anytime; #1 waits with gen-2).
       Full research + implementation spec: https://claude.ai/artifact/RMxsm56stRe8Uq5U9kbRUx
       1. deck-potential eval features (folds into M4 gen-2);
-      2. opponent-outs punisher pass on verified lines ("if they draw removal-class -> n%",
-         commit-vs-hold dial via mean-minus-spread ranking);
+      2. DONE (Oct 2026): opponent-outs punisher pass. src/ai/outs.ts
+         sampleOutClasses (removal via effect-def scan / threat / counter /
+         blocker / median-ordinary, mass-weighted reps); turnSearch punishLine
+         replays each verified line to pre-END_TURN, forces one rep per class
+         onto the opponent's deck top, plays their whole greedy reply turn,
+         publishes afterReply {expected, worstDraw, branches}. Analyzer shows
+         "reply ~X% (worst)" chips + "if they draw <class> (card) -> n%"
+         branches. Planner ADOPTED rankBy 'punished' (0.5·expected +
+         0.5·worstDraw, the mean-minus-spread commit-vs-hold dial): 57%
+         (57-43) over worst-case ranking, 100 seat-swapped base-deck games;
       3. DONE (Oct 2026): chance-node draw steps in MCTS (Choe & Kim lazy
          determinization + Zhang-Buro outcome bucketing; fixes topdeck
          clairvoyance). src/ai/chance.ts resamples unknown deck/life orderings

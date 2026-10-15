@@ -26,6 +26,16 @@ observation -> named concept -> feature -> gate (2-for-2 today, ~1h each),
    engineering.
 3. Feature mining cadence: a play session per week-ish; every bot misjudgment
    becomes a FEATURE_IDEAS entry below, best one gets implemented + gated.
+   - DONE (Oct 2026), M4.5 #2 opponent-outs punisher pass: src/ai/outs.ts
+     sampleOutClasses (removal read from effect defs, threat/counter/blocker,
+     median ordinary); turnSearch replays each verified line to pre-END_TURN,
+     forces one class rep onto their deck top, plays their greedy reply turn,
+     and publishes afterReply {expected, worstDraw, branches}. Analyzer
+     renders reply chips + per-class draw branches. Planner ADOPTED the
+     commit-vs-hold dial (rank by 0.5·expected + 0.5·worstDraw): 57-43 (57%)
+     over worst-case ranking across 100 seat-swapped base-deck games
+     (scripts/gate-punish.ts). sampleOutClasses is the shared utility #4
+     (playing-to-outs) reuses.
 4. League bootstrap (4.1): freeze champion-v1 (hand+P0b eval, mcts300) in
    src/ai/league/; persistent ladder-results file; future adoptions must beat
    a league quorum, not just the latest.
