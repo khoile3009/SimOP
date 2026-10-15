@@ -268,7 +268,19 @@ anecdote. Elo over league members once there are 4+.
    then multiple-observer trees
 3. chance-node bucketing for draw/reveal events (Zhang-Buro)
 4. policy priors from the eval (progressive bias / implicit minimax) - turns
-   eval quality directly into search speed
+   eval quality directly into search speed.
+   ATTEMPTED Oct 2026, REJECTED (scripts/tune-prior.ts holds the full record):
+   (a) AlphaZero sqrt-form PUCT loses to UCB1 here even with UNIFORM priors
+   (19-38%) - deterministic eval leaves want log exploration; the engine got
+   prior-weighted UCB1 instead (tilt = 1 + cPuct·(k·P - 1), uniform ==
+   incumbent exactly, verified 46% seed-noise). (b) The recycled gen-3 rank
+   model is harmful as a prior, monotonically in mix (42% at 0.5, 29-33% at
+   1.0): its corpus is search-over-the-hand-eval choices, so it double-counts
+   the teacher's biases and adds no ordering information - the same
+   saturation lesson as the five rejected evals, now confirmed for ordering.
+   Machinery KEPT (MctsOptions.prior/cPuct/priorTemp, PriorFn hook, default
+   off): a future prior must carry information the eval lacks (per-card
+   model, or human-game imitation).
 5. fixed time-per-move budgets for the UI tiers (difficulty = milliseconds,
    not algorithm identity)
 

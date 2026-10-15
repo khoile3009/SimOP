@@ -5,6 +5,8 @@ import { evaluateState } from './evaluate'
 import type { EvalFn } from './evaluate'
 import type { Agent } from './agents'
 import { chanceTrigger, chanceOutcomeStates } from './chance'
+import { rankPrior } from './prior'
+import type { PriorFn } from './prior'
 
 /**
  * Perfect-information UCT with evaluation leaves: selection by UCB1 (each node
@@ -41,6 +43,8 @@ interface Node {
   weight?: number
   /** Chance nodes crossed from the root (dampens chance width) */
   chanceDepth: number
+  /** Raw policy-prior logit from the PARENT actor's perspective (PUCT) */
+  priorScore?: number
 }
 
 export interface MctsOptions {
@@ -50,6 +54,13 @@ export interface MctsOptions {
   /** Chance-node draws (on by default): branch on hidden-card consumption
    * instead of trusting the determinized deck order */
   chance?: boolean
+  /** Policy prior for PUCT selection (off by default): true uses the recycled
+   * gen-3 rank model, or pass a custom PriorFn */
+  prior?: boolean | PriorFn
+  /** PUCT exploration constant (used only when a prior is active) */
+  cPuct?: number
+  /** Softmax temperature over sibling prior logits */
+  priorTemp?: number
   /** Gen-3 data hook: receives the root's explored children after each search */
   onSearch?: (info: MctsSearchInfo) => void
 }
@@ -68,6 +79,9 @@ export class MctsAgent implements Agent {
   private exploration: number
   private evalFn: EvalFn
   private chance: boolean
+  private priorFn: PriorFn | null
+  private cPuct: number
+  private priorTemp: number
   private onSearch?: (info: MctsSearchInfo) => void
 
   constructor(rand: () => number = Math.random, options: MctsOptions = {}) {
@@ -76,6 +90,14 @@ export class MctsAgent implements Agent {
     this.exploration = options.exploration ?? 0.5
     this.evalFn = options.evalFn ?? evaluateState
     this.chance = options.chance ?? true
+    this.priorFn =
+      options.prior === true
+        ? rankPrior
+        : typeof options.prior === 'function'
+          ? options.prior
+          : null
+    this.cPuct = options.cPuct ?? 1.5
+    this.priorTemp = options.priorTemp ?? 1
     this.onSearch = options.onSearch
   }
 
@@ -163,6 +185,7 @@ export class MctsAgent implements Agent {
         visits: 0,
         valueSum: 0,
         chanceDepth: node.chanceDepth,
+        priorScore: this.priorFn ? this.priorFn(result.state, actor) : undefined,
       }
       node.children.push(child)
       return child
@@ -202,9 +225,18 @@ export class MctsAgent implements Agent {
     if (chanceNode.children.length === 1) {
       // One bucket: no fan-out needed, but keep the resampled (honest) child
       const only = chanceNode.children[0]
-      const child: Node = { ...only, action, parent: node, weight: undefined }
+      const child: Node = {
+        ...only,
+        action,
+        parent: node,
+        weight: undefined,
+        priorScore: this.priorFn ? this.priorFn(only.state, actor) : undefined,
+      }
       node.children.push(child)
       return child
+    }
+    if (this.priorFn) {
+      chanceNode.priorScore = this.priorFn(this.representativeState(chanceNode), actor)
     }
     node.children.push(chanceNode)
     return this.selectOutcome(chanceNode)
@@ -237,12 +269,48 @@ export class MctsAgent implements Agent {
   }
 
   private selectChild(node: Node): Node {
+    if (this.priorFn) return this.selectChildPuct(node)
     const logN = Math.log(Math.max(1, node.visits))
     let best = node.children[0]
     let bestScore = -Infinity
     for (const child of node.children) {
       const exploit = this.perspective(node.actor, child)
       const explore = this.exploration * Math.sqrt(logN / Math.max(1, child.visits))
+      const score = exploit + explore
+      if (score > bestScore) {
+        bestScore = score
+        best = child
+      }
+    }
+    return best
+  }
+
+  /** Prior-weighted UCB1: the incumbent exploration term, scaled per child by
+   * how much the policy prior likes it (k·P normalized so a uniform prior
+   * reproduces plain UCB1 exactly; cPuct in [0,1] mixes the tilt in).
+   * The AlphaZero sqrt-form PUCT measurably LOST here even with uniform
+   * priors - deterministic eval leaves want UCB1's log exploration. */
+  private selectChildPuct(node: Node): Node {
+    let maxLogit = -Infinity
+    for (const c of node.children) {
+      if ((c.priorScore ?? 0) > maxLogit) maxLogit = c.priorScore ?? 0
+    }
+    let z = 0
+    const exps = node.children.map((c) => {
+      const e = Math.exp(((c.priorScore ?? 0) - maxLogit) / this.priorTemp)
+      z += e
+      return e
+    })
+    const k = node.children.length
+    const logN = Math.log(Math.max(1, node.visits))
+    let best = node.children[0]
+    let bestScore = -Infinity
+    for (let i = 0; i < node.children.length; i++) {
+      const child = node.children[i]
+      const exploit = this.perspective(node.actor, child)
+      const tilt = 1 + this.cPuct * ((k * exps[i]) / z - 1)
+      const explore =
+        this.exploration * Math.sqrt(logN / Math.max(1, child.visits)) * Math.max(0, tilt)
       const score = exploit + explore
       if (score > bestScore) {
         bestScore = score
