@@ -14,12 +14,17 @@ observation -> named concept -> feature -> gate (2-for-2 today, ~1h each),
 (b) search/infra engineering validated by the ladder.
 
 **Next up (agent)**
-1. P3 finish: honest-agent verdict from scripts/tune-honest.ts.
-   A) a config clears planner -> ship as the fair "Hard" in /play (label the
-      omniscient MCTS for what it is), add 'honest' to /watch.
-   B) all configs trail planner -> implement Multiple-Observer IS-MCTS (ONE
-      tree, a fresh determinization per iteration; information-set nodes keyed
-      by the actor's view) - the known upgrade over PIMC voting, same hook.
+1. DONE (Oct 2026): P3 complete. Honest PIMC shipped as Hard first (4x500,
+   61%/57%); then IS-MCTS (src/ai/ismcts.ts, Cowling 2012) REPLACED it as
+   Hard: one shared information-set tree, a fresh determinization threaded
+   through per iteration (subsumes the chance-node fan-out), edges keyed by
+   the root player's OBSERVATION (hidden-at-root ids key by printed card
+   identity, public ids stay stable, duplicate hidden cards collapse to one
+   info-set action), availability-adjusted UCB1. Budget-matched gate
+   (gate-ismcts.ts, 2000 iters vs honest 4x500): 56% (18-14) vs honest PIMC
+   AND 54% (13-11) vs the oracle - the double-positive signature. n=32/24
+   (~30s/game), so the margin is directional; honest stays pickable as
+   "classic". ~32s/game wall-clock, similar order to honest.
 2. Knowledge tracking in determinize.ts: pin cards seen via searches /
    bottom-decks (today they resample uniformly). Improves the honest agent,
    Honest-mode analyzer, and any future belief modeling, and it is pure
