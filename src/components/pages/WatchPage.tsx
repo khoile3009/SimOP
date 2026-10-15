@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { PlayerId } from '@/engine/types'
+import type { GameState, PlayerId } from '@/engine/types'
 import { Wordmark } from '@/components/common/PageShell'
 import Button from '@/components/common/Button'
 import { legalActions, whoActs } from '@/engine/legalActions'
@@ -9,6 +9,9 @@ import { useDeckStore } from '@/stores/deckStore'
 import type { Agent } from '@/ai/agents'
 import { AGENT_FACTORIES, type AgentKind } from '@/sim/benchmark'
 import { evaluateState } from '@/ai/evaluate'
+import { describeAction } from '@/ai/turnSearch'
+import { getEffectivePower } from '@/engine/powerCalc'
+import { getEffectDefs } from '@/engine/effects/registry'
 import GameBoard from '@/components/game/GameBoard'
 import DeckSelect from '@/components/common/DeckSelect'
 import { resolveDeckChoice, DEFAULT_CHOICE, type DeckChoice } from '@/components/common/deckChoice'
@@ -26,12 +29,37 @@ const AGENT_OPTIONS: { kind: AgentKind; label: string; hint: string }[] = [
 const agentLabel = (kind: AgentKind): string =>
   AGENT_OPTIONS.find((o) => o.kind === kind)?.label ?? kind
 
+function findUnit(state: GameState, id: string) {
+  for (const pid of ['player1', 'player2'] as PlayerId[]) {
+    const p = state.players[pid]
+    if (p.leader.instanceId === id) return p.leader
+    const c = p.characters.find((x) => x.instanceId === id)
+    if (c) return c
+  }
+  return null
+}
+
+interface LogEntry {
+  n: number
+  turn: number
+  actor: PlayerId
+  label: string
+  /** P1 win probability after the action */
+  p1: number
+  /** Attack declared below the target's power: 'hopeless' has no [When
+   * Attacking] rider to fire, 'rider' swings to trigger one */
+  flag?: 'hopeless' | 'rider'
+}
+
 export default function WatchPage() {
   const { gameState, startNewGame, dispatch } = useGameStore()
   const { savedDecks } = useDeckStore()
   const [running, setRunning] = useState(false)
   const [setupOpen, setSetupOpen] = useState(true)
   const [speed, setSpeed] = useState(400)
+  const [logOpen, setLogOpen] = useState(false)
+  const [log, setLog] = useState<LogEntry[]>([])
+  const logCount = useRef(0)
   const [kinds, setKinds] = useState<Record<PlayerId, AgentKind>>({
     player1: 'greedy',
     player2: 'greedy',
@@ -56,7 +84,31 @@ export default function WatchPage() {
     const actions = legalActions(state)
     if (actions.length === 0) return
     const action = agentsRef.current[actor].choose(state, actions, actor)
+    const label = describeAction(state, action)
+    const turn = state.turnNumber
     dispatch(action, actor)
+
+    // Match log: what was played, the P1 eval after it, and attack-quality
+    // flags (an under-powered swing is fine when it fires a [When Attacking]
+    // rider; without one it can never connect and only rests the attacker)
+    const after = useGameStore.getState().gameState
+    let flag: LogEntry['flag']
+    if (action.type === 'DECLARE_ATTACK' && after?.battle) {
+      const atk = findUnit(after, after.battle.attackerId)
+      const tgt = findUnit(after, after.battle.currentTargetId)
+      if (atk && tgt && getEffectivePower(after, atk) < getEffectivePower(after, tgt)) {
+        flag = getEffectDefs(atk.cardId, 'whenAttacking').length > 0 ? 'rider' : 'hopeless'
+      }
+    }
+    const entry: LogEntry = {
+      n: ++logCount.current,
+      turn,
+      actor,
+      label,
+      p1: after ? evaluateState(after, 'player1') : 0.5,
+      flag,
+    }
+    setLog((l) => [entry, ...l].slice(0, 300))
   }
 
   useEffect(() => {
@@ -73,6 +125,8 @@ export default function WatchPage() {
       player2: AGENT_FACTORIES[kinds.player2](Math.random),
     }
     startNewGame(deck1, deck2)
+    setLog([])
+    logCount.current = 0
     setSetupOpen(false)
     setRunning(true)
   }
@@ -127,6 +181,9 @@ export default function WatchPage() {
                 onChange={(e) => setSpeed(1550 - Number(e.target.value))}
               />
             </label>
+            <Button size="sm" variant="ghost" onClick={() => setLogOpen((o) => !o)}>
+              {logOpen ? 'Hide log' : `Log (${log.length})`}
+            </Button>
           </>
         )}
 
@@ -158,6 +215,59 @@ export default function WatchPage() {
           <span className="w-12 text-[10px] tabular-nums text-text-secondary">
             {(score * 100).toFixed(0)}%
           </span>
+        </div>
+      )}
+
+      {!showSetup && logOpen && (
+        <div className="fixed bottom-2 right-2 top-24 z-40 flex w-80 flex-col gap-1 overflow-hidden rounded-xl border border-glass-border bg-ocean-950/90 p-2 backdrop-blur-md">
+          <div className="flex items-center justify-between px-1">
+            <span className="ui-label">Match log</span>
+            <button
+              className="text-[11px] text-text-secondary hover:text-text-primary"
+              onClick={() => {
+                const text = [...log]
+                  .reverse()
+                  .map(
+                    (e) =>
+                      `#${e.n} T${e.turn} ${e.actor === 'player1' ? 'P1' : 'P2'} ${e.label} -> P1 ${(e.p1 * 100).toFixed(0)}%${e.flag ? ` [${e.flag}]` : ''}`,
+                  )
+                  .join('\n')
+                void navigator.clipboard.writeText(text)
+              }}
+            >
+              Copy
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {log.map((e) => (
+              <div
+                key={e.n}
+                className={`flex items-baseline justify-between gap-2 border-b border-glass-border/40 px-1 py-0.5 text-[11px] ${
+                  e.flag === 'hopeless'
+                    ? 'text-life-red'
+                    : e.flag === 'rider'
+                      ? 'text-don-gold'
+                      : 'text-text-secondary'
+                }`}
+                title={
+                  e.flag === 'hopeless'
+                    ? 'Attack declared below the target power with no [When Attacking] effect - it can never connect'
+                    : e.flag === 'rider'
+                      ? 'Below-power swing, but it fires a [When Attacking] effect'
+                      : undefined
+                }
+              >
+                <span className="min-w-0 truncate">
+                  T{e.turn} {e.actor === 'player1' ? 'P1' : 'P2'} · {e.label}
+                  {e.flag ? ` [${e.flag}]` : ''}
+                </span>
+                <span className="tabular-nums">{(e.p1 * 100).toFixed(0)}%</span>
+              </div>
+            ))}
+            {log.length === 0 && (
+              <p className="px-1 py-2 text-[11px] text-text-muted">No actions yet.</p>
+            )}
+          </div>
         </div>
       )}
 
