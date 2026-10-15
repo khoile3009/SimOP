@@ -42,6 +42,9 @@ export interface TurnLine {
   /** Punisher pass (M4.5 #2): the opponent's reply turn simulated once per
    * out-class draw - "don't overextend into their outs" */
   afterReply?: AfterReply
+  /** Playing-to-outs mode (M4.5 #4), present only when every line was losing:
+   * this line's value per OWN next-turn draw class - "which draw saves it" */
+  outs?: OutsReport
 }
 
 export interface AfterReply {
@@ -50,6 +53,16 @@ export interface AfterReply {
   /** Value under their most punishing draw class */
   worstDraw: number
   branches: { cls: string; cardName: string; value: number }[]
+}
+
+export interface OutsReport {
+  /** Mass-weighted mean over own draw classes */
+  mean: number
+  /** Value in the best own-draw branch - the ranking key when behind */
+  bestDraw: number
+  /** Deck share of the draw classes that lift this line to >= 50% */
+  flipMass: number
+  branches: { cls: string; cardName: string; value: number; mass: number }[]
 }
 
 interface Node {
@@ -79,6 +92,9 @@ export interface TurnSearchOptions {
   /** 'punished' ranks by mean-minus-spread over their draw classes
    * (0.5·expected + 0.5·worstDraw) - the commit-vs-hold dial */
   rankBy?: 'worstCase' | 'punished'
+  /** When the BEST line still ranks below this, stop maximizing the mean and
+   * play to your outs: rank by the best own-draw branch (0 disables) */
+  outsThreshold?: number
 }
 
 export function searchTurnLines(
@@ -95,6 +111,7 @@ export function searchTurnLines(
     verifyBudget = 4000,
     punish = true,
     rankBy = 'worstCase',
+    outsThreshold = 0.35,
   } = options
   const ev = memoizeEval(options.evalFn ?? evaluateState)
   if (whoActs(root) !== player) return []
@@ -199,7 +216,23 @@ export function searchTurnLines(
     rankBy === 'punished' && l.afterReply
       ? 0.5 * l.afterReply.expected + 0.5 * l.afterReply.worstDraw
       : l.worstCase
-  return verified.sort((a, b) => rankKey(b) - rankKey(a)).slice(0, topK)
+  const ranked = verified.sort((a, b) => rankKey(b) - rankKey(a))
+
+  // Playing-to-outs (M4.5 #4): when even the best line is losing, expected
+  // value is the wrong objective - find the draw that WOULD win and take the
+  // line positioned to exploit it (prefer lines alive to more out-classes)
+  if (punish && outsThreshold > 0 && ranked.length > 0 && rankKey(ranked[0]) < outsThreshold) {
+    for (const line of ranked) {
+      if (!line.lethal) line.outs = playToOuts(root, player, line.actions, ev)
+    }
+    ranked.sort((a, b) => {
+      const ao = a.outs
+      const bo = b.outs
+      if (!ao || !bo) return (bo ? 1 : 0) - (ao ? 1 : 0)
+      return bo.bestDraw - ao.bestDraw || bo.flipMass - ao.flipMass || rankKey(b) - rankKey(a)
+    })
+  }
+  return ranked.slice(0, topK)
 }
 
 // ─── Opponent-outs punisher pass (M4.5 #2) ───────────────────────────────────
@@ -211,16 +244,15 @@ export function searchTurnLines(
  * their whole reply turn with greedy agents on both sides. The result prices
  * what the board looks like AFTER they answer, not just after we act.
  */
-function punishLine(
+/** Replay a line's actions up to (not including) its final END_TURN,
+ * resolving opponent interrupts with greedy replies. */
+function replayToPreEnd(
   root: GameState,
   player: PlayerId,
   actions: GameAction[],
   ev: EvalFn,
-): AfterReply | undefined {
+): GameState | undefined {
   if (actions.length === 0 || actions[actions.length - 1].type !== 'END_TURN') return undefined
-  const opp = getOpponent(player)
-
-  // Replay to the pre-END_TURN state, greedy replies on interrupts
   let s = root
   for (const action of actions.slice(0, -1)) {
     for (let guard = 0; guard < 20 && !s.winner && whoActs(s) !== player; guard++) {
@@ -233,7 +265,18 @@ function punishLine(
     if (result.error) return undefined
     s = result.state
   }
-  if (s.winner) return undefined
+  return s.winner ? undefined : s
+}
+
+function punishLine(
+  root: GameState,
+  player: PlayerId,
+  actions: GameAction[],
+  ev: EvalFn,
+): AfterReply | undefined {
+  const opp = getOpponent(player)
+  const s = replayToPreEnd(root, player, actions, ev)
+  if (!s) return undefined
 
   const reps = sampleOutClasses(s.players[opp].deck)
   if (reps.length === 0) return undefined
@@ -258,6 +301,49 @@ function punishLine(
   }
   if (branches.length === 0) return undefined
   return { expected: weighted / massTotal, worstDraw, branches }
+}
+
+/**
+ * Playing-to-outs extension (M4.5 #4): per OWN out-class, force that card to
+ * our deck top before ending the turn, let the opponent take their greedy
+ * reply turn (our forced top survives it to become our draw), then play our
+ * own next turn greedily and score. "Which draw class saves this line?"
+ */
+function playToOuts(
+  root: GameState,
+  player: PlayerId,
+  actions: GameAction[],
+  ev: EvalFn,
+): OutsReport | undefined {
+  const s = replayToPreEnd(root, player, actions, ev)
+  if (!s) return undefined
+  const reps = sampleOutClasses(s.players[player].deck)
+  if (reps.length === 0) return undefined
+
+  const branches: OutsReport['branches'] = []
+  let weighted = 0
+  let massTotal = 0
+  let bestDraw = -Infinity
+  let flipMass = 0
+  for (const rep of reps) {
+    const forced = forceDeckTop(s, player, rep.card.instanceId)
+    const ended = processAction(forced, actions[actions.length - 1], player)
+    if (ended.error) continue
+    const afterReply = rolloutReplyTurn(ended.state, player, ev)
+    const value = ev(greedyComplete(afterReply, player, ev), player)
+    branches.push({
+      cls: rep.cls,
+      cardName: getCardById(rep.card.cardId)?.name ?? rep.card.cardId,
+      value,
+      mass: rep.mass,
+    })
+    weighted += rep.mass * value
+    massTotal += rep.mass
+    if (value > bestDraw) bestDraw = value
+    if (value >= 0.5) flipMass += rep.mass
+  }
+  if (branches.length === 0) return undefined
+  return { mean: weighted / massTotal, bestDraw, flipMass, branches }
 }
 
 /** Swap one deck card to the top (the draw the reply turn will see). */
@@ -312,6 +398,10 @@ export class TurnPlannerAgent implements Agent {
       // across 100 seat-swapped base-deck games (gate-punish.ts)
       punish: true,
       rankBy: 'punished',
+      // Playing-to-outs REJECTED for the planner (gate-outs.ts: 47% of 100;
+      // the mode fires in already-lost games, so the gate has little power
+      // either way) - the analyzer keeps it; re-gate if the model improves
+      outsThreshold: 0,
       ...searchOptions,
     }
     this.greedy = new GreedyAgent(rand, this.searchOptions.evalFn ?? evaluateState)

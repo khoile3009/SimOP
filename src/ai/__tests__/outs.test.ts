@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { GameState } from '@/engine/types'
-import { createGame } from '@/engine/gameSetup'
+import { createGame, createGameCard } from '@/engine/gameSetup'
 import { processAction } from '@/engine/processor'
 import { whoActs } from '@/engine/legalActions'
 import { sampleOutClasses } from '@/ai/outs'
@@ -66,6 +66,52 @@ describe('opponent-outs punisher pass', () => {
         expect(b.cardName.length).toBeGreaterThan(0)
       }
     }
+  })
+
+  it('plays to outs when every line is losing', { timeout: 60000 }, () => {
+    const base = midGameState()
+    const p1 = base.players.player1
+    const p2 = base.players.player2
+    const losing: GameState = {
+      ...base,
+      players: {
+        ...base.players,
+        player1: { ...p1, lifeCards: p1.lifeCards.slice(0, 1) },
+        player2: {
+          ...p2,
+          characters: ['OP01-005', 'OP01-005', 'OP01-010'].map((id) => ({
+            ...createGameCard(id, 'player2'),
+            turnPlayed: 1,
+          })),
+        },
+      },
+    }
+    const lines = searchTurnLines(losing, 'player1', {
+      beamWidth: 6,
+      verifyTop: 2,
+      topK: 2,
+      maxExpansions: 1200,
+      verifyBudget: 300,
+    })
+    expect(lines.length).toBeGreaterThan(0)
+    const top = lines[0]
+    expect(top.worstCase).toBeLessThan(0.35)
+    expect(top.outs).toBeDefined()
+    const o = top.outs!
+    expect(o.branches.length).toBeGreaterThanOrEqual(1)
+    expect(o.bestDraw).toBeGreaterThanOrEqual(o.mean - 1e-9)
+    expect(o.flipMass).toBeGreaterThanOrEqual(0)
+
+    // Disabled threshold: no outs report even when losing
+    const flat = searchTurnLines(losing, 'player1', {
+      beamWidth: 6,
+      verifyTop: 2,
+      topK: 1,
+      maxExpansions: 1200,
+      verifyBudget: 300,
+      outsThreshold: 0,
+    })
+    expect(flat.every((l) => l.outs === undefined)).toBe(true)
   })
 
   it('punish: false skips the pass entirely', () => {

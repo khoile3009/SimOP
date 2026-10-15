@@ -26,6 +26,14 @@ observation -> named concept -> feature -> gate (2-for-2 today, ~1h each),
    engineering.
 3. Feature mining cadence: a play session per week-ish; every bot misjudgment
    becomes a FEATURE_IDEAS entry below, best one gets implemented + gated.
+   - M4.5 #4 playing-to-outs (Oct 2026): analyzer SHIPPED, planner REJECTED.
+     Below a 0.35 rank value, lines extend through their reply into OUR
+     next-turn draw per out-class (forceDeckTop before our END_TURN; the top
+     survives their turn), re-ranked by bestDraw then flipMass; AnalyzePanel
+     badge + "wins if you draw <classes> - N% of deck". gate-outs.ts: 47% of
+     100 vs outsThreshold:0 - no adoption, but the mode only acts in
+     mostly-lost games so the all-games gate is low-powered for it; a
+     desperate-positions-only benchmark would be the fair re-test.
    - DONE (Oct 2026), M4.5 #2 opponent-outs punisher pass: src/ai/outs.ts
      sampleOutClasses (removal read from effect defs, threat/counter/blocker,
      median ordinary); turnSearch replays each verified line to pre-END_TURN,

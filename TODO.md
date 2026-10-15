@@ -51,8 +51,17 @@
          (27-33, parity within noise - the oracle WAS profiting from the
          cheat); wall-clock well under the 2-3x budget. Searches/effect draws
          still resolve from the fixed order (future refinement);
-      4. playing-to-your-outs mode (when max win% < threshold, rank lines by P(win | best
-         draw class) - direct transcription of pro play; unpublished as an AI technique).
+      4. DONE for the analyzer / REJECTED for the planner (Oct 2026):
+         playing-to-outs mode. When every verified line ranks below 0.35,
+         turnSearch extends each line past the opponent's reply into the
+         player's own next-turn draw (one branch per own out-class via the
+         shared sampleOutClasses), re-ranks by best-draw branch then flip
+         mass, and the analyzer shows a PLAY TO OUTS badge + "wins if you
+         draw <classes> - N% of deck". Planner gate (gate-outs.ts): 47% of
+         100 - no adoption; note the gate has little power here by design
+         (the mode only fires in mostly-lost games), so re-gate after reply-
+         model improvements rather than treating 47% as disproof. Planner
+         default outsThreshold 0; analyzer default 0.35.
 - [x] M5 Phase B engine — DONE (Sep 2026). OP01 is now FULLY implemented: zero
       MISSING/PARTIAL ledger entries (only documented SIMPLIFIED deviations).
       Shipped: (1) event pipeline - 'onEvent' EffectDefs subscribe to engine

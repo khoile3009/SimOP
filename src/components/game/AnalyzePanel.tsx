@@ -209,6 +209,14 @@ export default function AnalyzePanel() {
                       {pct(scoreFor(line.afterReply.worstDraw))})
                     </span>
                   )}
+                  {line.outs && (
+                    <span
+                      className="rounded bg-don-gold/20 px-1.5 text-[10px] font-bold text-don-gold"
+                      title="Every line is losing on average - ranked by the best own-draw branch instead"
+                    >
+                      PLAY TO OUTS {pct(scoreFor(line.outs.bestDraw))}
+                    </span>
+                  )}
                 </div>
                 <ol className="flex flex-col gap-0.5 text-xs text-text-secondary">
                   {line.labels.map((label, j) => (
@@ -232,12 +240,34 @@ export default function AnalyzePanel() {
                     ))}
                   </div>
                 )}
-                {i === 0 && line.afterReply && (
+                {i === 0 && line.afterReply && !line.outs && (
                   <div className="mt-1.5 border-t border-glass-border pt-1 text-[11px] text-text-muted">
                     {line.afterReply.branches.map((b, j) => (
                       <div key={j} className="flex justify-between gap-2">
                         <span>
                           If they draw {b.cls} ({b.cardName})
+                        </span>
+                        <span className="tabular-nums">{pct(scoreFor(b.value))}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {i === 0 && line.outs && (
+                  <div className="mt-1.5 border-t border-glass-border pt-1 text-[11px] text-text-muted">
+                    {line.outs.flipMass > 0 && (
+                      <div className="mb-0.5 text-don-gold">
+                        Wins if you draw{' '}
+                        {line.outs.branches
+                          .filter((b) => b.value >= 0.5)
+                          .map((b) => `${b.cls} (${b.cardName})`)
+                          .join(', ')}{' '}
+                        — {Math.round(line.outs.flipMass * 100)}% of deck
+                      </div>
+                    )}
+                    {line.outs.branches.map((b, j) => (
+                      <div key={j} className="flex justify-between gap-2">
+                        <span>
+                          If you draw {b.cls} ({b.cardName})
                         </span>
                         <span className="tabular-nums">{pct(scoreFor(b.value))}</span>
                       </div>
